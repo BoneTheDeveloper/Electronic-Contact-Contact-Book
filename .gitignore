@@ -1,0 +1,31 @@
+# Git ignore for React Native
+# Dependencies
+node_modules/
+deps/
+vendor/
+
+# Build
+build/
+dist/
+
+# Cache
+.cache/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Expo
+.expo/
+
+# Temporary
+*.tmp
+*.temp
