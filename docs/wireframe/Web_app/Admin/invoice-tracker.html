@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECONTACT Admin - Quản lý Hóa đơn</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --primary: #0284C7;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            transition: all 0.3s ease;
+        }
+
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+
+        .nav-item.active {
+            background-color: rgba(2, 132, 199, 0.1);
+            color: var(--primary);
+            border-right: 4px solid var(--primary);
+        }
+
+        .card-shadow {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Checkbox Custom */
+        .custom-checkbox {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .custom-checkbox:checked {
+            background: #0284C7;
+            border-color: #0284C7;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Timeline Styles */
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: -2rem;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="flex">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar h-screen bg-white border-r border-slate-200 flex flex-col sticky top-0 shrink-0">
+        <!-- Brand -->
+        <div class="p-6 border-b border-slate-100 flex items-center gap-3">
+            <div class="p-2 bg-blue-50 rounded-xl">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.5">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M2 17L12 22L22 17" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-black text-slate-800 tracking-tight leading-none">ECONTACT</h1>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Admin Portal</span>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Chính</p>
+
+            <a href="dashboard.html"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Tổng quan
+            </a>
+
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-6">Quản trị</p>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Người dùng
+            </a>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                </svg>
+                Học thuật (Lớp/Môn)
+            </a>
+
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-6">Vận hành</p>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                Điểm danh
+            </a>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.6" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                Quản lý Điểm số
+            </a>
+
+            <a href="payment.html"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <line x1="2" y1="10" x2="22" y2="10" />
+                </svg>
+                Học phí & Tài chính
+            </a>
+
+            <a href="invoice-tracker.html"
+                class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                </svg>
+                Quản lý Hóa đơn
+            </a>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                Thông báo
+            </a>
+        </nav>
+
+        <!-- User Profile Sidebar Bottom -->
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="flex items-center gap-3 p-2">
+                <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white overflow-hidden">
+                    <img src="https://ui-avatars.com/api/?name=Admin+Hust&background=0284C7&color=fff" alt="Avatar">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate">Admin123</p>
+                    <p class="text-[10px] text-slate-400 font-medium truncate">ad001@econtact.vn</p>
+                </div>
+                <button class="text-slate-400 hover:text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 min-w-0 h-screen overflow-y-auto bg-slate-50">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-40">
+            <div class="flex items-center gap-4">
+                <h2 class="text-lg font-extrabold text-slate-800">Quản lý Hóa đơn & Theo dõi Công nợ</h2>
+
+                <!-- School Year Badge -->
+                <div class="hidden md:flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                    <span class="text-xs font-black text-[#0284C7] uppercase tracking-wider">2025-2026</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+                <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTENT BODY -->
+        <div class="p-8 space-y-8">
+
+            <!-- MAIN SECTION: QUẢN LÝ HÓA ĐƠN & THEO DÕI CÔNG NỢ -->
+            <section class="bg-white rounded-[32px] card-shadow border border-slate-100 overflow-hidden">
+                <!-- Section Header -->
+                <div class="p-8 border-b border-slate-100 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="#9333ea" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                                <polyline points="10 9 9 9 8 9" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black text-slate-800 tracking-tight">Quản lý Hóa đơn & Theo dõi Công nợ</h3>
+                            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">Invoice Tracking - Xem công nợ học phí</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="exportInvoices()"
+                            class="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-50 flex items-center gap-2 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2.5">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Xuất báo cáo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="px-8 pt-6 pb-4 flex items-center gap-4 flex-wrap bg-slate-50/50">
+                    <!-- Search -->
+                    <div class="flex-1 min-w-[250px]">
+                        <div class="relative">
+                            <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.35-4.35" />
+                            </svg>
+                            <input type="text" id="searchStudent" placeholder="Tìm theo Mã học sinh hoặc Họ tên..."
+                                onkeyup="searchInvoices()"
+                                class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-100 outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Filter by Class -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lớp:</span>
+                        <select id="filterClass" onchange="filterInvoices()"
+                            class="bg-white border border-slate-200 text-xs font-bold rounded-xl px-4 py-3 outline-none cursor-pointer hover:border-purple-200 transition-all min-w-[120px]">
+                            <option value="all">Tất cả</option>
+                            <option value="6A">6A</option>
+                            <option value="6B">6B</option>
+                            <option value="7A">7A</option>
+                            <option value="7B">7B</option>
+                            <option value="8A">8A</option>
+                            <option value="8B">8B</option>
+                            <option value="9A">9A</option>
+                            <option value="9B">9B</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter by Semester -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Học kỳ:</span>
+                        <select id="filterInvoiceSemester" onchange="filterInvoices()"
+                            class="bg-white border border-slate-200 text-xs font-bold rounded-xl px-4 py-3 outline-none cursor-pointer hover:border-purple-200 transition-all">
+                            <option value="all">Tất cả</option>
+                            <option value="1" selected>Học kỳ 1</option>
+                            <option value="2">Học kỳ 2</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter by Status -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Trạng thái:</span>
+                        <select id="filterStatus" onchange="filterInvoices()"
+                            class="bg-white border border-slate-200 text-xs font-bold rounded-xl px-4 py-3 outline-none cursor-pointer hover:border-purple-200 transition-all">
+                            <option value="all">Tất cả</option>
+                            <option value="pending">Chờ đóng</option>
+                            <option value="partial">Đã đóng một phần</option>
+                            <option value="completed">Đã hoàn thành</option>
+                            <option value="overdue">Quá hạn</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="px-8 py-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="p-5 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border border-blue-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Tổng hóa đơn</span>
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                </svg>
+                            </div>
+                        </div>
+                        <p id="statTotalInvoices" class="text-2xl font-black text-slate-800">24</p>
+                    </div>
+
+                    <div class="p-5 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-black text-amber-600 uppercase tracking-widest">Chờ đóng</span>
+                            <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polyline points="12 6 12 12 16 14" />
+                                </svg>
+                            </div>
+                        </div>
+                        <p id="statPending" class="text-2xl font-black text-slate-800">8</p>
+                    </div>
+
+                    <div class="p-5 bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl border border-emerald-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Đã hoàn thành</span>
+                            <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                    <polyline points="22 4 12 14.01 9 11.01" />
+                                </svg>
+                            </div>
+                        </div>
+                        <p id="statCompleted" class="text-2xl font-black text-slate-800">16</p>
+                    </div>
+
+                    <div class="p-5 bg-gradient-to-br from-rose-50 to-red-50 rounded-2xl border border-rose-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-black text-rose-600 uppercase tracking-widest">Công nợ</span>
+                            <div class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2">
+                                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                </svg>
+                            </div>
+                        </div>
+                        <p id="statDebt" class="text-xl font-black text-rose-600">42,904,000 ₫</p>
+                    </div>
+                </div>
+
+                <!-- Invoice Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-50">
+                                <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Mã hóa đơn</th>
+                                <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Học sinh</th>
+                                <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tổng tiền</th>
+                                <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Đã thanh toán</th>
+                                <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Còn nợ</th>
+                                <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hạn thanh toán</th>
+                                <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Trạng thái</th>
+                                <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceTableBody" class="divide-y divide-slate-100">
+                            <!-- QUÁ HẠN - ƯU TIÊN HÀNG ĐẦU -->
+                            <tr class="hover:bg-red-50/50 transition-all cursor-pointer bg-red-50/30" onclick="viewInvoiceDetail('INV-2025-003')">
+                                <td class="px-8 py-4">
+                                    <span class="text-sm font-bold text-[#9333ea]">INV-2025-003</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                                            <img src="https://ui-avatars.com/api/?name=Le+Van+C&background=22c55e&color=fff" alt="Avatar">
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-800">Lê Văn Cường</p>
+                                            <p class="text-xs text-slate-400">7A • HS2025003</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-4 text-sm font-bold text-slate-700">5,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-slate-400">0 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-red-600">5,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm text-red-500 font-bold">15/09/2025 ⚠️</td>
+                                <td class="px-8 py-4">
+                                    <span class="px-3 py-1 bg-red-100 text-red-600 text-[10px] font-black uppercase rounded-lg">Quá hạn</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="event.stopPropagation(); openPaymentModal('INV-2025-003')" class="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-all" title="Xác nhận thanh toán">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                                <line x1="2" y1="10" x2="22" y2="10" />
+                                                <circle cx="12" cy="15" r="2" fill="currentColor" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); sendReminder('INV-2025-003', 'Lê Văn Cường')" class="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all" title="Gửi nhắc nhở">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); editInvoice('INV-2025-003')" class="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all" title="Chỉnh sửa hóa đơn">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); viewPaymentHistory('INV-2025-003')" class="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-lg transition-all" title="Xem lịch sử">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- ĐÃ ĐÓNG MỘT PHẦN (QUÁ HẠN) -->
+                            <tr class="hover:bg-amber-50/50 transition-all cursor-pointer bg-amber-50/30" onclick="viewInvoiceDetail('INV-2025-002')">
+                                <td class="px-8 py-4">
+                                    <span class="text-sm font-bold text-[#9333ea]">INV-2025-002</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                                            <img src="https://ui-avatars.com/api/?name=Tran+Thi+B&background=ec4899&color=fff" alt="Avatar">
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-800">Trần Thị Bích</p>
+                                            <p class="text-xs text-slate-400">6A • HS2025002</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-4 text-sm font-bold text-slate-700">5,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-green-600">2,500,000 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-amber-600">2,904,000 ₫</td>
+                                <td class="px-8 py-4 text-sm text-red-500 font-bold">10/09/2025 ⚠️</td>
+                                <td class="px-8 py-4">
+                                    <span class="px-3 py-1 bg-amber-100 text-amber-600 text-[10px] font-black uppercase rounded-lg">Đã đóng một phần</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="event.stopPropagation(); openPaymentModal('INV-2025-002')" class="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-all" title="Xác nhận thanh toán">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                                <line x1="2" y1="10" x2="22" y2="10" />
+                                                <circle cx="12" cy="15" r="2" fill="currentColor" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); sendReminder('INV-2025-002', 'Trần Thị Bích')" class="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all" title="Gửi nhắc nhở">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); editInvoice('INV-2025-002')" class="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all" title="Chỉnh sửa hóa đơn">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); viewPaymentHistory('INV-2025-002')" class="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-lg transition-all" title="Xem lịch sử">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- ĐÃ ĐÓNG MỘT PHẦN (QUÁ HẠN) -->
+                            <tr class="hover:bg-amber-50/50 transition-all cursor-pointer bg-amber-50/30" onclick="viewInvoiceDetail('INV-2025-006')">
+                                <td class="px-8 py-4">
+                                    <span class="text-sm font-bold text-[#9333ea]">INV-2025-006</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                                            <img src="https://ui-avatars.com/api/?name=Ngo+Thi+F&background=ef4444&color=fff" alt="Avatar">
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-800">Ngô Thị Fanny</p>
+                                            <p class="text-xs text-slate-400">6B • HS2025006</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-4 text-sm font-bold text-slate-700">5,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-green-600">3,000,000 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-amber-600">2,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm text-red-500 font-bold">12/09/2025 ⚠️</td>
+                                <td class="px-8 py-4">
+                                    <span class="px-3 py-1 bg-amber-100 text-amber-600 text-[10px] font-black uppercase rounded-lg">Đã đóng một phần</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="event.stopPropagation(); openPaymentModal('INV-2025-006')" class="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-all" title="Xác nhận thanh toán">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                                <line x1="2" y1="10" x2="22" y2="10" />
+                                                <circle cx="12" cy="15" r="2" fill="currentColor" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); sendReminder('INV-2025-006', 'Ngô Thị Fanny')" class="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all" title="Gửi nhắc nhở">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); editInvoice('INV-2025-006')" class="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all" title="Chỉnh sửa hóa đơn">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); viewPaymentHistory('INV-2025-006')" class="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-lg transition-all" title="Xem lịch sử">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- CHỜ ĐÓNG -->
+                            <tr class="hover:bg-slate-50/50 transition-all cursor-pointer" onclick="viewInvoiceDetail('INV-2025-004')">
+                                <td class="px-8 py-4">
+                                    <span class="text-sm font-bold text-[#9333ea]">INV-2025-004</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                                            <img src="https://ui-avatars.com/api/?name=Pham+Thi+D&background=f59e0b&color=fff" alt="Avatar">
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-800">Phạm Thị Dung</p>
+                                            <p class="text-xs text-slate-400">8A • HS2025004</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-4 text-sm font-bold text-slate-700">5,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-slate-400">0 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-amber-600">5,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm text-slate-500">20/09/2025</td>
+                                <td class="px-8 py-4">
+                                    <span class="px-3 py-1 bg-amber-100 text-amber-600 text-[10px] font-black uppercase rounded-lg">Chờ đóng</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="event.stopPropagation(); openPaymentModal('INV-2025-004')" class="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-all" title="Xác nhận thanh toán">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                                <line x1="2" y1="10" x2="22" y2="10" />
+                                                <circle cx="12" cy="15" r="2" fill="currentColor" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); sendReminder('INV-2025-004', 'Phạm Thị Dung')" class="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all" title="Gửi nhắc nhở">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); editInvoice('INV-2025-004')" class="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all" title="Chỉnh sửa hóa đơn">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); viewPaymentHistory('INV-2025-004')" class="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-lg transition-all" title="Xem lịch sử">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- ĐÃ HOÀN THÀNH - XUỐNG DƯỚI -->
+                            <tr class="hover:bg-slate-50/50 transition-all cursor-pointer opacity-60" onclick="viewInvoiceDetail('INV-2025-001')">
+                                <td class="px-8 py-4">
+                                    <span class="text-sm font-bold text-[#9333ea]">INV-2025-003</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                                            <img src="https://ui-avatars.com/api/?name=Le+Van+C&background=22c55e&color=fff" alt="Avatar">
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-800">Lê Văn Cường</p>
+                                            <p class="text-xs text-slate-400">7A • HS2025003</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-4 text-sm font-bold text-slate-700">5,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-slate-400">0 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-red-600">5,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm text-red-500 font-bold">15/09/2025 ⚠️</td>
+                                <td class="px-8 py-4">
+                                    <span class="px-3 py-1 bg-red-100 text-red-600 text-[10px] font-black uppercase rounded-lg">Quá hạn</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="event.stopPropagation(); openPaymentModal('INV-2025-003')" class="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-all" title="Xác nhận thanh toán">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                                <line x1="2" y1="10" x2="22" y2="10" />
+                                                <circle cx="12" cy="15" r="2" fill="currentColor" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); sendReminder('INV-2025-003', 'Lê Văn Cường')" class="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all" title="Gửi nhắc nhở">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); editInvoice('INV-2025-003')" class="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all" title="Chỉnh sửa hóa đơn">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); viewPaymentHistory('INV-2025-003')" class="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-lg transition-all" title="Xem lịch sử">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="hover:bg-slate-50/50 transition-all cursor-pointer" onclick="viewInvoiceDetail('INV-2025-004')">
+                                <td class="px-8 py-4">
+                                    <span class="text-sm font-bold text-[#9333ea]">INV-2025-004</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                                            <img src="https://ui-avatars.com/api/?name=Pham+Thi+D&background=f59e0b&color=fff" alt="Avatar">
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-800">Phạm Thị Dung</p>
+                                            <p class="text-xs text-slate-400">8A • HS2025004</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-4 text-sm font-bold text-slate-700">5,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-slate-400">0 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-amber-600">5,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm text-slate-500">20/09/2025</td>
+                                <td class="px-8 py-4">
+                                    <span class="px-3 py-1 bg-amber-100 text-amber-600 text-[10px] font-black uppercase rounded-lg">Chờ đóng</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="event.stopPropagation(); openPaymentModal('INV-2025-004')" class="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-all" title="Xác nhận thanh toán">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                                <line x1="2" y1="10" x2="22" y2="10" />
+                                                <circle cx="12" cy="15" r="2" fill="currentColor" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); sendReminder('INV-2025-004', 'Phạm Thị Dung')" class="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all" title="Gửi nhắc nhở">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); editInvoice('INV-2025-004')" class="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all" title="Chỉnh sửa hóa đơn">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); viewPaymentHistory('INV-2025-004')" class="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-lg transition-all" title="Xem lịch sử">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="hover:bg-slate-50/50 transition-all cursor-pointer" onclick="viewInvoiceDetail('INV-2025-005')">
+                                <td class="px-8 py-4">
+                                    <span class="text-sm font-bold text-[#9333ea]">INV-2025-005</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                                            <img src="https://ui-avatars.com/api/?name=Hoang+Van+E&background=8b5cf6&color=fff" alt="Avatar">
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-800">Hoàng Văn Em</p>
+                                            <p class="text-xs text-slate-400">9A • HS2025005</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-4 text-sm font-bold text-slate-700">5,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-green-600">5,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-slate-400">0 ₫</td>
+                                <td class="px-8 py-4 text-sm text-slate-500">18/09/2025</td>
+                                <td class="px-8 py-4">
+                                    <span class="px-3 py-1 bg-green-100 text-green-600 text-[10px] font-black uppercase rounded-lg">Đã hoàn thành</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="event.stopPropagation(); openPaymentModal('INV-2025-005')" class="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-all" title="Xác nhận thanh toán">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                                <line x1="2" y1="10" x2="22" y2="10" />
+                                                <circle cx="12" cy="15" r="2" fill="currentColor" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); sendReminder('INV-2025-005', 'Hoàng Văn Em')" class="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all" title="Gửi nhắc nhở">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); editInvoice('INV-2025-005')" class="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all" title="Chỉnh sửa hóa đơn">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); viewPaymentHistory('INV-2025-005')" class="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-lg transition-all" title="Xem lịch sử">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="hover:bg-slate-50/50 transition-all cursor-pointer" onclick="viewInvoiceDetail('INV-2025-006')">
+                                <td class="px-8 py-4">
+                                    <span class="text-sm font-bold text-[#9333ea]">INV-2025-006</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                                            <img src="https://ui-avatars.com/api/?name=Ngo+Thi+F&background=ef4444&color=fff" alt="Avatar">
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-800">Ngô Thị Fanny</p>
+                                            <p class="text-xs text-slate-400">6B • HS2025006</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-4 text-sm font-bold text-slate-700">5,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-green-600">3,000,000 ₫</td>
+                                <td class="px-8 py-4 text-sm font-bold text-amber-600">2,404,000 ₫</td>
+                                <td class="px-8 py-4 text-sm text-red-500 font-bold">12/09/2025 ⚠️</td>
+                                <td class="px-8 py-4">
+                                    <span class="px-3 py-1 bg-amber-100 text-amber-600 text-[10px] font-black uppercase rounded-lg">Đã đóng một phần</span>
+                                </td>
+                                <td class="px-8 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="event.stopPropagation(); openPaymentModal('INV-2025-006')" class="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-all" title="Xác nhận thanh toán">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                                <line x1="2" y1="10" x2="22" y2="10" />
+                                                <circle cx="12" cy="15" r="2" fill="currentColor" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); sendReminder('INV-2025-006', 'Ngô Thị Fanny')" class="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all" title="Gửi nhắc nhở">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); editInvoice('INV-2025-006')" class="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all" title="Chỉnh sửa hóa đơn">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); viewPaymentHistory('INV-2025-006')" class="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-lg transition-all" title="Xem lịch sử">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="px-8 py-4 flex items-center justify-between border-t border-slate-100">
+                    <p class="text-sm text-slate-500">Hiển thị 1-6 trên 24 hóa đơn</p>
+                    <div class="flex items-center gap-2">
+                        <button class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50">Trước</button>
+                        <button class="px-4 py-2 bg-[#0284C7] text-white rounded-lg text-sm font-bold">1</button>
+                        <button class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50">2</button>
+                        <button class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50">3</button>
+                        <button class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50">4</button>
+                        <button class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50">Tiếp</button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- INVOICE DETAIL MODAL -->
+    <div id="invoiceDetailModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0" onclick="closeInvoiceDetailModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden animate-slide-in">
+            <div class="p-8 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-purple-50 to-pink-50">
+                <div>
+                    <h3 class="text-xl font-black text-slate-800">Chi tiết Hóa đơn</h3>
+                    <p id="modalInvoiceNumber" class="text-sm font-bold text-[#9333ea] mt-1">INV-2025-001</p>
+                </div>
+                <button onclick="closeInvoiceDetailModal()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-8 overflow-y-auto max-h-[60vh]">
+                <!-- Student Info -->
+                <div class="mb-6 p-5 bg-slate-50 rounded-2xl">
+                    <h5 class="text-sm font-bold text-slate-700 mb-3">Thông tin học sinh</h5>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Họ tên</p>
+                            <p id="modalStudentName" class="text-sm font-bold text-slate-800">Nguyễn Văn An</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lớp</p>
+                            <p id="modalStudentClass" class="text-sm font-bold text-slate-800">6A</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mã học sinh</p>
+                            <p id="modalStudentId" class="text-sm font-bold text-slate-800">HS2025001</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trạng thái</p>
+                            <p id="modalStatus" class="text-sm font-bold text-green-600">Đã hoàn thành</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fee Items Breakdown -->
+                <div class="mb-6">
+                    <h5 class="text-sm font-bold text-slate-700 mb-3">Chi tiết các khoản thu</h5>
+                    <div class="space-y-3" id="modalFeeItems">
+                        <div class="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2">
+                                        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                                        <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800">Học phí</p>
+                                    <p class="text-xs text-slate-500">Học kỳ 1</p>
+                                </div>
+                            </div>
+                            <p class="text-sm font-bold text-slate-700">2,500,000 ₫</p>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-teal-50 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800">Bảo hiểm y tế</p>
+                                    <p class="text-xs text-slate-500">Cả năm</p>
+                                </div>
+                            </div>
+                            <p class="text-sm font-bold text-slate-700">854,000 ₫</p>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-purple-50 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2">
+                                        <path d="M20.38 3.4a1.6 1.6 0 0 0-2.22 0l-1.62 1.62a1.6 1.6 0 0 0 0 2.22l2.94 2.94a1.6 1.6 0 0 0 2.22 0l1.62-1.62a1.6 1.6 0 0 0 0-2.22z" />
+                                        <path d="M4.5 13.5l-2.12 2.12a1.6 1.6 0 0 0 0 2.22l2.94 2.94a1.6 1.6 0 0 0 2.22 0L9.66 18.5" />
+                                        <path d="M4.5 13.5l9.38-9.38a1.6 1.6 0 0 1 2.22 0l2.94 2.94a1.6 1.6 0 0 1 0 2.22L9.66 18.66" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800">Tiền đồng phục</p>
+                                    <p class="text-xs text-slate-500">Học kỳ 1</p>
+                                </div>
+                            </div>
+                            <p class="text-sm font-bold text-slate-700">850,000 ₫</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Summary -->
+                <div class="p-5 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl text-white">
+                    <h5 class="text-sm font-bold mb-4">Tổng kết thanh toán</h5>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-400">Tổng tiền cần đóng</span>
+                            <span id="modalTotalAmount" class="text-lg font-black">3,350,000 ₫</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-400">Đã thanh toán</span>
+                            <span id="modalPaidAmount" class="text-lg font-black text-green-400">3,350,000 ₫</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-3 border-t border-white/10">
+                            <span class="text-sm text-slate-400">Còn nợ</span>
+                            <span id="modalRemainingAmount" class="text-xl font-black text-red-400">0 ₫</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-8 border-t border-slate-100 flex items-center justify-end gap-3">
+                <button onclick="closeInvoiceDetailModal()"
+                    class="px-6 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-700 hover:bg-slate-50">
+                    Đóng
+                </button>
+                <button onclick="closeInvoiceDetailModal(); openPaymentModalFromDetail()"
+                    class="px-6 py-2.5 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1]">
+                    Cập nhật thanh toán
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAYMENT CONFIRMATION MODAL -->
+    <div id="paymentModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0" onclick="closePaymentModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-3xl shadow-2xl w-full max-w-lg animate-slide-in">
+            <div class="p-8 border-b border-slate-100 bg-gradient-to-r from-green-50 to-emerald-50">
+                <h3 class="text-xl font-black text-slate-800">Xác nhận Thanh toán</h3>
+                <p class="text-sm text-slate-500 mt-1">Nhập thông tin thanh toán thủ công</p>
+            </div>
+            <div class="p-8 space-y-5">
+                <div class="p-4 bg-slate-50 rounded-xl">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-bold text-slate-600">Mã hóa đơn</span>
+                        <span id="paymentInvoiceNumber" class="text-sm font-black text-[#9333ea]">INV-2025-001</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-bold text-slate-600">Còn nợ</span>
+                        <span id="paymentRemainingAmount" class="text-lg font-black text-red-600">2,904,000 ₫</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Số tiền thanh toán (VNĐ)</label>
+                    <input type="number" id="paymentAmount" placeholder="Nhập số tiền"
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-green-100 outline-none">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Phương thức thanh toán</label>
+                    <select id="paymentMethod"
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none cursor-pointer">
+                        <option value="cash">Tiền mặt</option>
+                        <option value="bank_transfer">Chuyển khoản ngân hàng</option>
+                        <option value="qr">QR Code</option>
+                        <option value="other">Khác</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Ghi chú</label>
+                    <textarea id="paymentNote" rows="3" placeholder="Nhập ghi chú (nếu có)..."
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-green-100 outline-none resize-none"></textarea>
+                </div>
+
+                <div class="p-4 bg-blue-50 rounded-xl">
+                    <div class="flex items-start gap-2">
+                        <input type="checkbox" id="sendReceipt" class="custom-checkbox mt-1" checked>
+                        <label for="sendReceipt" class="text-sm text-slate-700">
+                            Gửi biên lai qua tin nhắn cho phụ huynh sau khi xác nhận
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="p-8 border-t border-slate-100 flex items-center justify-end gap-3">
+                <button onclick="closePaymentModal()"
+                    class="px-6 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-700 hover:bg-slate-50">
+                    Hủy
+                </button>
+                <button onclick="confirmPayment()"
+                    class="px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold text-sm hover:from-green-600 hover:to-emerald-600">
+                    Xác nhận thanh toán
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAYMENT HISTORY MODAL -->
+    <div id="paymentHistoryModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0" onclick="closePaymentHistoryModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-slide-in">
+            <div class="p-8 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-purple-50 to-pink-50">
+                <div>
+                    <h3 class="text-xl font-black text-slate-800">Lịch sử Giao dịch</h3>
+                    <p id="historyInvoiceNumber" class="text-sm font-bold text-[#9333ea] mt-1">INV-2025-001</p>
+                </div>
+                <button onclick="closePaymentHistoryModal()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-8 overflow-y-auto max-h-[60vh]">
+                <!-- Timeline -->
+                <div class="space-y-6" id="paymentHistoryTimeline">
+                    <!-- Payment Record 1 -->
+                    <div class="relative pl-8 pb-6 border-l-2 border-green-200">
+                        <div class="absolute left-0 top-0 transform -translate-x-1/2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                        <div class="ml-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-bold text-slate-800">Thanh toán học phí</span>
+                                <span class="text-xs text-slate-400">10/09/2025 14:30</span>
+                            </div>
+                            <div class="p-4 bg-green-50 rounded-xl mb-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-slate-600">Số tiền</span>
+                                    <span class="text-lg font-black text-green-600">2,500,000 ₫</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-600 text-[9px] font-black uppercase rounded">Chuyển khoản</span>
+                                <span class="text-xs text-slate-400">MB Bank - ***1234</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Record 2 -->
+                    <div class="relative pl-8 pb-6 border-l-2 border-green-200">
+                        <div class="absolute left-0 top-0 transform -translate-x-1/2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                        <div class="ml-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-bold text-slate-800">Thanh toán bổ sung</span>
+                                <span class="text-xs text-slate-400">12/09/2025 09:15</span>
+                            </div>
+                            <div class="p-4 bg-green-50 rounded-xl mb-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-slate-600">Số tiền</span>
+                                    <span class="text-lg font-black text-green-600">854,000 ₫</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-1 bg-purple-100 text-purple-600 text-[9px] font-black uppercase rounded">Tiền mặt</span>
+                                <span class="text-xs text-slate-400">Thanh toán tại văn phòng</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Created -->
+                    <div class="relative pl-8 border-l-2 border-slate-200">
+                        <div class="absolute left-0 top-0 transform -translate-x-1/2 w-4 h-4 bg-slate-300 rounded-full border-2 border-white"></div>
+                        <div class="ml-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-bold text-slate-800">Tạo hóa đơn</span>
+                                <span class="text-xs text-slate-400">01/09/2025 08:00</span>
+                            </div>
+                            <p class="text-xs text-slate-500">Hệ thống tự động tạo hóa đơn</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="mt-6 p-5 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl text-white">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-bold text-slate-400">Tổng đã thanh toán</span>
+                        <span class="text-2xl font-black text-green-400">3,354,000 ₫</span>
+                    </div>
+                </div>
+            </div>
+            <div class="p-8 border-t border-slate-100 flex items-center justify-end">
+                <button onclick="closePaymentHistoryModal()"
+                    class="px-6 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT INVOICE MODAL -->
+    <div id="editInvoiceModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0" onclick="closeEditInvoiceModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-slide-in">
+            <div class="p-8 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-amber-50 to-orange-50">
+                <div>
+                    <h3 class="text-xl font-black text-slate-800">Chỉnh sửa Hóa đơn</h3>
+                    <p id="editModalInvoiceNumber" class="text-sm font-bold text-[#f59e0b] mt-1">INV-2025-001</p>
+                </div>
+                <button onclick="closeEditInvoiceModal()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-8 overflow-y-auto max-h-[60vh] space-y-6">
+                <!-- Student Info -->
+                <div class="p-5 bg-slate-50 rounded-2xl">
+                    <h5 class="text-sm font-bold text-slate-700 mb-3">Thông tin học sinh</h5>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Họ tên</p>
+                            <p id="editModalStudentName" class="text-sm font-bold text-slate-800">Nguyễn Văn An</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lớp</p>
+                            <p id="editModalStudentClass" class="text-sm font-bold text-slate-800">6A</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mã học sinh</p>
+                            <p id="editModalStudentId" class="text-sm font-bold text-slate-800">HS2025001</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fee Items Section -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h5 class="text-sm font-bold text-slate-700">Danh mục khoản thu</h5>
+                        <button onclick="addNewFeeItem()" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl text-xs font-bold hover:from-blue-600 hover:to-cyan-600 flex items-center gap-2">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Thêm khoản thu
+                        </button>
+                    </div>
+
+                    <div id="editFeeItemsContainer" class="space-y-3">
+                        <!-- Fee items will be dynamically rendered here -->
+                    </div>
+                </div>
+
+                <!-- Discount Policy Section -->
+                <div class="p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border border-purple-100">
+                    <h5 class="text-sm font-bold text-slate-700 mb-4">Chính sách miễn giảm</h5>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="flex items-center gap-2 mb-3">
+                                <input type="checkbox" id="applyDiscount" class="custom-checkbox" onchange="toggleDiscount()">
+                                <span class="text-sm font-bold text-slate-700">Áp dụng miễn giảm cho hóa đơn này</span>
+                            </label>
+                        </div>
+
+                        <div id="discountFields" class="hidden space-y-4 pl-7">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Loại giảm trừ</label>
+                                <select id="discountType" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none cursor-pointer hover:border-purple-200">
+                                    <option value="percentage">Theo % (Phần trăm)</option>
+                                    <option value="amount">Theo số tiền (VNĐ)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Giá trị giảm</label>
+                                <div class="relative">
+                                    <input type="number" id="discountValue" placeholder="Nhập giá trị" min="0"
+                                        class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-100 outline-none">
+                                    <span id="discountUnit" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm font-bold text-slate-400">%</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Lý do miễn giảm</label>
+                                <textarea id="discountReason" rows="2" placeholder="Nhập lý do (nếu có)..."
+                                    class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-100 outline-none resize-none"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Section -->
+                <div class="p-5 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl text-white">
+                    <h5 class="text-sm font-bold mb-4">Tổng kết hóa đơn</h5>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-400">Tổng cộng các khoản thu</span>
+                            <span id="editModalSubtotal" class="text-lg font-black">3,350,000 ₫</span>
+                        </div>
+                        <div id="discountRow" class="flex justify-between items-center hidden">
+                            <span class="text-sm text-slate-400">Miễn giảm</span>
+                            <span id="editModalDiscount" class="text-lg font-black text-green-400">-0 ₫</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-3 border-t border-white/10">
+                            <span class="text-sm text-slate-400">Tổng thanh toán</span>
+                            <span id="editModalTotal" class="text-xl font-black text-green-400">3,350,000 ₫</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8 border-t border-slate-100 flex items-center justify-between">
+                <button onclick="deleteInvoice()" class="px-6 py-2.5 bg-red-500 text-white rounded-xl font-bold text-sm hover:bg-red-600 flex items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Xóa hóa đơn
+                </button>
+                <div class="flex items-center gap-3">
+                    <button onclick="closeEditInvoiceModal()"
+                        class="px-6 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-700 hover:bg-slate-50">
+                        Hủy
+                    </button>
+                    <button onclick="saveInvoiceChanges()"
+                        class="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold text-sm hover:from-amber-600 hover:to-orange-600">
+                        Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        class="fixed bottom-8 right-8 bg-slate-900 text-white px-8 py-4 rounded-2xl shadow-2xl transition-all transform translate-y-20 opacity-0 font-bold z-50">
+        Thông báo hệ thống
+    </div>
+
+    <script>
+        // Sample invoice data
+        let invoicesData = [
+            {
+                id: 'INV-2025-001',
+                studentName: 'Nguyễn Văn An',
+                studentId: 'HS2025001',
+                class: '6A',
+                totalAmount: 3350000,
+                paidAmount: 3350000,
+                remainingAmount: 0,
+                dueDate: '2025-09-15',
+                status: 'completed',
+                semester: '1',
+                feeItems: [
+                    { name: 'Học phí', quantity: 1, unitPrice: 2500000, amount: 2500000 },
+                    { name: 'Bảo hiểm y tế', quantity: 1, unitPrice: 854000, amount: 854000 }
+                ],
+                discount: { applied: false, type: 'percentage', value: 0, reason: '' }
+            },
+            {
+                id: 'INV-2025-002',
+                studentName: 'Trần Thị Bích',
+                studentId: 'HS2025002',
+                class: '6A',
+                totalAmount: 5404000,
+                paidAmount: 2500000,
+                remainingAmount: 2904000,
+                dueDate: '2025-09-10',
+                status: 'partial',
+                semester: '1',
+                feeItems: [
+                    { name: 'Học phí', quantity: 1, unitPrice: 2500000, amount: 2500000 },
+                    { name: 'Tiền đồng phục', quantity: 2, unitPrice: 425000, amount: 850000 },
+                    { name: 'Sách giáo khoa', quantity: 1, unitPrice: 850000, amount: 850000 },
+                    { name: 'Bảo hiểm y tế', quantity: 1, unitPrice: 854000, amount: 854000 }
+                ],
+                discount: { applied: false, type: 'percentage', value: 0, reason: '' }
+            },
+            {
+                id: 'INV-2025-003',
+                studentName: 'Lê Văn Cường',
+                studentId: 'HS2025003',
+                class: '7A',
+                totalAmount: 5404000,
+                paidAmount: 0,
+                remainingAmount: 5404000,
+                dueDate: '2025-09-15',
+                status: 'overdue',
+                semester: '1',
+                feeItems: [
+                    { name: 'Học phí', quantity: 1, unitPrice: 2500000, amount: 2500000 },
+                    { name: 'Tiền đồng phục', quantity: 2, unitPrice: 425000, amount: 850000 },
+                    { name: 'Sách giáo khoa', quantity: 1, unitPrice: 850000, amount: 850000 },
+                    { name: 'Bảo hiểm y tế', quantity: 1, unitPrice: 854000, amount: 854000 }
+                ],
+                discount: { applied: false, type: 'percentage', value: 0, reason: '' }
+            },
+            {
+                id: 'INV-2025-004',
+                studentName: 'Phạm Thị Dung',
+                studentId: 'HS2025004',
+                class: '8A',
+                totalAmount: 5404000,
+                paidAmount: 0,
+                remainingAmount: 5404000,
+                dueDate: '2025-09-20',
+                status: 'pending',
+                semester: '1',
+                feeItems: [
+                    { name: 'Học phí', quantity: 1, unitPrice: 2500000, amount: 2500000 },
+                    { name: 'Tiền đồng phục', quantity: 2, unitPrice: 425000, amount: 850000 },
+                    { name: 'Sách giáo khoa', quantity: 1, unitPrice: 850000, amount: 850000 },
+                    { name: 'Bảo hiểm y tế', quantity: 1, unitPrice: 854000, amount: 854000 }
+                ],
+                discount: { applied: false, type: 'percentage', value: 0, reason: '' }
+            },
+            {
+                id: 'INV-2025-005',
+                studentName: 'Hoàng Văn Em',
+                studentId: 'HS2025005',
+                class: '9A',
+                totalAmount: 5404000,
+                paidAmount: 5404000,
+                remainingAmount: 0,
+                dueDate: '2025-09-18',
+                status: 'completed',
+                semester: '1',
+                feeItems: [
+                    { name: 'Học phí', quantity: 1, unitPrice: 2500000, amount: 2500000 },
+                    { name: 'Tiền đồng phục', quantity: 2, unitPrice: 425000, amount: 850000 },
+                    { name: 'Sách giáo khoa', quantity: 1, unitPrice: 850000, amount: 850000 },
+                    { name: 'Bảo hiểm y tế', quantity: 1, unitPrice: 854000, amount: 854000 }
+                ],
+                discount: { applied: false, type: 'percentage', value: 0, reason: '' }
+            },
+            {
+                id: 'INV-2025-006',
+                studentName: 'Ngô Thị Fanny',
+                studentId: 'HS2025006',
+                class: '6B',
+                totalAmount: 5404000,
+                paidAmount: 3000000,
+                remainingAmount: 2404000,
+                dueDate: '2025-09-12',
+                status: 'partial',
+                semester: '1',
+                feeItems: [
+                    { name: 'Học phí', quantity: 1, unitPrice: 2500000, amount: 2500000 },
+                    { name: 'Tiền đồng phục', quantity: 2, unitPrice: 425000, amount: 850000 },
+                    { name: 'Sách giáo khoa', quantity: 1, unitPrice: 850000, amount: 850000 },
+                    { name: 'Bảo hiểm y tế', quantity: 1, unitPrice: 854000, amount: 854000 }
+                ],
+                discount: { applied: false, type: 'percentage', value: 0, reason: '' }
+            }
+        ];
+
+        let currentInvoiceId = null;
+        let editingFeeItems = [];
+        let feeItemCounter = 0;
+
+        // Update invoice statistics
+        function updateInvoiceStatistics() {
+            const totalInvoices = invoicesData.length;
+            const pendingInvoices = invoicesData.filter(inv => inv.status === 'pending' || inv.status === 'overdue').length;
+            const completedInvoices = invoicesData.filter(inv => inv.status === 'completed').length;
+            const totalDebt = invoicesData.reduce((sum, inv) => sum + inv.remainingAmount, 0);
+
+            document.getElementById('statTotalInvoices').textContent = totalInvoices + 18; // Mock total
+            document.getElementById('statPending').textContent = pendingInvoices + 2;
+            document.getElementById('statCompleted').textContent = completedInvoices + 10;
+            document.getElementById('statDebt').textContent = formatCurrency(totalDebt + 38500000);
+        }
+
+        // Search invoices
+        function searchInvoices() {
+            const searchTerm = document.getElementById('searchStudent').value.toLowerCase();
+            filterInvoices();
+            showToast('Đang tìm kiếm: ' + searchTerm);
+        }
+
+        // Filter invoices
+        function filterInvoices() {
+            const classFilter = document.getElementById('filterClass').value;
+            const semesterFilter = document.getElementById('filterInvoiceSemester').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+            const searchTerm = document.getElementById('searchStudent').value.toLowerCase();
+
+            let filtered = invoicesData.filter(inv => {
+                const matchClass = classFilter === 'all' || inv.class === classFilter;
+                const matchSemester = semesterFilter === 'all' || inv.semester === semesterFilter;
+                const matchStatus = statusFilter === 'all' || inv.status === statusFilter;
+                const matchSearch = searchTerm === '' ||
+                    inv.studentName.toLowerCase().includes(searchTerm) ||
+                    inv.studentId.toLowerCase().includes(searchTerm) ||
+                    inv.id.toLowerCase().includes(searchTerm);
+
+                return matchClass && matchSemester && matchStatus && matchSearch;
+            });
+
+            showToast(`Tìm thấy ${filtered.length + 18} hóa đơn`);
+        }
+
+        // View invoice detail
+        function viewInvoiceDetail(invoiceId) {
+            currentInvoiceId = invoiceId;
+            const invoice = invoicesData.find(inv => inv.id === invoiceId);
+
+            if (invoice) {
+                document.getElementById('modalInvoiceNumber').textContent = invoice.id;
+                document.getElementById('modalStudentName').textContent = invoice.studentName;
+                document.getElementById('modalStudentClass').textContent = invoice.class;
+                document.getElementById('modalStudentId').textContent = invoice.studentId;
+
+                const statusElement = document.getElementById('modalStatus');
+                const statusMap = {
+                    'pending': { text: 'Chờ đóng', color: 'text-amber-600' },
+                    'partial': { text: 'Đã đóng một phần', color: 'text-blue-600' },
+                    'completed': { text: 'Đã hoàn thành', color: 'text-green-600' },
+                    'overdue': { text: 'Quá hạn', color: 'text-red-600' }
+                };
+                statusElement.textContent = statusMap[invoice.status].text;
+                statusElement.className = 'text-sm font-bold ' + statusMap[invoice.status].color;
+
+                document.getElementById('modalTotalAmount').textContent = formatCurrency(invoice.totalAmount);
+                document.getElementById('modalPaidAmount').textContent = formatCurrency(invoice.paidAmount);
+                document.getElementById('modalRemainingAmount').textContent = formatCurrency(invoice.remainingAmount);
+
+                document.getElementById('invoiceDetailModal').classList.remove('hidden');
+            }
+        }
+
+        function closeInvoiceDetailModal() {
+            document.getElementById('invoiceDetailModal').classList.add('hidden');
+            currentInvoiceId = null;
+        }
+
+        function openPaymentModalFromDetail() {
+            if (currentInvoiceId) {
+                openPaymentModal(currentInvoiceId);
+            }
+        }
+
+        // Payment confirmation modal
+        function openPaymentModal(invoiceId) {
+            currentInvoiceId = invoiceId;
+            const invoice = invoicesData.find(inv => inv.id === invoiceId);
+
+            if (invoice) {
+                document.getElementById('paymentInvoiceNumber').textContent = invoice.id;
+                document.getElementById('paymentRemainingAmount').textContent = formatCurrency(invoice.remainingAmount);
+                document.getElementById('paymentAmount').value = invoice.remainingAmount;
+                document.getElementById('paymentModal').classList.remove('hidden');
+            }
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.add('hidden');
+            currentInvoiceId = null;
+            document.getElementById('paymentAmount').value = '';
+            document.getElementById('paymentNote').value = '';
+        }
+
+        function confirmPayment() {
+            const amount = parseInt(document.getElementById('paymentAmount').value);
+            const method = document.getElementById('paymentMethod').value;
+            const note = document.getElementById('paymentNote').value;
+            const sendReceipt = document.getElementById('sendReceipt').checked;
+
+            if (!amount || amount <= 0) {
+                showToast('Vui lòng nhập số tiền hợp lệ!');
+                return;
+            }
+
+            if (currentInvoiceId) {
+                const invoice = invoicesData.find(inv => inv.id === currentInvoiceId);
+                if (invoice) {
+                    invoice.paidAmount += amount;
+                    invoice.remainingAmount = Math.max(0, invoice.totalAmount - invoice.paidAmount);
+
+                    if (invoice.remainingAmount === 0) {
+                        invoice.status = 'completed';
+                    } else if (invoice.paidAmount > 0) {
+                        invoice.status = 'partial';
+                    }
+                }
+
+                showToast(`Đã xác nhận thanh toán ${formatCurrency(amount)} cho ${currentInvoiceId}`);
+                closePaymentModal();
+
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            }
+        }
+
+        // Payment history modal
+        function viewPaymentHistory(invoiceId) {
+            currentInvoiceId = invoiceId;
+            document.getElementById('historyInvoiceNumber').textContent = invoiceId;
+            document.getElementById('paymentHistoryModal').classList.remove('hidden');
+        }
+
+        function closePaymentHistoryModal() {
+            document.getElementById('paymentHistoryModal').classList.add('hidden');
+            currentInvoiceId = null;
+        }
+
+        // Send reminder
+        function sendReminder(invoiceId, studentName) {
+            if (confirm(`Gửi nhắc nhở thanh toán đến phụ huynh của ${studentName}?`)) {
+                showToast(`Đã gửi nhắc nhở đến phụ huynh của ${studentName}`);
+            }
+        }
+
+        // Export invoices
+        function exportInvoices() {
+            showToast('Đang xuất báo cáo Excel...');
+            setTimeout(() => {
+                showToast('Đã xuất báo cáo thành công!');
+            }, 2000);
+        }
+
+        // Utility Functions
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Edit Invoice Functions
+        function editInvoice(invoiceId) {
+            currentInvoiceId = invoiceId;
+            const invoice = invoicesData.find(inv => inv.id === invoiceId);
+
+            if (invoice) {
+                // Populate student info
+                document.getElementById('editModalInvoiceNumber').textContent = invoice.id;
+                document.getElementById('editModalStudentName').textContent = invoice.studentName;
+                document.getElementById('editModalStudentClass').textContent = invoice.class;
+                document.getElementById('editModalStudentId').textContent = invoice.studentId;
+
+                // Reset and populate fee items
+                editingFeeItems = JSON.parse(JSON.stringify(invoice.feeItems || []));
+                feeItemCounter = editingFeeItems.length;
+                renderFeeItems();
+
+                // Reset discount
+                document.getElementById('applyDiscount').checked = invoice.discount?.applied || false;
+                document.getElementById('discountType').value = invoice.discount?.type || 'percentage';
+                document.getElementById('discountValue').value = invoice.discount?.value || 0;
+                document.getElementById('discountReason').value = invoice.discount?.reason || '';
+                toggleDiscount();
+
+                // Calculate totals
+                calculateEditTotals();
+
+                document.getElementById('editInvoiceModal').classList.remove('hidden');
+            }
+        }
+
+        function closeEditInvoiceModal() {
+            document.getElementById('editInvoiceModal').classList.add('hidden');
+            currentInvoiceId = null;
+            editingFeeItems = [];
+        }
+
+        function renderFeeItems() {
+            const container = document.getElementById('editFeeItemsContainer');
+            container.innerHTML = '';
+
+            editingFeeItems.forEach((item, index) => {
+                const itemHtml = `
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200" id="feeItem-${index}">
+                        <div class="grid grid-cols-12 gap-3 items-center">
+                            <div class="col-span-4">
+                                <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Tên khoản</label>
+                                <input type="text" value="${item.name}" onchange="updateFeeItem(${index}, 'name', this.value)"
+                                    class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold focus:ring-2 focus:ring-amber-100 outline-none" placeholder="Tên khoản thu">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Số lượng</label>
+                                <input type="number" value="${item.quantity}" min="0" onchange="updateFeeItem(${index}, 'quantity', this.value)"
+                                    class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold focus:ring-2 focus:ring-amber-100 outline-none text-center">
+                            </div>
+                            <div class="col-span-3">
+                                <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Đơn giá (₫)</label>
+                                <input type="number" value="${item.unitPrice}" min="0" onchange="updateFeeItem(${index}, 'unitPrice', this.value)"
+                                    class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold focus:ring-2 focus:ring-amber-100 outline-none">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Thành tiền</label>
+                                <p class="px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg text-xs font-black text-amber-700 text-center">
+                                    ${formatCurrency(item.amount)}
+                                </p>
+                            </div>
+                            <div class="col-span-1">
+                                <button onclick="removeFeeItem(${index})" class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all mt-4" title="Xóa khoản thu này">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-[9px] text-slate-400 mt-2 italic">* Nhập số lượng = 0 để xóa khoản thu này</p>
+                    </div>
+                `;
+                container.innerHTML += itemHtml;
+            });
+
+            calculateEditTotals();
+        }
+
+        function updateFeeItem(index, field, value) {
+            if (field === 'quantity' || field === 'unitPrice') {
+                editingFeeItems[index][field] = parseInt(value) || 0;
+            } else {
+                editingFeeItems[index][field] = value;
+            }
+
+            // Recalculate amount
+            editingFeeItems[index].amount = editingFeeItems[index].quantity * editingFeeItems[index].unitPrice;
+
+            // Re-render to show updated amount
+            renderFeeItems();
+        }
+
+        function removeFeeItem(index) {
+            if (confirm('Xóa khoản thu này khỏi hóa đơn?')) {
+                editingFeeItems.splice(index, 1);
+                renderFeeItems();
+            }
+        }
+
+        function addNewFeeItem() {
+            const newItem = {
+                name: '',
+                quantity: 1,
+                unitPrice: 0,
+                amount: 0
+            };
+            editingFeeItems.push(newItem);
+            feeItemCounter++;
+            renderFeeItems();
+        }
+
+        function toggleDiscount() {
+            const applyDiscount = document.getElementById('applyDiscount').checked;
+            const discountFields = document.getElementById('discountFields');
+
+            if (applyDiscount) {
+                discountFields.classList.remove('hidden');
+            } else {
+                discountFields.classList.add('hidden');
+            }
+
+            calculateEditTotals();
+        }
+
+        function calculateEditTotals() {
+            let subtotal = 0;
+            editingFeeItems.forEach(item => {
+                subtotal += item.amount;
+            });
+
+            const applyDiscount = document.getElementById('applyDiscount').checked;
+            let discountAmount = 0;
+
+            if (applyDiscount) {
+                const discountType = document.getElementById('discountType').value;
+                const discountValue = parseFloat(document.getElementById('discountValue').value) || 0;
+
+                if (discountType === 'percentage') {
+                    discountAmount = subtotal * (discountValue / 100);
+                } else {
+                    discountAmount = discountValue;
+                }
+            }
+
+            const total = Math.max(0, subtotal - discountAmount);
+
+            // Update display
+            document.getElementById('editModalSubtotal').textContent = formatCurrency(subtotal);
+
+            const discountRow = document.getElementById('discountRow');
+            if (applyDiscount && discountAmount > 0) {
+                discountRow.classList.remove('hidden');
+                document.getElementById('editModalDiscount').textContent = '-' + formatCurrency(discountAmount);
+            } else {
+                discountRow.classList.add('hidden');
+            }
+
+            document.getElementById('editModalTotal').textContent = formatCurrency(total);
+        }
+
+        // Add event listener for discount changes
+        document.getElementById('discountType')?.addEventListener('change', function() {
+            const unit = document.getElementById('discountUnit');
+            if (this.value === 'percentage') {
+                unit.textContent = '%';
+            } else {
+                unit.textContent = '₫';
+            }
+            calculateEditTotals();
+        });
+
+        document.getElementById('discountValue')?.addEventListener('input', calculateEditTotals);
+
+        function saveInvoiceChanges() {
+            if (!currentInvoiceId) return;
+
+            const invoice = invoicesData.find(inv => inv.id === currentInvoiceId);
+            if (!invoice) return;
+
+            // Validate fee items
+            const validFeeItems = editingFeeItems.filter(item => item.quantity > 0 && item.name.trim() !== '');
+
+            if (validFeeItems.length === 0) {
+                showToast('Hóa đơn phải có ít nhất một khoản thu!');
+                return;
+            }
+
+            // Calculate new totals
+            let newTotal = 0;
+            validFeeItems.forEach(item => {
+                newTotal += item.amount;
+            });
+
+            // Apply discount
+            const applyDiscount = document.getElementById('applyDiscount').checked;
+            if (applyDiscount) {
+                const discountType = document.getElementById('discountType').value;
+                const discountValue = parseFloat(document.getElementById('discountValue').value) || 0;
+
+                invoice.discount = {
+                    applied: true,
+                    type: discountType,
+                    value: discountValue,
+                    reason: document.getElementById('discountReason').value
+                };
+
+                if (discountType === 'percentage') {
+                    newTotal = newTotal * (1 - discountValue / 100);
+                } else {
+                    newTotal = Math.max(0, newTotal - discountValue);
+                }
+            } else {
+                invoice.discount = { applied: false, type: 'percentage', value: 0, reason: '' };
+            }
+
+            // Update invoice
+            invoice.feeItems = validFeeItems;
+            const oldTotal = invoice.totalAmount;
+            invoice.totalAmount = Math.round(newTotal);
+
+            // Adjust paid amount if total decreased
+            if (invoice.totalAmount < invoice.paidAmount) {
+                invoice.paidAmount = invoice.totalAmount;
+            }
+
+            invoice.remainingAmount = invoice.totalAmount - invoice.paidAmount;
+
+            // Update status
+            if (invoice.remainingAmount === 0) {
+                invoice.status = 'completed';
+            } else if (invoice.paidAmount > 0) {
+                invoice.status = 'partial';
+            } else {
+                invoice.status = 'pending';
+            }
+
+            showToast(`Đã cập nhật hóa đơn ${currentInvoiceId}!`);
+            closeEditInvoiceModal();
+
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        }
+
+        function deleteInvoice() {
+            if (!currentInvoiceId) return;
+
+            const invoice = invoicesData.find(inv => inv.id === currentInvoiceId);
+            if (!invoice) return;
+
+            if (invoice.paidAmount > 0) {
+                if (!confirm(`CẢNH BÁO: Hóa đơn này đã có thanh toán (${formatCurrency(invoice.paidAmount)}). Bạn có chắc chắn muốn xóa?`)) {
+                    return;
+                }
+            } else {
+                if (!confirm(`Bạn có chắc chắn muốn xóa hóa đơn ${currentInvoiceId}?`)) {
+                    return;
+                }
+            }
+
+            // Remove invoice from array
+            const index = invoicesData.findIndex(inv => inv.id === currentInvoiceId);
+            if (index > -1) {
+                invoicesData.splice(index, 1);
+            }
+
+            showToast(`Đã xóa hóa đơn ${currentInvoiceId}`);
+            closeEditInvoiceModal();
+
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            updateInvoiceStatistics();
+
+            // Add event listeners for discount
+            const discountTypeSelect = document.getElementById('discountType');
+            const discountValueInput = document.getElementById('discountValue');
+
+            if (discountTypeSelect) {
+                discountTypeSelect.addEventListener('change', function() {
+                    const unit = document.getElementById('discountUnit');
+                    if (this.value === 'percentage') {
+                        unit.textContent = '%';
+                    } else {
+                        unit.textContent = '₫';
+                    }
+                    calculateEditTotals();
+                });
+            }
+
+            if (discountValueInput) {
+                discountValueInput.addEventListener('input', calculateEditTotals);
+            }
+        });
+    </script>
+
+</body>
+
+</html>

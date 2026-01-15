@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EContact - Lịch sử điểm danh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+        :root {
+            --primary-blue: #0284C7;
+            --light-blue: #E0F2FE;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background-color: #F8FAFC;
+            border: 12px solid #333;
+            border-radius: 40px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .notch {
+            width: 160px;
+            height: 30px;
+            background-color: #333;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+            z-index: 20;
+        }
+
+        .header-bg {
+            background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+            height: 140px;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            z-index: 0;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+
+        .back-btn {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .back-btn:active {
+            transform: scale(0.92);
+        }
+
+        .month-tab {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .month-tab.active {
+            background-color: #0284C7;
+            color: white;
+        }
+
+        .attendance-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .attendance-card:active {
+            transform: scale(0.98);
+        }
+
+        .nav-item {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="phone-frame">
+        <div class="notch"></div>
+        <div class="header-bg"></div>
+
+        <!-- Header with Back Button -->
+        <div class="relative z-10 px-6 pt-16 pb-4">
+            <div class="flex items-center space-x-4">
+                <button class="back-btn w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5"></path>
+                        <path d="M12 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <div>
+                    <h2 class="text-white text-xl font-extrabold">Lịch sử điểm danh</h2>
+                    <p class="text-blue-100 text-xs font-medium mt-0.5">Theo dõi attendance học sinh</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-y-auto hide-scrollbar px-6 pt-6 pb-32">
+
+            <!-- Summary Stats -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-100">
+                    <p class="text-emerald-600 text-[9px] font-black uppercase tracking-wider mb-1">Có mặt</p>
+                    <p class="text-emerald-700 text-2xl font-extrabold">42</p>
+                    <p class="text-emerald-500 text-[9px] font-medium">ngày</p>
+                </div>
+                <div class="bg-rose-50 p-3 rounded-2xl border border-rose-100">
+                    <p class="text-rose-600 text-[9px] font-black uppercase tracking-wider mb-1">Vắng mặt</p>
+                    <p class="text-rose-700 text-2xl font-extrabold">2</p>
+                    <p class="text-rose-500 text-[9px] font-medium">ngày</p>
+                </div>
+                <div class="bg-amber-50 p-3 rounded-2xl border border-amber-100">
+                    <p class="text-amber-600 text-[9px] font-black uppercase tracking-wider mb-1">Có phép</p>
+                    <p class="text-amber-700 text-2xl font-extrabold">1</p>
+                    <p class="text-amber-500 text-[9px] font-medium">ngày</p>
+                </div>
+            </div>
+
+            <!-- Month Selector -->
+            <div class="flex space-x-2 mb-5 overflow-x-auto hide-scrollbar">
+                <div class="month-tab flex-shrink-0 px-4 py-2 text-center rounded-xl bg-white border border-gray-200">
+                    <p class="text-xs font-black text-gray-400">Tháng 10</p>
+                </div>
+                <div class="month-tab active flex-shrink-0 px-4 py-2 text-center rounded-xl bg-blue-50">
+                    <p class="text-xs font-black">Tháng 11</p>
+                </div>
+                <div class="month-tab flex-shrink-0 px-4 py-2 text-center rounded-xl bg-white border border-gray-200">
+                    <p class="text-xs font-black text-gray-400">Tháng 12</p>
+                </div>
+                <div class="month-tab flex-shrink-0 px-4 py-2 text-center rounded-xl bg-white border border-gray-200">
+                    <p class="text-xs font-black text-gray-400">Tháng 1</p>
+                </div>
+            </div>
+
+            <!-- Attendance Calendar -->
+            <h3 class="text-gray-800 font-extrabold text-sm mb-3">Chi tiết điểm danh</h3>
+
+            <div class="space-y-3">
+                <!-- Week Group 1 -->
+                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-gray-800 font-bold text-sm">Tuần 02 (06/01 - 12/01)</h4>
+                        <span class="bg-emerald-100 text-emerald-700 text-[9px] font-black px-2 py-1 rounded-full uppercase">6/6 ngày</span>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1">
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">T2</p>
+                            <div class="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">T3</p>
+                            <div class="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">T4</p>
+                            <div class="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">T5</p>
+                            <div class="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">T6</p>
+                            <div class="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">T7</p>
+                            <div class="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">CN</p>
+                            <div class="w-7 h-7 bg-gray-100 rounded-lg"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Week Group 2 - With Absence -->
+                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-gray-800 font-bold text-sm">Tuần 01 (30/12 - 05/01)</h4>
+                        <span class="bg-rose-100 text-rose-700 text-[9px] font-black px-2 py-1 rounded-full uppercase">5/6 ngày</span>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1">
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">T2</p>
+                            <div class="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">T3</p>
+                            <div class="w-7 h-7 bg-rose-100 rounded-lg flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">T4</p>
+                            <div class="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">T5</p>
+                            <div class="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">T6</p>
+                            <div class="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">T7</p>
+                            <div class="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-2">
+                            <p class="text-[8px] font-black text-gray-400 uppercase mb-1">CN</p>
+                            <div class="w-7 h-7 bg-gray-100 rounded-lg"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="flex items-center justify-center space-x-6 pt-2">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 bg-emerald-100 rounded-lg flex items-center justify-center">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <span class="text-[10px] font-black text-gray-500 uppercase">Có mặt</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 bg-rose-100 rounded-lg flex items-center justify-center">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </div>
+                        <span class="text-[10px] font-black text-gray-500 uppercase">Vắng</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Navigation Bar -->
+        <div
+            class="absolute bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-100 px-10 py-5 flex justify-between items-center z-30">
+            <!-- Home -->
+            <div class="nav-item flex flex-col items-center text-gray-300 hover:text-gray-400">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span class="text-[9px] font-black uppercase mt-1">Trang chủ</span>
+            </div>
+
+            <!-- Chat / Tin nhắn -->
+            <div class="nav-item flex flex-col items-center text-gray-300 hover:text-gray-400">
+                <div class="relative">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span
+                        class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+                </div>
+                <span class="text-[9px] font-black uppercase mt-1">Tin nhắn</span>
+            </div>
+
+            <!-- Profile / Cá nhân -->
+            <div class="nav-item flex flex-col items-center text-gray-300 hover:text-gray-400">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span class="text-[9px] font-black uppercase mt-1">Cá nhân</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

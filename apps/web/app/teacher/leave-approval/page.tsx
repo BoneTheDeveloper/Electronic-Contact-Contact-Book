@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { getLeaveApprovalRequests } from '@/lib/mock-data'
 import { Calendar, Clock, CheckCircle, XCircle, User, FileText, Phone } from 'lucide-react'
 
 interface LeaveRequestApproval {
@@ -23,87 +22,68 @@ interface LeaveRequestApproval {
 
 export default function LeaveApprovalPage() {
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending')
+  const [requests, setRequests] = useState<LeaveRequestApproval[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Mock data - in real app, load server-side
-  const mockRequests: LeaveRequestApproval[] = [
-    {
-      id: 'LR001',
-      studentId: '1',
-      studentName: 'Nguyễn Văn An',
-      classId: '10A1',
-      className: '10A1',
-      startDate: '2026-01-20',
-      endDate: '2026-01-22',
-      reason: 'Đi cùng gia đình công tác',
-      status: 'pending',
-      submittedDate: '2026-01-15',
-      parentContact: '0901234567',
-    },
-    {
-      id: 'LR002',
-      studentId: '2',
-      studentName: 'Trần Thị Bình',
-      classId: '10A1',
-      className: '10A1',
-      startDate: '2026-01-18',
-      endDate: '2026-01-18',
-      reason: 'Đi khám bệnh định kỳ',
-      status: 'pending',
-      submittedDate: '2026-01-17',
-      parentContact: '0901234568',
-    },
-    {
-      id: 'LR003',
-      studentId: '3',
-      studentName: 'Lê Văn Cường',
-      classId: '10A1',
-      className: '10A1',
-      startDate: '2026-01-16',
-      endDate: '2026-01-17',
-      reason: 'Ốm, sốt',
-      status: 'pending',
-      submittedDate: '2026-01-15',
-      parentContact: '0901234569',
-    },
-    {
-      id: 'LR004',
-      studentId: '4',
-      studentName: 'Phạm Thị Dung',
-      classId: '10A1',
-      className: '10A1',
-      startDate: '2026-01-10',
-      endDate: '2026-01-12',
-      reason: 'Việc gia đình',
-      status: 'approved',
-      submittedDate: '2026-01-09',
-      parentContact: '0901234570',
-    },
-    {
-      id: 'LR005',
-      studentId: '5',
-      studentName: 'Hoàng Văn Em',
-      classId: '10A1',
-      className: '10A1',
-      startDate: '2026-01-08',
-      endDate: '2026-01-08',
-      reason: 'Lý do không hợp lý',
-      status: 'rejected',
-      submittedDate: '2026-01-07',
-      parentContact: '0901234571',
-    },
-  ]
+  // Fetch leave requests on mount and when tab changes
+  useEffect(() => {
+    async function fetchRequests() {
+      setLoading(true)
+      try {
+        const status = activeTab === 'pending' ? 'pending' : undefined
+        const res = await fetch(`/api/teacher/leave-requests?status=${status || ''}`)
+        const json = await res.json()
+        setRequests(json.data)
+      } catch (error) {
+        console.error('Failed to fetch leave requests:', error)
+        setRequests([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchRequests()
+  }, [activeTab])
 
-  const pendingRequests = mockRequests.filter((r) => r.status === 'pending')
-  const historyRequests = mockRequests.filter((r) => r.status !== 'pending')
-
-  const handleApprove = (requestId: string) => {
-    console.log('Approve request:', requestId)
-    // TODO: Implement approve logic
+  const handleApprove = async (requestId: string) => {
+    try {
+      const res = await fetch('/api/teacher/leave-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId, action: 'approve' }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        // Remove from list
+        setRequests(requests.filter(r => r.id !== requestId))
+      }
+    } catch (error) {
+      console.error('Failed to approve request:', error)
+    }
   }
 
-  const handleReject = (requestId: string) => {
-    console.log('Reject request:', requestId)
-    // TODO: Implement reject logic
+  const handleReject = async (requestId: string) => {
+    try {
+      const res = await fetch('/api/teacher/leave-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId, action: 'reject' }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        // Remove from list
+        setRequests(requests.filter(r => r.id !== requestId))
+      }
+    } catch (error) {
+      console.error('Failed to reject request:', error)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6 p-8">
+        <div className="text-center py-12 text-gray-500">Đang tải...</div>
+      </div>
+    )
   }
 
   const formatDate = (dateString: string) => {
@@ -232,12 +212,12 @@ export default function LeaveApprovalPage() {
           className={activeTab === 'pending' ? 'bg-sky-600 hover:bg-sky-700' : ''}
         >
           Chờ phê duyệt
-          {pendingRequests.length > 0 && (
+          {requests.length > 0 && (
             <Badge
               className="ml-2 bg-amber-500 hover:bg-amber-600"
               variant="secondary"
             >
-              {pendingRequests.length}
+              {requests.length}
             </Badge>
           )}
         </Button>
@@ -253,7 +233,7 @@ export default function LeaveApprovalPage() {
       {/* Leave Request Cards */}
       <div className="space-y-4">
         {activeTab === 'pending' ? (
-          pendingRequests.length === 0 ? (
+          requests.length === 0 ? (
             <Card>
               <CardContent className="pt-12 pb-12 text-center">
                 <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-3" />
@@ -261,9 +241,9 @@ export default function LeaveApprovalPage() {
               </CardContent>
             </Card>
           ) : (
-            pendingRequests.map(renderRequestCard)
+            requests.map(renderRequestCard)
           )
-        ) : historyRequests.length === 0 ? (
+        ) : requests.length === 0 ? (
           <Card>
             <CardContent className="pt-12 pb-12 text-center">
               <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
@@ -271,7 +251,7 @@ export default function LeaveApprovalPage() {
             </CardContent>
           </Card>
         ) : (
-          historyRequests.map(renderRequestCard)
+          requests.map(renderRequestCard)
         )}
       </div>
     </div>

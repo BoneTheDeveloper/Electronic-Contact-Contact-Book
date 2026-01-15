@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EContact - Danh bạ giáo viên</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background-color: #F8FAFC;
+            border: 12px solid #333;
+            border-radius: 40px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .notch {
+            width: 160px;
+            height: 30px;
+            background-color: #333;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+            z-index: 20;
+        }
+
+        .teacher-card {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .teacher-card:active {
+            transform: scale(0.98);
+            background-color: #f1f5f9;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .subject-tag {
+            transition: all 0.2s ease;
+        }
+
+        .subject-tag:hover {
+            transform: translateY(-2px);
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 320px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #F8FAFC;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="phone-frame">
+        <div class="notch"></div>
+
+        <!-- Header -->
+        <div class="bg-white px-6 pt-14 pb-4 border-b border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <button class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="#0284C7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <h1 class="text-lg font-extrabold text-gray-800">Danh bạ giáo viên</h1>
+                <button class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="#0284C7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18" />
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Search -->
+            <div class="relative mb-3">
+                <input type="text" placeholder="Tìm kiếm giáo viên..."
+                    class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-[#0284C7]">
+                <svg class="absolute left-3 top-3.5 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="16"
+                    height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+            </div>
+
+            <!-- Subject Filter -->
+            <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+                <button class="subject-tag px-3 py-1.5 bg-[#0284C7] text-white rounded-full text-[10px] font-black whitespace-nowrap">
+                    Tất cả
+                </button>
+                <button class="subject-tag px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-[10px] font-black whitespace-nowrap">
+                    GVCN
+                </button>
+                <button class="subject-tag px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-[10px] font-black whitespace-nowrap">
+                    Toán
+                </button>
+                <button class="subject-tag px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-[10px] font-black whitespace-nowrap">
+                    Văn
+                </button>
+                <button class="subject-tag px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-[10px] font-black whitespace-nowrap">
+                    Anh
+                </button>
+                <button class="subject-tag px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-[10px] font-black whitespace-nowrap">
+                    Lý
+                </button>
+            </div>
+        </div>
+
+        <!-- Teacher List -->
+        <div class="flex-1 overflow-y-auto hide-scrollbar px-4 py-4 space-y-3">
+            <!-- Homeroom Teacher - Featured -->
+            <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-2xl border border-blue-200">
+                <div class="flex items-center gap-2 mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="#0284C7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                    <span class="text-[10px] font-black text-[#0284C7] uppercase tracking-wider">Giáo viên chủ nhiệm</span>
+                </div>
+                <div class="teacher-card flex items-center gap-3 cursor-pointer">
+                    <div class="relative cursor-pointer" onclick="showTeacherInfo('Nguyễn Thị Hồng', '0901234567', 'hong.nguyen@school.edu.vn', 'GVCN 9A')">
+                        <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            NH
+                        </div>
+                        <span class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></span>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-gray-800 font-bold text-sm">Nguyễn Thị Hồng</h4>
+                        <p class="text-[#0284C7] text-[10px] font-bold uppercase tracking-wider">GVCN 9A</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-shadow" onclick="showTeacherInfo('Nguyễn Thị Hồng', '0901234567', 'hong.nguyen@school.edu.vn', 'GVCN 9A')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="#0284C7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="16" x2="12" y2="12" />
+                                <line x1="12" y1="8" x2="12.01" y2="8" />
+                            </svg>
+                        </button>
+                        <button class="w-9 h-9 bg-[#0284C7] rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subject Teachers Section -->
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2 pt-2">Giáo viên bộ môn</p>
+
+            <!-- Teacher 1 - Toán -->
+            <div class="teacher-card flex items-center gap-3 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer">
+                <div class="relative cursor-pointer" onclick="showTeacherInfo('Trần Văn Hùng', '0912345678', 'hung.tran@school.edu.vn', 'Toán - 9A, 9B, 9C')">
+                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                        TH
+                    </div>
+                    <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-gray-800 font-bold text-sm">Trần Văn Hùng</h4>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-purple-100 text-purple-600 text-[9px] font-black px-2 py-0.5 rounded-full">Toán</span>
+                        <span class="text-gray-400 text-[9px] font-medium">9A, 9B, 9C</span>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors" onclick="showTeacherInfo('Trần Văn Hùng', '0912345678', 'hung.tran@school.edu.vn', 'Toán - 9A, 9B, 9C')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="#64748B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                    </button>
+                    <button class="w-8 h-8 bg-[#0284C7] rounded-full flex items-center justify-center hover:bg-[#0369A1] transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Teacher 2 - Văn -->
+            <div class="teacher-card flex items-center gap-3 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer">
+                <div class="relative cursor-pointer" onclick="showTeacherInfo('Lê Thị Khánh', '0923456789', 'khanh.le@school.edu.vn', 'Ngữ văn - 9A, 9D')">
+                    <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white font-bold">
+                        LTK
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-gray-800 font-bold text-sm">Lê Thị Khánh</h4>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-orange-100 text-orange-600 text-[9px] font-black px-2 py-0.5 rounded-full">Ngữ văn</span>
+                        <span class="text-gray-400 text-[9px] font-medium">9A, 9D</span>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors" onclick="showTeacherInfo('Lê Thị Khánh', '0923456789', 'khanh.le@school.edu.vn', 'Ngữ văn - 9A, 9D')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="#64748B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                    </button>
+                    <button class="w-8 h-8 bg-[#0284C7] rounded-full flex items-center justify-center hover:bg-[#0369A1] transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Teacher 3 - Anh -->
+            <div class="teacher-card flex items-center gap-3 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer">
+                <div class="relative cursor-pointer" onclick="showTeacherInfo('Lê Phượng', '0934567890', 'phuong.le@school.edu.vn', 'Tiếng Anh - 9A, 9B')">
+                    <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold">
+                        LP
+                    </div>
+                    <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-gray-800 font-bold text-sm">Lê Phượng</h4>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-pink-100 text-pink-600 text-[9px] font-black px-2 py-0.5 rounded-full">Tiếng Anh</span>
+                        <span class="text-gray-400 text-[9px] font-medium">9A, 9B</span>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors" onclick="showTeacherInfo('Lê Phượng', '0934567890', 'phuong.le@school.edu.vn', 'Tiếng Anh - 9A, 9B')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="#64748B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                    </button>
+                    <button class="w-8 h-8 bg-[#0284C7] rounded-full flex items-center justify-center hover:bg-[#0369A1] transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Teacher 4 - Lý -->
+            <div class="teacher-card flex items-center gap-3 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer">
+                <div class="relative cursor-pointer" onclick="showTeacherInfo('Phạm Minh Khang', '0945678901', 'khang.pm@school.edu.vn', 'Vật lý - 9A-F')">
+                    <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                        PMK
+                    </div>
+                    <span class="absolute bottom-0 right-0 w-3 h-3 bg-amber-500 border-2 border-white rounded-full"></span>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-gray-800 font-bold text-sm">Phạm Minh Khang</h4>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-green-100 text-green-600 text-[9px] font-black px-2 py-0.5 rounded-full">Vật lý</span>
+                        <span class="text-gray-400 text-[9px] font-medium">9A-F</span>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors" onclick="showTeacherInfo('Phạm Minh Khang', '0945678901', 'khang.pm@school.edu.vn', 'Vật lý - 9A-F')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="#64748B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                    </button>
+                    <button class="w-8 h-8 bg-[#0284C7] rounded-full flex items-center justify-center hover:bg-[#0369A1] transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Teacher 5 - Hóa -->
+            <div class="teacher-card flex items-center gap-3 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer">
+                <div class="relative cursor-pointer" onclick="showTeacherInfo('Nguyễn Thúy Loan', '0956789012', 'loan.nguyen@school.edu.vn', 'Hóa học - 9A-C')">
+                    <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-bold">
+                        NTL
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-gray-800 font-bold text-sm">Nguyễn Thúy Loan</h4>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-cyan-100 text-cyan-600 text-[9px] font-black px-2 py-0.5 rounded-full">Hóa học</span>
+                        <span class="text-gray-400 text-[9px] font-medium">9A-C</span>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors" onclick="showTeacherInfo('Nguyễn Thúy Loan', '0956789012', 'loan.nguyen@school.edu.vn', 'Hóa học - 9A-C')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="#64748B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                    </button>
+                    <button class="w-8 h-8 bg-[#0284C7] rounded-full flex items-center justify-center hover:bg-[#0369A1] transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teacher Info Modal -->
+        <div id="teacherInfoModal" class="modal-overlay" onclick="closeTeacherInfo(event)">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-800">Thông tin liên hệ</h3>
+                    <button onclick="closeTeacherInfo()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="mb-4">
+                    <h4 id="modalTeacherName" class="text-base font-bold text-gray-800 mb-1"></h4>
+                    <p id="modalTeacherSubject" class="text-sm text-gray-500"></p>
+                </div>
+
+                <div class="space-y-2 mb-4">
+                    <div class="info-row">
+                        <div class="info-icon bg-blue-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Điện thoại</p>
+                            <p id="modalTeacherPhone" class="text-sm font-bold text-gray-800"></p>
+                        </div>
+                        <button class="w-8 h-8 bg-[#0284C7] rounded-full flex items-center justify-center hover:bg-[#0369A1] transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-icon bg-purple-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9333EA" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                <polyline points="22,6 12,13 2,6" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Email</p>
+                            <p id="modalTeacherEmail" class="text-sm font-bold text-gray-800 break-all"></p>
+                        </div>
+                        <button class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                <polyline points="22,6 12,13 2,6" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="closeTeacherInfo()" class="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors">
+                    Đóng
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="bg-white border-t border-gray-100 px-10 py-5 flex justify-between items-center">
+            <!-- Home -->
+            <div class="flex flex-col items-center text-gray-300">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span class="text-[9px] font-black uppercase mt-1">Trang chủ</span>
+            </div>
+
+            <!-- Chat / Tin nhắn -->
+            <div class="flex flex-col items-center text-gray-300">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span class="text-[9px] font-black uppercase mt-1">Tin nhắn</span>
+            </div>
+
+            <!-- Profile / Cá nhân -->
+            <div class="flex flex-col items-center text-gray-300">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span class="text-[9px] font-black uppercase mt-1">Cá nhân</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Teacher info modal functionality
+        function showTeacherInfo(name, phone, email, subject) {
+            document.getElementById('modalTeacherName').textContent = name;
+            document.getElementById('modalTeacherPhone').textContent = phone;
+            document.getElementById('modalTeacherEmail').textContent = email;
+            document.getElementById('modalTeacherSubject').textContent = subject;
+            document.getElementById('teacherInfoModal').classList.add('active');
+        }
+
+        function closeTeacherInfo(event) {
+            if (!event || event.target === document.getElementById('teacherInfoModal')) {
+                document.getElementById('teacherInfoModal').classList.remove('active');
+            }
+        }
+
+        // Subject filter functionality
+        document.querySelectorAll('.subject-tag').forEach(tag => {
+            tag.addEventListener('click', function () {
+                document.querySelectorAll('.subject-tag').forEach(t => {
+                    t.classList.remove('bg-[#0284C7]', 'text-white');
+                    t.classList.add('bg-gray-100', 'text-gray-600');
+                });
+                this.classList.remove('bg-gray-100', 'text-gray-600');
+                this.classList.add('bg-[#0284C7]', 'text-white');
+            });
+        });
+
+        // Navigation - Back button
+        document.querySelector('button').addEventListener('click', () => {
+            window.location.href = 'dashboard.html';
+        });
+    </script>
+
+</body>
+
+</html>

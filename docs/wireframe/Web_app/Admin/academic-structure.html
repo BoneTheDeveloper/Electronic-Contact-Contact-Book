@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECONTACT Admin - Cấu trúc Học thuật</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --primary: #0284C7;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            transition: all 0.3s ease;
+        }
+
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+
+        .nav-item.active {
+            background-color: rgba(2, 132, 199, 0.1);
+            color: var(--primary);
+            border-right: 4px solid var(--primary);
+        }
+
+        .card-shadow {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .tab-button {
+            transition: all 0.2s ease;
+        }
+
+        .tab-button.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .class-card {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .class-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .class-card.selected {
+            border-color: var(--primary);
+            background-color: rgba(2, 132, 199, 0.05);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--primary);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+
+        .modal-overlay {
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .drag-over {
+            border: 2px dashed var(--primary);
+            background-color: rgba(2, 132, 199, 0.05);
+        }
+    </style>
+</head>
+
+<body class="flex">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar h-screen bg-white border-r border-slate-200 flex flex-col sticky top-0 shrink-0">
+        <!-- Brand -->
+        <div class="p-6 border-b border-slate-100 flex items-center gap-3">
+            <div class="p-2 bg-blue-50 rounded-xl">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.5">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M2 17L12 22L22 17" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-black text-slate-800 tracking-tight leading-none">ECONTACT</h1>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Admin Portal</span>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Chính</p>
+
+            <a href="dashboard.html"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Tổng quan
+            </a>
+
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-6">Quản trị</p>
+
+            <a href="user-management.html"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Người dùng
+            </a>
+
+            <a href="academic-structure.html" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                </svg>
+                Học thuật (Lớp/Môn)
+            </a>
+
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-6">Vận hành</p>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                Điểm danh
+            </a>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.6" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                Quản lý Điểm số
+            </a>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <line x1="2" y1="10" x2="22" y2="10" />
+                </svg>
+                Học phí & Tài chính
+            </a>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                Thông báo
+            </a>
+        </nav>
+
+        <!-- User Profile Sidebar Bottom -->
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="flex items-center gap-3 p-2">
+                <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white overflow-hidden">
+                    <img src="https://ui-avatars.com/api/?name=Admin+Hust&background=0284C7&color=fff" alt="Avatar">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate">Admin123</p>
+                    <p class="text-[10px] text-slate-400 font-medium truncate">ad001@econtact.vn</p>
+                </div>
+                <button class="text-slate-400 hover:text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 min-w-0 h-screen overflow-y-auto bg-slate-50">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-40">
+            <div class="flex items-center gap-4">
+                <h2 class="text-lg font-extrabold text-slate-800">Cấu trúc Học thuật</h2>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="relative hidden sm:block">
+                    <input type="text" placeholder="Tìm kiếm lớp, môn học..."
+                        class="w-64 pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-100">
+                    <svg class="absolute left-3 top-2.5 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="16"
+                        height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                        </svg>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                    </button>
+                    <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENT BODY -->
+        <div class="p-8">
+
+            <!-- TABS -->
+            <div class="bg-white rounded-[24px] card-shadow border border-slate-100 p-2 mb-8 inline-flex gap-2">
+                <button onclick="switchTab('years')" class="tab-button active px-6 py-3 rounded-xl font-bold text-sm">
+                    Năm học & Học kỳ
+                </button>
+                <button onclick="switchTab('grades')" class="tab-button px-6 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                    Khối & Lớp học
+                </button>
+                <button onclick="switchTab('subjects')" class="tab-button px-6 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                    Danh mục Môn học
+                </button>
+            </div>
+
+            <!-- TAB 1: Năm học & Học kỳ -->
+            <div id="tab-years" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Year List -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white rounded-[24px] card-shadow border border-slate-100 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h4 class="text-lg font-black text-slate-800 tracking-tight">Danh sách Năm học</h4>
+                                    <p class="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">Quản lý
+                                        năm học & học kỳ</p>
+                                </div>
+                                <button onclick="openAddYearModal()"
+                                    class="px-5 py-2.5 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1] flex items-center gap-2 shadow-lg shadow-blue-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3">
+                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
+                                    Thêm năm học
+                                </button>
+                            </div>
+
+                            <div class="space-y-4" id="yearsList">
+                                <!-- Years will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Year Summary -->
+                    <div class="space-y-6">
+                        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-[24px] p-6 text-white">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h4 class="text-lg font-black">Năm học hiện tại</h4>
+                                    <p class="text-blue-100 text-xs font-bold uppercase tracking-widest mt-1">Active Year
+                                    </p>
+                                </div>
+                                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                        <line x1="16" y1="2" x2="16" y2="6" />
+                                        <line x1="8" y1="2" x2="8" y2="6" />
+                                        <line x1="3" y1="10" x2="21" y2="10" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <h3 class="text-3xl font-black mb-4">2025-2026</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-white/10 rounded-xl p-4">
+                                    <p class="text-xs font-bold text-blue-100 uppercase tracking-wider mb-1">Học kỳ I
+                                    </p>
+                                    <p class="text-sm font-black">01/09 - 15/01</p>
+                                </div>
+                                <div class="bg-white/10 rounded-xl p-4">
+                                    <p class="text-xs font-bold text-blue-100 uppercase tracking-wider mb-1">Học kỳ II
+                                    </p>
+                                    <p class="text-sm font-black">16/01 - 31/05</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-[24px] card-shadow border border-slate-100 p-6">
+                            <h4 class="text-lg font-black text-slate-800 tracking-tight mb-4">Thống kê</h4>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium text-slate-600">Tổng số năm học</span>
+                                    <span class="text-lg font-black text-slate-800">7</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium text-slate-600">Lớp đang hoạt động</span>
+                                    <span class="text-lg font-black text-blue-600">28</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium text-slate-600">Môn học</span>
+                                    <span class="text-lg font-black text-purple-600">15</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Khối & Lớp học -->
+            <div id="tab-grades" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <!-- Grades Sidebar -->
+                    <div class="bg-white rounded-[24px] card-shadow border border-slate-100 p-6 h-fit">
+                        <div class="flex items-center justify-between mb-6">
+                            <h4 class="text-lg font-black text-slate-800 tracking-tight">Danh sách Khối</h4>
+                            <button onclick="openAddGradeModal()"
+                                class="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-blue-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19" />
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="space-y-2" id="gradesList">
+                            <!-- Grades will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Classes Grid -->
+                    <div class="lg:col-span-3">
+                        <div class="bg-white rounded-[24px] card-shadow border border-slate-100 p-6 mb-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="text-lg font-black text-slate-800 tracking-tight">Danh sách Lớp học</h4>
+                                    <p class="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1" id="selectedGradeTitle">Khối 6</p>
+                                </div>
+                                <button onclick="openAddClassModal()"
+                                    class="px-5 py-2.5 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1] flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3">
+                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
+                                    Thêm lớp
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="classesGrid">
+                            <!-- Classes will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: Danh mục Môn học -->
+            <div id="tab-subjects" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Subject Categories -->
+                    <div class="bg-white rounded-[24px] card-shadow border border-slate-100 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h4 class="text-lg font-black text-slate-800 tracking-tight">Nhóm môn học</h4>
+                            <button onclick="openAddCategoryModal()"
+                                class="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-blue-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19" />
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="space-y-3" id="categoriesList">
+                            <!-- Categories will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Subjects List -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-[24px] card-shadow border border-slate-100 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h4 class="text-lg font-black text-slate-800 tracking-tight">Danh sách Môn học</h4>
+                                    <p class="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">Cấu hình
+                                        môn học & hệ số</p>
+                                </div>
+                                <button onclick="openAddSubjectModal()"
+                                    class="px-5 py-2.5 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1] flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3">
+                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
+                                    Thêm môn học
+                                </button>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="bg-slate-50">
+                                            <th
+                                                class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                Mã môn</th>
+                                            <th
+                                                class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                Tên môn học</th>
+                                            <th
+                                                class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                Số tiết/tuần</th>
+                                            <th
+                                                class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                Nhóm</th>
+                                            <th
+                                                class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="subjectsTableBody" class="divide-y divide-slate-100">
+                                        <!-- Subjects will be rendered here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ADD CLASS MODAL -->
+    <div id="addClassModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0" onclick="closeAddClassModal()"></div>
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl slide-in overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-slate-200 px-8 py-6 flex items-center justify-between z-10">
+                <div>
+                    <h3 class="text-xl font-black text-slate-800">Thêm Lớp học mới</h3>
+                    <p class="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">Cấu hình lớp & phân công
+                    </p>
+                </div>
+                <button onclick="closeAddClassModal()" class="p-2 hover:bg-slate-100 rounded-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+
+            <form onsubmit="saveClass(event)" class="p-8 space-y-6">
+                <div>
+                    <label class="block text-sm font-black text-slate-700 mb-2">Tên lớp</label>
+                    <input type="text" name="className" required
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none"
+                        placeholder="6A">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-black text-slate-700 mb-2">Mã phòng</label>
+                    <input type="text" name="room"
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none"
+                        placeholder="P.101">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-black text-slate-700 mb-2">Sĩ số tối đa</label>
+                    <input type="number" name="maxStudents" value="40" required
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none">
+                </div>
+
+                <div class="border-t border-slate-200 pt-6">
+                    <h4 class="text-sm font-black text-slate-700 mb-4">Phân công Giáo viên</h4>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-600 mb-2">Giáo viên chủ nhiệm</label>
+                            <select name="homeroomTeacher"
+                                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none">
+                                <option value="">Chọn GVCN</option>
+                                <option value="gv001">Nguyễn Thanh E</option>
+                                <option value="gv002">Trần Thị F</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4 border-t border-slate-200">
+                    <button type="button" onclick="closeAddClassModal()"
+                        class="flex-1 px-6 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-700 hover:bg-slate-50">
+                        Hủy bỏ
+                    </button>
+                    <button type="submit"
+                        class="flex-1 px-6 py-3 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1]">
+                        Lưu lớp học
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast"
+        class="fixed bottom-8 right-8 bg-slate-900 text-white px-8 py-4 rounded-2xl shadow-2xl transition-all transform translate-y-20 opacity-0 font-bold z-50">
+        Thông báo hệ thống
+    </div>
+
+    <script>
+        // Data
+        const academicData = {
+            years: [
+                { id: 1, name: '2025-2026', active: true, semester1: '01/09/2025 - 15/01/2026', semester2: '16/01/2026 - 31/05/2026' },
+                { id: 2, name: '2024-2025', active: false, semester1: '01/09/2024 - 15/01/2025', semester2: '16/01/2025 - 31/05/2025' },
+                { id: 3, name: '2023-2024', active: false, semester1: '01/09/2023 - 15/01/2024', semester2: '16/01/2024 - 31/05/2024' },
+                { id: 4, name: '2022-2023', active: false, semester1: '01/09/2022 - 15/01/2023', semester2: '16/01/2023 - 31/05/2023' },
+            ],
+            grades: [
+                { id: 6, name: 'Khối 6', active: true },
+                { id: 7, name: 'Khối 7', active: false },
+                { id: 8, name: 'Khối 8', active: false },
+                { id: 9, name: 'Khối 9', active: false }
+            ],
+            classes: [
+                { id: 1, name: '6A', grade: 6, room: 'P.101', maxStudents: 40, currentStudents: 38, homeroomTeacher: 'Nguyễn Thanh E' },
+                { id: 2, name: '6B', grade: 6, room: 'P.102', maxStudents: 40, currentStudents: 40, homeroomTeacher: 'Trần Thị F' },
+                { id: 3, name: '6C', grade: 6, room: 'P.103', maxStudents: 40, currentStudents: 35, homeroomTeacher: 'Lê Văn G' },
+                { id: 4, name: '7A', grade: 7, room: 'P.201', maxStudents: 40, currentStudents: 39, homeroomTeacher: 'Phạm Thị H' },
+                { id: 5, name: '7B', grade: 7, room: 'P.202', maxStudents: 40, currentStudents: 37, homeroomTeacher: 'Nguyễn Văn I' },
+            ],
+            categories: [
+                { id: 1, name: 'Tự nhiên', color: 'blue', icon: '🔬' },
+                { id: 2, name: 'Xã hội', color: 'green', icon: '📚' },
+                { id: 3, name: 'Năng khiếu', color: 'purple', icon: '🎨' }
+            ],
+            subjects: [
+                { id: 1, code: 'TOAN', name: 'Toán', periodsPerWeek: 5, category: 1 },
+                { id: 2, code: 'VAN', name: 'Ngữ văn', periodsPerWeek: 4, category: 2 },
+                { id: 3, code: 'ANH', name: 'Tiếng Anh', periodsPerWeek: 4, category: 2 },
+                { id: 4, code: 'LY', name: 'Vật lý', periodsPerWeek: 3, category: 1 },
+                { id: 5, code: 'HOA', name: 'Hóa học', periodsPerWeek: 3, category: 1 },
+                { id: 6, code: 'SINH', name: 'Sinh học', periodsPerWeek: 2, category: 1 },
+                { id: 7, code: 'SU', name: 'Lịch sử', periodsPerWeek: 2, category: 2 },
+                { id: 8, code: 'DIA', name: 'Địa lý', periodsPerWeek: 2, category: 2 },
+                { id: 9, code: 'GDCD', name: 'GDCD', periodsPerWeek: 2, category: 2 },
+                { id: 10, code: 'TIN', name: 'Tin học', periodsPerWeek: 2, category: 1 },
+                { id: 11, code: 'TD', name: 'Thể dục', periodsPerWeek: 3, category: 3 },
+                { id: 12, code: 'NA', name: 'Nghệ thuật', periodsPerWeek: 2, category: 3 },
+                { id: 13, code: 'CN', name: 'Công nghệ', periodsPerWeek: 2, category: 1 },
+            ],
+            waitingStudents: [
+                { id: 1, name: 'Nguyễn Văn K', code: 'HS2024011' },
+                { id: 2, name: 'Trần Thị L', code: 'HS2024012' },
+                { id: 3, name: 'Lê Văn M', code: 'HS2024013' },
+                { id: 4, name: 'Phạm Thị N', code: 'HS2024014' },
+                { id: 5, name: 'Nguyễn Văn O', code: 'HS2024015' },
+            ]
+        };
+
+        let selectedGrade = 6;
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            // Show selected tab
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+            // Update button states
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('text-slate-600');
+            });
+            event.target.classList.add('active');
+            event.target.classList.remove('text-slate-600');
+
+            // Render content for the tab
+            if (tabName === 'grades') renderGrades();
+            if (tabName === 'subjects') renderSubjects();
+        }
+
+        // Render Years
+        function renderYears() {
+            const container = document.getElementById('yearsList');
+            container.innerHTML = academicData.years.map(year => `
+                <div class="p-4 border border-slate-200 rounded-xl hover:border-blue-300 transition-all">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 ${year.active ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'} rounded-xl flex items-center justify-center font-black text-lg">
+                                ${year.name.slice(2, 4)}
+                            </div>
+                            <div>
+                                <h5 class="text-sm font-black text-slate-800">Năm học ${year.name}</h5>
+                                <p class="text-xs text-slate-400 mt-1">HK I: ${year.semester1}</p>
+                                <p class="text-xs text-slate-400">HK II: ${year.semester2}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <label class="switch">
+                                <input type="checkbox" ${year.active ? 'checked' : ''} onchange="toggleYear(${year.id})">
+                                <span class="slider"></span>
+                            </label>
+                            <button class="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-blue-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Grades
+        function renderGrades() {
+            const gradesContainer = document.getElementById('gradesList');
+            gradesContainer.innerHTML = academicData.grades.map(grade => `
+                <button onclick="selectGrade(${grade.id})" class="w-full p-4 rounded-xl font-bold text-sm text-left transition-all ${selectedGrade === grade.id ? 'bg-blue-500 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}">
+                    ${grade.name}
+                </button>
+            `).join('');
+
+            renderClasses();
+        }
+
+        function selectGrade(gradeId) {
+            selectedGrade = gradeId;
+            renderGrades();
+        }
+
+        // Render Classes
+        function renderClasses() {
+            const classesContainer = document.getElementById('classesGrid');
+            const filteredClasses = academicData.classes.filter(c => c.grade === selectedGrade);
+
+            const grade = academicData.grades.find(g => g.id === selectedGrade);
+            document.getElementById('selectedGradeTitle').textContent = grade ? grade.name : '';
+
+            classesContainer.innerHTML = filteredClasses.map(cls => {
+                const percentage = (cls.currentStudents / cls.maxStudents) * 100;
+                return `
+                    <div class="class-card bg-white rounded-[24px] card-shadow border border-slate-100 p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl flex items-center justify-center font-black text-xl">
+                                ${cls.name}
+                            </div>
+                            <button class="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-blue-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="1" />
+                                    <circle cx="12" cy="5" r="1" />
+                                    <circle cx="12" cy="19" r="1" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <h4 class="text-lg font-black text-slate-800 mb-1">Lớp ${cls.name}</h4>
+                        <p class="text-xs text-slate-400 mb-4">${cls.room}</p>
+
+                        <div class="mb-4">
+                            <div class="flex items-center justify-between text-xs font-bold mb-2">
+                                <span class="text-slate-600">Sĩ số</span>
+                                <span class="text-blue-600">${cls.currentStudents}/${cls.maxStudents}</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 p-3 bg-slate-50 rounded-xl">
+                            <div class="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center font-bold text-xs">
+                                GV
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-bold text-slate-700 truncate">${cls.homeroomTeacher}</p>
+                                <p class="text-[10px] text-slate-400">GVCN</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Subjects
+        function renderSubjects() {
+            // Render categories
+            const categoriesContainer = document.getElementById('categoriesList');
+            categoriesContainer.innerHTML = academicData.categories.map(cat => `
+                <div class="p-4 bg-${cat.color}-50 border border-${cat.color}-200 rounded-xl flex items-center gap-3">
+                    <span class="text-2xl">${cat.icon}</span>
+                    <div class="flex-1">
+                        <p class="text-sm font-black text-slate-800">${cat.name}</p>
+                        <p class="text-xs text-slate-400">${academicData.subjects.filter(s => s.category === cat.id).length} môn</p>
+                    </div>
+                </div>
+            `).join('');
+
+            // Render subjects table
+            const subjectsContainer = document.getElementById('subjectsTableBody');
+            subjectsContainer.innerHTML = academicData.subjects.map(subject => {
+                const category = academicData.categories.find(c => c.id === subject.category);
+                return `
+                    <tr class="hover:bg-slate-50/50">
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-black">${subject.code}</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm font-bold text-slate-800">${subject.name}</td>
+                        <td class="px-6 py-4 text-sm font-medium text-slate-600">${subject.periodsPerWeek}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 bg-${category.color}-100 text-${category.color}-600 rounded-lg text-xs font-black">${category.name}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <button class="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-blue-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                    </svg>
+                                </button>
+                                <button class="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-red-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Modal functions
+        function openAddClassModal() {
+            document.getElementById('addClassModal').classList.remove('hidden');
+        }
+
+        function closeAddClassModal() {
+            document.getElementById('addClassModal').classList.add('hidden');
+        }
+
+        function saveClass(event) {
+            event.preventDefault();
+            showToast('Đã thêm lớp học thành công!');
+            closeAddClassModal();
+        }
+
+        function openAddYearModal() {
+            showToast('Đang mở form thêm năm học...');
+        }
+
+        function openAddGradeModal() {
+            showToast('Đang mở form thêm khối...');
+        }
+
+        function openAddCategoryModal() {
+            showToast('Đang mở form thêm nhóm môn...');
+        }
+
+        function openAddSubjectModal() {
+            showToast('Đang mở form thêm môn học...');
+        }
+
+        function toggleYear(yearId) {
+            academicData.years.forEach(y => {
+                if (y.id === yearId) {
+                    y.active = true;
+                } else {
+                    y.active = false;
+                }
+            });
+            renderYears();
+            showToast('Đã chuyển đổi năm học hiện tại');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            renderYears();
+            renderGrades();
+            renderSubjects();
+        });
+    </script>
+
+</body>
+
+</html>

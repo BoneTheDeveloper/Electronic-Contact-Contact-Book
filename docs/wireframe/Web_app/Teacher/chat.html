@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECONTACT Teacher - Tin nhắn</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --primary: #0284C7;
+            --sidebar-width: 320px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .chat-item {
+            transition: all 0.15s ease;
+        }
+
+        .chat-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .chat-item.active {
+            background-color: #eff6ff;
+            border-left: 3px solid #0284C7;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+        }
+
+        .message-bubble.sent {
+            background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+        }
+
+        .message-bubble.received {
+            background-color: #f1f5f9;
+        }
+
+        .typing-indicator span {
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-4px);
+            }
+        }
+
+        .online-indicator {
+            box-shadow: 0 0 0 2px white;
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden">
+
+    <!-- LEFT SIDEBAR - Chat List -->
+    <aside class="w-[320px] bg-white border-r border-slate-200 flex flex-col shrink-0">
+        <!-- Header -->
+        <div class="p-4 border-b border-slate-100">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <button onclick="window.location.href='dashboard.html'" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5"></path>
+                            <path d="M12 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <h1 class="text-lg font-black text-slate-800">Tin nhắn</h1>
+                </div>
+                <button class="p-2 hover:bg-slate-100 rounded-lg transition-colors relative">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </button>
+            </div>
+            <!-- Search -->
+            <div class="relative">
+                <input type="text" placeholder="Tìm kiếm cuộc hội thoại..."
+                    class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-[#0284C7] focus:ring-2 focus:ring-[#0284C7]/20">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Chat Tabs -->
+        <div class="px-4 pt-3 flex gap-2">
+            <button class="flex-1 py-2 px-3 bg-[#0284C7] text-white text-xs font-black rounded-lg">Tất cả</button>
+            <button class="flex-1 py-2 px-3 bg-slate-100 text-slate-600 text-xs font-black rounded-lg hover:bg-slate-200 transition-colors">Chưa đọc</button>
+        </div>
+
+        <!-- Chat List -->
+        <div class="flex-1 overflow-y-auto">
+            <!-- Chat Item 1 - Active -->
+            <div class="chat-item active p-4 border-b border-slate-50 cursor-pointer" onclick="selectChat(1)">
+                <div class="flex items-start gap-3">
+                    <div class="relative shrink-0">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">
+                            PH
+                        </div>
+                        <span class="online-indicator absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-sm font-bold text-slate-800">Phụ huynh Phạm Hùng</h4>
+                            <span class="text-[10px] text-slate-400">2p</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs text-slate-600 truncate font-medium">Dạ thưa thầy, tôi đã nhận được kết quả...</p>
+                            <span class="w-5 h-5 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full font-black shrink-0">2</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Item 2 -->
+            <div class="chat-item p-4 border-b border-slate-50 cursor-pointer" onclick="selectChat(2)">
+                <div class="flex items-start gap-3">
+                    <div class="relative shrink-0">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold">
+                            NMA
+                        </div>
+                        <span class="online-indicator absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-sm font-bold text-slate-800">Phụ huynh Nguyễn Minh Anh</h4>
+                            <span class="text-[10px] text-slate-400">15p</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs text-slate-500 truncate">Chào thầy, tôi vừa nhắc cháu hoàn thành...</p>
+                            <span class="w-5 h-5 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full font-black shrink-0">1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Item 3 -->
+            <div class="chat-item p-4 border-b border-slate-50 cursor-pointer" onclick="selectChat(3)">
+                <div class="flex items-start gap-3">
+                    <div class="relative shrink-0">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold">
+                            LQN
+                        </div>
+                        <span class="online-indicator absolute bottom-0 right-0 w-4 h-4 bg-gray-300 rounded-full border-2 border-white"></span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-sm font-bold text-slate-600">Phụ huynh Lê Quang Nam</h4>
+                            <span class="text-[10px] text-slate-400">Hôm qua</span>
+                        </div>
+                        <p class="text-xs text-slate-400 truncate">Thưa thầy, do gia đình có việc đột xuất...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Item 4 -->
+            <div class="chat-item p-4 border-b border-slate-50 cursor-pointer" onclick="selectChat(4)">
+                <div class="flex items-start gap-3">
+                    <div class="relative shrink-0">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-rose-400 to-rose-600 flex items-center justify-center text-white font-bold">
+                            TLL
+                        </div>
+                        <span class="online-indicator absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-sm font-bold text-slate-600">Phụ huynh Trần Lê Linh</h4>
+                            <span class="text-[10px] text-slate-400">2 ngày</span>
+                        </div>
+                        <p class="text-xs text-slate-400 truncate">Thay mặt gia đình, tôi xin chân thành cảm ơn...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Item 5 -->
+            <div class="chat-item p-4 border-b border-slate-50 cursor-pointer">
+                <div class="flex items-start gap-3">
+                    <div class="relative shrink-0">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold">
+                            PTK
+                        </div>
+                        <span class="online-indicator absolute bottom-0 right-0 w-4 h-4 bg-gray-300 rounded-full border-2 border-white"></span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-sm font-bold text-slate-600">Phụ huynh Phạm Thị Kim</h4>
+                            <span class="text-[10px] text-slate-400">3 ngày</span>
+                        </div>
+                        <p class="text-xs text-slate-400 truncate">Dạ thầy ơi, sắp tới kỳ thi học kỳ rồi...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Item 6 -->
+            <div class="chat-item p-4 border-b border-slate-50 cursor-pointer">
+                <div class="flex items-start gap-3">
+                    <div class="relative shrink-0">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold">
+                            VTH
+                        </div>
+                        <span class="online-indicator absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-sm font-bold text-slate-600">Phụ huynh Võ Thanh Hằng</h4>
+                            <span class="text-[10px] text-slate-400">1 tuần</span>
+                        </div>
+                        <p class="text-xs text-slate-400 truncate">Thưa thầy, tôi muốn hỏi thăm một chút...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CHAT AREA -->
+    <main class="flex-1 flex flex-col bg-white">
+        <!-- Chat Header -->
+        <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">
+                        PH
+                    </div>
+                    <span class="online-indicator absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></span>
+                </div>
+                <div>
+                    <h2 class="text-base font-black text-slate-800">Phụ huynh Phạm Hùng</h2>
+                    <p class="text-xs text-green-600 font-medium flex items-center gap-1">
+                        <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                        Đang hoạt động • Học sinh: Phạm Hùng (9A1)
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button class="p-2.5 hover:bg-slate-100 rounded-lg transition-colors" title="Gọi điện">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                </button>
+                <button class="p-2.5 hover:bg-slate-100 rounded-lg transition-colors" title="Video call">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 7l-7 5 7 5V7z"></path>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                    </svg>
+                </button>
+                <button class="p-2.5 hover:bg-slate-100 rounded-lg transition-colors" title="Thông tin">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Messages Area -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
+            <!-- Date Divider -->
+            <div class="flex items-center gap-4 my-4">
+                <div class="flex-1 h-px bg-slate-200"></div>
+                <span class="text-xs text-slate-400 font-medium px-3">Hôm nay</span>
+                <div class="flex-1 h-px bg-slate-200"></div>
+            </div>
+
+            <!-- Message 1 - Received -->
+            <div class="flex items-end gap-3">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                    PH
+                </div>
+                <div class="message-bubble received rounded-2xl rounded-bl-sm px-4 py-3">
+                    <p class="text-sm text-slate-700">Dạ thưa thầy,</p>
+                    <p class="text-sm text-slate-700 mt-1">Tôi đã nhận được kết quả bài kiểm tra toán vừa rồi của Hùng. Cháu đạt 8.5 là một nỗ lực lớn, nhưng cháu có tâm sự là phần Phương trình bậc hai vẫn còn thấy lúng túng.</p>
+                    <p class="text-sm text-slate-700 mt-1">Nhờ thầy hướng dẫn thêm cho cháu phương pháp nào để nắm chắc phần này hơn tại nhà không ạ?</p>
+                    <span class="text-[10px] text-slate-400 mt-2 block">14:30</span>
+                </div>
+            </div>
+
+            <!-- Message 2 - Sent -->
+            <div class="flex items-end gap-3 justify-end">
+                <div class="message-bubble sent rounded-2xl rounded-br-sm px-4 py-3 text-white">
+                    <p class="text-sm">Chào phụ huynh,</p>
+                    <p class="text-sm mt-1">Cảm ơn phụ huynh đã quan tâm đến việc học của Hùng. Thầy rất vui khi biết cháu đã nỗ lực đạt 8.5 điểm.</p>
+                    <p class="text-sm mt-1">Về phần Phương trình bậc hai, thầy nhận thấy Hùng đã hiểu cơ bản nhưng cần luyện tập thêm. Phụ huynh có thể cho cháu làm thêm bài tập từ cơ bản đến nâng cao, thầy sẽ gửi tài liệu bổ sung sớm ạ.</p>
+                    <span class="text-[10px] text-blue-100 mt-2 block">14:32 ✓✓</span>
+                </div>
+            </div>
+
+            <!-- Message 3 - Received -->
+            <div class="flex items-end gap-3">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                    PH
+                </div>
+                <div class="message-bubble received rounded-2xl rounded-bl-sm px-4 py-3">
+                    <p class="text-sm text-slate-700">Dạ tôi cảm ơn thầy nhiều ạ! 👍</p>
+                    <p class="text-sm text-slate-700 mt-1">Ở nhà tôi có thử hướng dẫn cháu nhưng thấy cháu vẫn còn hơi sợ phần bài tập này. Không biết thầy có thể sắp xếp buổi phụ đạo sau giờ học cho cháu được không ạ?</p>
+                    <span class="text-[10px] text-slate-400 mt-2 block">14:35</span>
+                </div>
+            </div>
+
+            <!-- Message 4 - Sent -->
+            <div class="flex items-end gap-3 justify-end">
+                <div class="message-bubble sent rounded-2xl rounded-br-sm px-4 py-3 text-white">
+                    <p class="text-sm">Được chứ phụ huynh.</p>
+                    <p class="text-sm mt-1">Thầy đang dự kiến mở buổi phụ đạo vào thứ 6 hàng tuần, từ 3h30 đến 5h chiều. Phụ huynh cho Hùng tham gia nhé. Thầy sẽ thông báo chi tiết sau.</p>
+                    <span class="text-[10px] text-blue-100 mt-2 block">14:36 ✓✓</span>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="flex items-end gap-3">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                    PH
+                </div>
+                <div class="message-bubble received rounded-2xl px-4 py-3">
+                    <div class="typing-indicator flex items-center gap-1">
+                        <span class="w-2 h-2 bg-slate-400 rounded-full"></span>
+                        <span class="w-2 h-2 bg-slate-400 rounded-full"></span>
+                        <span class="w-2 h-2 bg-slate-400 rounded-full"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="bg-white border-t border-slate-200 p-4 shrink-0">
+            <!-- Input Area -->
+            <div class="flex items-end gap-3">
+                <button class="p-3 hover:bg-slate-100 rounded-xl transition-colors shrink-0">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                </button>
+                <div class="flex-1 relative">
+                    <textarea rows="1" placeholder="Nhập tin nhắn..."
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#0284C7] focus:ring-2 focus:ring-[#0284C7]/20 resize-none"
+                        oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                    <button class="absolute right-3 bottom-3 p-1.5 hover:bg-slate-200 rounded-lg transition-colors">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <path d="M12 18v-6"></path>
+                            <path d="M9 15l3 3 3-3"></path>
+                        </svg>
+                    </button>
+                </div>
+                <button class="p-3 bg-gradient-to-r from-[#0284C7] to-[#0369A1] text-white rounded-xl hover:shadow-lg transition-all shrink-0">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR - Contact Info (Optional) -->
+    <aside class="w-80 bg-white border-l border-slate-200 p-6 hidden lg:block overflow-y-auto">
+        <div class="text-center mb-6">
+            <div class="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-3xl font-black mx-auto mb-4">
+                PH
+            </div>
+            <h3 class="text-lg font-black text-slate-800">Phụ huynh Phạm Hùng</h3>
+            <p class="text-sm text-slate-500">Lớp 9A1 • Học sinh: Phạm Hùng</p>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Thông tin liên hệ</h4>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400">Số điện thoại</p>
+                            <p class="text-sm font-bold text-slate-700">0912 345 678</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400">Email</p>
+                            <p class="text-sm font-bold text-slate-700">phungh.parent@gmail.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Thông tin học sinh</h4>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                        <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-700">Phạm Hùng</p>
+                            <p class="text-xs text-slate-400">MSSV: 2024001</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">File chia sẻ</h4>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer">
+                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold text-slate-700 truncate">Bài tập Tuần 5.pdf</p>
+                            <p class="text-xs text-slate-400">2.5 MB • 2 ngày trước</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <script>
+        function selectChat(id) {
+            // Remove active class from all chat items
+            document.querySelectorAll('.chat-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Add active class to clicked item
+            event.currentTarget.classList.add('active');
+
+            // In real app, load chat messages for selected user
+            console.log('Selected chat:', id);
+        }
+
+        // Auto-resize textarea
+        const textarea = document.querySelector('textarea');
+        if (textarea) {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EContact - Select Child</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+        :root {
+            --primary-blue: #0284C7;
+            --light-blue: #E0F2FE;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background-color: #ffffff;
+            border: 12px solid #333;
+            border-radius: 40px;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notch {
+            width: 160px;
+            height: 30px;
+            background-color: #333;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+            z-index: 10;
+        }
+
+        .child-card {
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .child-card.active {
+            border-color: var(--primary-blue);
+            background-color: var(--light-blue);
+        }
+
+        .primary-btn {
+            background-color: var(--primary-blue);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="phone-frame">
+        <div class="notch"></div>
+
+        <!-- Header -->
+        <div class="pt-14 px-6 pb-6 border-b border-gray-100 flex items-center">
+            <button class="p-2 -ml-2 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </button>
+            <h2 class="flex-1 text-center text-lg font-black text-gray-800 uppercase tracking-tight mr-6">Chọn con em
+            </h2>
+        </div>
+
+        <div class="p-6 flex-1 overflow-y-auto">
+            <p class="text-gray-500 text-sm font-medium mb-8 text-center">Vui lòng chọn tài khoản học sinh bạn muốn theo
+                dõi thông tin.</p>
+
+            <div class="space-y-4">
+                <!-- Child 1 (Active) -->
+                <div onclick="selectChild(1)" id="child-1"
+                    class="child-card active p-5 rounded-[24px] flex items-center space-x-4 cursor-pointer shadow-sm">
+                    <div
+                        class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-xl font-black shadow-lg shadow-blue-200">
+                        HB
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-gray-800 font-bold text-base">Nguyễn Hoàng B</h3>
+                        <p class="text-blue-600 text-xs font-black uppercase tracking-widest mt-0.5">Lớp 9A</p>
+                        <p class="text-gray-400 text-[10px] mt-1 font-bold tracking-tight">Mã HS: 20230847</p>
+                    </div>
+                    <div class="status-icon text-blue-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Child 2 -->
+                <div onclick="selectChild(2)" id="child-2"
+                    class="child-card bg-gray-50 p-5 rounded-[24px] flex items-center space-x-4 cursor-pointer">
+                    <div
+                        class="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center text-gray-500 text-xl font-black">
+                        HC
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-gray-800 font-bold text-base">Nguyễn Hồng C</h3>
+                        <p class="text-gray-400 text-xs font-black uppercase tracking-widest mt-0.5">Lớp 6B</p>
+                        <p class="text-gray-400 text-[10px] mt-1 font-bold tracking-tight">Mã HS: 20261253</p>
+                    </div>
+                    <div class="status-icon hidden text-blue-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Phần liên kết thêm con đã được loại bỏ để Admin quản lý tập trung -->
+            </div>
+        </div>
+
+        <!-- Footer Action -->
+        <div class="p-8">
+            <button onclick="confirmSelection()"
+                class="primary-btn w-full py-5 rounded-2xl text-white font-black text-lg shadow-xl shadow-blue-100 uppercase tracking-widest">
+                Xác nhận
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function selectChild(id) {
+            // Reset all cards
+            document.querySelectorAll('.child-card').forEach(card => {
+                card.classList.remove('active', 'bg-blue-50');
+                card.classList.add('bg-gray-50');
+                card.querySelector('.status-icon').classList.add('hidden');
+            });
+
+            // Set active card
+            const activeCard = document.getElementById('child-' + id);
+            activeCard.classList.add('active');
+            activeCard.classList.remove('bg-gray-50');
+            activeCard.querySelector('.status-icon').classList.remove('hidden');
+        }
+
+        function confirmSelection() {
+            alert("Đã chuyển sang hồ sơ học sinh thành công!");
+        }
+    </script>
+</body>
+
+</html>

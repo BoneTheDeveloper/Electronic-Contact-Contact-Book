@@ -1,10 +1,25 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { getTeacherSchedule } from '@/lib/mock-data'
 import { Calendar, Clock, MapPin } from 'lucide-react'
 
+interface ScheduleItem {
+  period: number
+  time: string
+  className: string
+  subject: string
+  room: string
+}
+
+async function fetchSchedule(): Promise<ScheduleItem[]> {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/teacher/schedule`, {
+    cache: 'no-store',
+  })
+  const json = await res.json()
+  return json.data
+}
+
 export default async function TeachingSchedulePage() {
-  const schedule = await getTeacherSchedule()
+  const schedule = await fetchSchedule()
 
   return (
     <div className="space-y-6 p-8">

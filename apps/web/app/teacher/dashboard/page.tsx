@@ -4,25 +4,72 @@ import {
   FileText,
   Clock,
   CheckCircle,
-  AlertCircle,
-  BookOpen,
-  TrendingUp,
   MessageSquare,
+  BookOpen,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { getTeacherStats, getGradeReviewRequests, getLeaveRequests, getTeacherClasses, getRegularAssessments, getTeacherSchedule } from '@/lib/mock-data'
 import Link from 'next/link'
 
+interface DashboardData {
+  stats: {
+    teaching: number
+    homeroom: string
+    gradeReviewRequests: number
+    leaveRequests: number
+    pendingGrades: number
+  }
+  gradeReviews: Array<{
+    id: string
+    studentName: string
+    className: string
+    assessmentType: string
+    currentScore: number
+    reason?: string
+  }>
+  leaveRequests: Array<{
+    id: string
+    studentName: string
+    startDate: string
+    endDate: string
+    reason: string
+  }>
+  classes: Array<{
+    id: string
+    name: string
+    subject: string
+    studentCount: number
+    schedule: string
+    isHomeroom: boolean
+  }>
+  schedule: Array<{
+    period: number
+    subject: string
+    className: string
+    time: string
+    room: string
+  }>
+  assessments: {
+    evaluated: number
+    pending: number
+    positive: number
+    needsAttention: number
+  }
+}
+
+async function fetchDashboardData(): Promise<DashboardData> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const res = await fetch(`${baseUrl}/api/teacher/dashboard`, {
+    cache: 'no-store',
+  })
+  const json = await res.json()
+  return json.data
+}
+
 export default async function TeacherDashboard() {
-  const stats = await getTeacherStats()
-  const gradeReviews = await getGradeReviewRequests()
-  const leaveRequests = await getLeaveRequests('10A', 'pending')
-  const classes = await getTeacherClasses()
-  const regularAssessments = await getRegularAssessments()
-  const schedule = await getTeacherSchedule()
+  const data = await fetchDashboardData()
+  const { stats, gradeReviews, leaveRequests, classes, schedule, assessments } = data
 
   return (
     <div className="space-y-8 p-8">
@@ -168,7 +215,7 @@ export default async function TeacherDashboard() {
                 <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
                   <CardContent className="pt-6">
                     <div className="text-3xl font-bold text-green-600">
-                      {regularAssessments.filter(a => a.status === 'evaluated').length}
+                      {assessments.evaluated}
                     </div>
                     <div className="text-sm text-green-700 font-bold mt-1">Đã đánh giá</div>
                   </CardContent>
@@ -176,7 +223,7 @@ export default async function TeacherDashboard() {
                 <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
                   <CardContent className="pt-6">
                     <div className="text-3xl font-bold text-amber-600">
-                      {regularAssessments.filter(a => a.status === 'pending').length}
+                      {assessments.pending}
                     </div>
                     <div className="text-sm text-amber-700 font-bold mt-1">Chưa đánh giá</div>
                   </CardContent>
@@ -184,7 +231,7 @@ export default async function TeacherDashboard() {
                 <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
                   <CardContent className="pt-6">
                     <div className="text-3xl font-bold text-blue-600">
-                      {regularAssessments.filter(a => a.rating && a.rating >= 4).length}
+                      {assessments.positive}
                     </div>
                     <div className="text-sm text-blue-700 font-bold mt-1">Tiếp tục cố gắng</div>
                   </CardContent>
@@ -192,7 +239,7 @@ export default async function TeacherDashboard() {
                 <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
                   <CardContent className="pt-6">
                     <div className="text-3xl font-bold text-red-600">
-                      {regularAssessments.filter(a => a.status === 'needs-attention').length}
+                      {assessments.needsAttention}
                     </div>
                     <div className="text-sm text-red-700 font-bold mt-1">Cần lưu ý</div>
                   </CardContent>

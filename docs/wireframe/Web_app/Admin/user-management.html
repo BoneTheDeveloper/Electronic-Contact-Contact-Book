@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECONTACT Admin - Quản trị Người dùng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --primary: #0284C7;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            transition: all 0.3s ease;
+        }
+
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+
+        .nav-item.active {
+            background-color: rgba(2, 132, 199, 0.1);
+            color: var(--primary);
+            border-right: 4px solid var(--primary);
+        }
+
+        .card-shadow {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .filter-tag {
+            transition: all 0.2s ease;
+        }
+
+        .filter-tag:hover {
+            transform: translateY(-1px);
+        }
+
+        .user-row {
+            transition: all 0.2s ease;
+        }
+
+        .user-row:hover {
+            background-color: #f8fafc;
+        }
+
+        .modal-overlay {
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="flex">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar h-screen bg-white border-r border-slate-200 flex flex-col sticky top-0 shrink-0">
+        <!-- Brand -->
+        <div class="p-6 border-b border-slate-100 flex items-center gap-3">
+            <div class="p-2 bg-blue-50 rounded-xl">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.5">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M2 17L12 22L22 17" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-black text-slate-800 tracking-tight leading-none">ECONTACT</h1>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Admin Portal</span>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Chính</p>
+
+            <a href="dashboard.html"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Tổng quan
+            </a>
+
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-6">Quản trị</p>
+
+            <a href="user-management.html" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Người dùng
+            </a>
+
+            <a href="academic-structure.html"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                </svg>
+                Học thuật (Lớp/Môn)
+            </a>
+
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-6">Vận hành</p>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                Điểm danh
+            </a>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.6" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                Quản lý Điểm số
+            </a>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <line x1="2" y1="10" x2="22" y2="10" />
+                </svg>
+                Học phí & Tài chính
+            </a>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                Thông báo
+            </a>
+        </nav>
+
+        <!-- User Profile Sidebar Bottom -->
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="flex items-center gap-3 p-2">
+                <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white overflow-hidden">
+                    <img src="https://ui-avatars.com/api/?name=Admin+Hust&background=0284C7&color=fff" alt="Avatar">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate">Admin123</p>
+                    <p class="text-[10px] text-slate-400 font-medium truncate">ad001@econtact.vn</p>
+                </div>
+                <button class="text-slate-400 hover:text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 min-w-0 h-screen overflow-y-auto bg-slate-50">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-40">
+            <div class="flex items-center gap-4">
+                <h2 class="text-lg font-extrabold text-slate-800">Quản trị Người dùng</h2>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="relative hidden sm:block">
+                    <input type="text" placeholder="Tìm kiếm người dùng..."
+                        class="w-64 pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-100">
+                    <svg class="absolute left-3 top-2.5 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="16"
+                        height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                        </svg>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                    </button>
+                    <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENT BODY -->
+        <div class="p-8">
+
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                <!-- Card 1 - Total Users -->
+                <div class="bg-white p-6 rounded-[24px] card-shadow border border-slate-100">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 bg-blue-50 text-[#0284C7] rounded-2xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                        </div>
+                        <span class="text-green-500 text-xs font-bold">+3.2%</span>
+                    </div>
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Tổng người dùng</p>
+                    <h4 class="text-2xl font-black text-slate-800">3,519</h4>
+                </div>
+
+                <!-- Card 2 - Admins -->
+                <div class="bg-white p-6 rounded-[24px] card-shadow border border-slate-100">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 bg-red-50 text-red-600 rounded-2xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                <path d="M2 17l10 5 10-5" />
+                                <path d="M2 12l10 5 10-5" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Admin</p>
+                    <h4 class="text-2xl font-black text-slate-800">5</h4>
+                </div>
+
+                <!-- Card 3 - Teachers -->
+                <div class="bg-white p-6 rounded-[24px] card-shadow border border-slate-100">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 bg-purple-50 text-purple-600 rounded-2xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </div>
+                        <span class="text-slate-400 text-xs font-bold">Ổn định</span>
+                    </div>
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Giáo viên</p>
+                    <h4 class="text-2xl font-black text-slate-800">85</h4>
+                </div>
+
+                <!-- Card 4 - Parents -->
+                <div class="bg-white p-6 rounded-[24px] card-shadow border border-slate-100">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 bg-teal-50 text-teal-600 rounded-2xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                        </div>
+                        <span class="text-teal-500 text-xs font-bold">+1.8%</span>
+                    </div>
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Phụ huynh</p>
+                    <h4 class="text-2xl font-black text-slate-800">2,186</h4>
+                </div>
+
+                <!-- Card 5 - Students -->
+                <div class="bg-white p-6 rounded-[24px] card-shadow border border-slate-100">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                        </div>
+                        <span class="text-blue-500 text-xs font-bold">+2.5%</span>
+                    </div>
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Học sinh</p>
+                    <h4 class="text-2xl font-black text-slate-800">1,248</h4>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="bg-white rounded-[24px] card-shadow border border-slate-100 p-6 mb-8">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Bộ lọc:</span>
+
+                        <!-- Role Filter -->
+                        <select id="roleFilter" onchange="applyFilters()"
+                            class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none">
+                            <option value="">Tất cả vai trò</option>
+                            <option value="admin">Admin</option>
+                            <option value="teacher">Giáo viên</option>
+                            <option value="parent">Phụ huynh</option>
+                            <option value="student">Học sinh</option>
+                        </select>
+
+                        <!-- Status Filter -->
+                        <select id="statusFilter" onchange="applyFilters()"
+                            class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="active">Hoạt động</option>
+                            <option value="locked">Bị khóa</option>
+                        </select>
+
+                        <!-- Grade/Class Filter -->
+                        <select id="gradeFilter" onchange="applyFilters()"
+                            class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none">
+                            <option value="">Tất cả khối</option>
+                            <option value="6">Khối 6</option>
+                            <option value="7">Khối 7</option>
+                            <option value="8">Khối 8</option>
+                            <option value="9">Khối 9</option>
+                        </select>
+
+                        <button onclick="clearFilters()"
+                            class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-bold hover:bg-slate-50 rounded-xl transition-all">
+                            Xóa bộ lọc
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <!-- Import Excel Button -->
+                        <button onclick="openImportModal()"
+                            class="px-5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                            Nhập Excel
+                        </button>
+
+                        <!-- Add New User Button -->
+                        <button onclick="openAddUserModal()"
+                            class="px-5 py-2.5 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1] flex items-center gap-2 shadow-lg shadow-blue-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="3">
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            Thêm người dùng
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Filters Display -->
+                <div id="activeFilters" class="flex flex-wrap gap-2 mt-4 hidden">
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="bg-white rounded-[24px] card-shadow border border-slate-100 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-black text-slate-800 tracking-tight">Danh sách người dùng</h4>
+                        <p class="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">Quản lý tài khoản
+                            hệ thống</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-bold text-slate-600">Hiển thị:</span>
+                        <select class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold">
+                            <option>10 / trang</option>
+                            <option>20 / trang</option>
+                            <option>50 / trang</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-50">
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Người dùng</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Vai trò</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Lớp/Đơn vị</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Trạng thái</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Đăng nhập cuối</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody" class="divide-y divide-slate-100">
+                            <!-- Users will be rendered here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="p-6 border-t border-slate-100 flex items-center justify-between">
+                    <p class="text-sm font-medium text-slate-500">Hiển thị <span class="font-bold text-slate-800">1-10</span>
+                        trong <span class="font-bold text-slate-800">3,519</span> người dùng</p>
+                    <div class="flex items-center gap-2">
+                        <button class="px-4 py-2 text-slate-400 hover:text-slate-600 font-bold text-sm disabled:opacity-50"
+                            disabled>
+                            Trang trước
+                        </button>
+                        <button
+                            class="w-10 h-10 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1]">1</button>
+                        <button class="w-10 h-10 text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-sm">2</button>
+                        <button class="w-10 h-10 text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-sm">3</button>
+                        <span class="px-2 text-slate-400">...</span>
+                        <button class="w-10 h-10 text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-sm">352</button>
+                        <button class="px-4 py-2 text-slate-600 hover:bg-slate-50 font-bold text-sm">Tiếp theo</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ADD USER MODAL -->
+    <div id="addUserModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0" onclick="closeAddUserModal()"></div>
+        <div class="absolute right-0 top-0 h-full w-full max-w-2xl bg-white shadow-2xl slide-in overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="sticky top-0 bg-white border-b border-slate-200 px-8 py-6 flex items-center justify-between z-10">
+                <div>
+                    <h3 class="text-xl font-black text-slate-800">Thêm người dùng mới</h3>
+                    <p class="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">Nhập thông tin tài khoản
+                    </p>
+                </div>
+                <button onclick="closeAddUserModal()" class="p-2 hover:bg-slate-100 rounded-xl transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <form id="addUserForm" onsubmit="saveUser(event)" class="p-8 space-y-6">
+                <!-- Step Indicator -->
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="flex-1 h-1 bg-blue-500 rounded-full"></div>
+                    <div class="flex-1 h-1 bg-slate-200 rounded-full" id="stepIndicator2"></div>
+                    <div class="flex-1 h-1 bg-slate-200 rounded-full" id="stepIndicator3"></div>
+                </div>
+
+                <!-- Role Selection -->
+                <div>
+                    <label class="block text-sm font-black text-slate-700 mb-3 uppercase tracking-wider">Bước 1: Chọn vai trò</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="role-option cursor-pointer">
+                            <input type="radio" name="role" value="student" class="sr-only peer" required onchange="updateFormFields()">
+                            <div class="p-4 border-2 border-slate-200 rounded-xl text-center transition-all peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-slate-300">
+                                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                        <circle cx="9" cy="7" r="4" />
+                                    </svg>
+                                </div>
+                                <p class="text-xs font-bold text-slate-700">Học sinh</p>
+                            </div>
+                        </label>
+                        <label class="role-option cursor-pointer">
+                            <input type="radio" name="role" value="teacher" class="sr-only peer" onchange="updateFormFields()">
+                            <div class="p-4 border-2 border-slate-200 rounded-xl text-center transition-all peer-checked:border-purple-500 peer-checked:bg-purple-50 hover:border-slate-300">
+                                <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                        <circle cx="12" cy="7" r="4" />
+                                    </svg>
+                                </div>
+                                <p class="text-xs font-bold text-slate-700">Giáo viên</p>
+                            </div>
+                        </label>
+                        <label class="role-option cursor-pointer">
+                            <input type="radio" name="role" value="parent" class="sr-only peer" onchange="updateFormFields()">
+                            <div class="p-4 border-2 border-slate-200 rounded-xl text-center transition-all peer-checked:border-teal-500 peer-checked:bg-teal-50 hover:border-slate-300">
+                                <div class="w-10 h-10 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                        <circle cx="9" cy="7" r="4" />
+                                        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                    </svg>
+                                </div>
+                                <p class="text-xs font-bold text-slate-700">Phụ huynh</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Auto-generated Code Display -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-black text-blue-600 uppercase tracking-wider mb-1">Mã định danh (Tự sinh)</p>
+                            <p class="text-sm font-bold text-slate-700" id="codePreview">Chọn vai trò để sinh mã</p>
+                        </div>
+                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" />
+                                <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-2">Quy tắc: [Tiền tố vai trò] + [Năm hiện tại] + [Số thứ tự tự tăng]</p>
+                </div>
+
+                <!-- HỌC SINH FIELDS -->
+                <div id="studentFields" class="role-fields hidden space-y-6">
+                    <div class="border-t border-slate-200 pt-6">
+                        <h4 class="text-sm font-black text-slate-700 mb-4 uppercase tracking-wider">Thông tin học sinh</h4>
+
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-black text-slate-700 mb-2">Họ và tên <span class="text-red-500">*</span></label>
+                                <input type="text" name="fullName" required
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none"
+                                    placeholder="Nguyễn Văn A">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-black text-slate-700 mb-2">Ngày sinh <span class="text-red-500">*</span></label>
+                                <input type="date" name="dob" required
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-sm font-black text-slate-700 mb-2">Giới tính</label>
+                            <div class="flex gap-3">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="gender" value="male" class="w-4 h-4 text-blue-600">
+                                    <span class="text-sm font-medium text-slate-700">Nam</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="gender" value="female" class="w-4 h-4 text-blue-600">
+                                    <span class="text-sm font-medium text-slate-700">Nữ</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="gender" value="other" class="w-4 h-4 text-blue-600">
+                                    <span class="text-sm font-medium text-slate-700">Khác</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-6 mt-4">
+                            <div>
+                                <label class="block text-sm font-black text-slate-700 mb-2">Khối <span class="text-red-500">*</span></label>
+                                <select name="grade" required
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none">
+                                    <option value="">Chọn khối</option>
+                                    <option value="6">Khối 6</option>
+                                    <option value="7">Khối 7</option>
+                                    <option value="8">Khối 8</option>
+                                    <option value="9">Khối 9</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-black text-slate-700 mb-2">Lớp <span class="text-red-500">*</span></label>
+                                <select name="class" required
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none">
+                                    <option value="">Chọn lớp</option>
+                                    <option value="6A">6A</option>
+                                    <option value="6B">6B</option>
+                                    <option value="7A">7A</option>
+                                    <option value="8A">8A</option>
+                                    <option value="9A">9A</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-sm font-black text-slate-700 mb-2">Ngày nhập học</label>
+                            <input type="date" name="enrollmentDate" id="studentEnrollmentDate"
+                                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GIÁO VIÊN FIELDS -->
+                <div id="teacherFields" class="role-fields hidden space-y-6">
+                    <div class="border-t border-slate-200 pt-6">
+                        <h4 class="text-sm font-black text-slate-700 mb-4 uppercase tracking-wider">Thông tin giáo viên</h4>
+
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-black text-slate-700 mb-2">Họ và tên <span class="text-red-500">*</span></label>
+                                <input type="text" name="fullName" required
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none"
+                                    placeholder="Nguyễn Thị B">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-black text-slate-700 mb-2">Số điện thoại <span class="text-red-500">*</span></label>
+                                <input type="tel" name="phone" required
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none"
+                                    placeholder="09xxxxxxxxx">
+                                <p class="text-[10px] text-slate-400 mt-1">Dùng để nhận OTP và liên lạc</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-sm font-black text-slate-700 mb-2">Email công vụ <span class="text-red-500">*</span></label>
+                            <input type="email" name="email" required
+                                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none"
+                                placeholder="nguyenthib@school.edu.vn">
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-sm font-black text-slate-700 mb-2">Bộ môn giảng dạy chính <span class="text-red-500">*</span></label>
+                            <select name="subject" required
+                                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none">
+                                <option value="">Chọn bộ môn</option>
+                                <option value="Toán">Toán</option>
+                                <option value="Ngữ văn">Ngữ văn</option>
+                                <option value="Tiếng Anh">Tiếng Anh</option>
+                                <option value="Vật lý">Vật lý</option>
+                                <option value="Hóa học">Hóa học</option>
+                                <option value="Sinh học">Sinh học</option>
+                                <option value="Lịch sử">Lịch sử</option>
+                                <option value="Địa lý">Địa lý</option>
+                                <option value="GDCD">GDCD</option>
+                                <option value="Tin học">Tin học</option>
+                                <option value="Thể dục">Thể dục</option>
+                                <option value="Nghệ thuật">Nghệ thuật</option>
+                                <option value="Công nghệ">Công nghệ</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PHỤ HUYNH FIELDS -->
+                <div id="parentFields" class="role-fields hidden space-y-6">
+                    <div class="border-t border-slate-200 pt-6">
+                        <h4 class="text-sm font-black text-slate-700 mb-4 uppercase tracking-wider">Thông tin phụ huynh</h4>
+
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-black text-slate-700 mb-2">Họ và tên <span class="text-red-500">*</span></label>
+                                <input type="text" name="fullName" required
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none"
+                                    placeholder="Nguyễn Văn C">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-black text-slate-700 mb-2">Số điện thoại <span class="text-red-500">*</span></label>
+                                <input type="tel" name="phone" required
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none"
+                                    placeholder="09xxxxxxxxx">
+                                <p class="text-[10px] text-slate-400 mt-1">⚠️ SĐT là tên đăng nhập chính</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-sm font-black text-slate-700 mb-2">Email</label>
+                            <input type="email" name="email"
+                                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none"
+                                placeholder="email@example.com">
+                            <p class="text-[10px] text-slate-400 mt-1">Nhận biên lai học phí điện tử</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Settings (Common for all roles) -->
+                <div class="border-t border-slate-200 pt-6">
+                    <h4 class="text-sm font-black text-slate-700 mb-4 uppercase tracking-wider">Cài đặt tài khoản</h4>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">Gửi mật khẩu qua SMS/Email</p>
+                                <p class="text-xs text-slate-400">Tự động gửi thông tin đăng nhập</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="sendPassword" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0284C7]"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">Yêu cầu đổi mật khẩu lần đầu</p>
+                                <p class="text-xs text-slate-400">Bắt buộc đổi mật khẩu khi đăng nhập</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="forcePasswordChange" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0284C7]"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-3 pt-4 border-t border-slate-200">
+                    <button type="button" onclick="closeAddUserModal()"
+                        class="flex-1 px-6 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-700 hover:bg-slate-50">
+                        Hủy bỏ
+                    </button>
+                    <button type="submit"
+                        class="flex-1 px-6 py-3 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1]">
+                        Lưu người dùng
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- IMPORT EXCEL MODAL -->
+    <div id="importModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0" onclick="closeImportModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-8">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-black text-slate-800">Nhập danh sách từ Excel</h3>
+                    <button onclick="closeImportModal()" class="p-2 hover:bg-slate-100 rounded-xl">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- File Upload Area -->
+                    <div
+                        class="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center hover:border-blue-400 transition-all cursor-pointer">
+                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-bold text-slate-700 mb-2">Kéo thả file Excel vào đây</p>
+                        <p class="text-xs text-slate-400 mb-4">hoặc nhấn để chọn file</p>
+                        <input type="file" accept=".xlsx,.xls" class="hidden" id="excelFileInput">
+                        <button type="button" onclick="document.getElementById('excelFileInput').click()"
+                            class="px-6 py-2 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1]">
+                            Chọn file
+                        </button>
+                    </div>
+
+                    <!-- Template Download -->
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="12" y1="18" x2="12" y2="12" />
+                                    <line x1="9" y1="15" x2="15" y2="15" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">Tải mẫu file Excel</p>
+                                <p class="text-xs text-slate-400">Template với định dạng chuẩn</p>
+                            </div>
+                        </div>
+                        <button class="px-4 py-2 text-[#0284C7] font-bold text-sm hover:bg-blue-50 rounded-xl">
+                            Tải xuống
+                        </button>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-3 pt-4">
+                        <button onclick="closeImportModal()"
+                            class="flex-1 px-6 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-700 hover:bg-slate-50">
+                            Hủy bỏ
+                        </button>
+                        <button class="flex-1 px-6 py-3 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1]">
+                            Nhập dữ liệu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- USER ACTIONS MODAL -->
+    <div id="userActionsModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0" onclick="closeUserActionsModal()"></div>
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl slide-in overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-slate-200 px-8 py-6 flex items-center justify-between z-10">
+                <div>
+                    <h3 class="text-xl font-black text-slate-800">Thao tác tài khoản</h3>
+                    <p class="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">Quản lý bảo mật & truy cập
+                    </p>
+                </div>
+                <button onclick="closeUserActionsModal()" class="p-2 hover:bg-slate-100 rounded-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-8 space-y-6">
+                <!-- User Info -->
+                <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
+                    <div id="modalUserAvatar" class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-xl font-black text-blue-600">
+                        NA
+                    </div>
+                    <div>
+                        <h4 id="modalUserName" class="text-lg font-black text-slate-800">Nguyễn Văn An</h4>
+                        <p id="modalUserCode" class="text-sm font-medium text-slate-500">HS2024001</p>
+                        <span id="modalUserRole" class="inline-block mt-1 px-3 py-1 bg-blue-100 text-blue-600 text-xs font-bold rounded-lg">
+                            Học sinh
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <button onclick="resetPassword()" class="w-full p-4 border border-slate-200 rounded-xl flex items-center gap-4 hover:bg-slate-50 transition-all">
+                        <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-black text-slate-800">Reset mật khẩu</p>
+                            <p class="text-xs text-slate-400">Gửi mật khẩu mới qua SMS/Email</p>
+                        </div>
+                    </button>
+
+                    <button onclick="toggleLockAccount()" id="lockUnlockBtn" class="w-full p-4 border border-slate-200 rounded-xl flex items-center gap-4 hover:bg-slate-50 transition-all">
+                        <div class="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-black text-slate-800">Khóa tài khoản</p>
+                            <p class="text-xs text-slate-400">Tạm dừng quyền truy cập</p>
+                        </div>
+                    </button>
+
+                    <button onclick="manageDevices()" class="w-full p-4 border border-slate-200 rounded-xl flex items-center gap-4 hover:bg-slate-50 transition-all">
+                        <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                                <line x1="12" y1="18" x2="12.01" y2="18" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-black text-slate-800">Thiết bị tin cậy</p>
+                            <p class="text-xs text-slate-400">Quản lý danh sách thiết bị</p>
+                        </div>
+                    </button>
+
+                    <button onclick="editUser()" class="w-full p-4 border border-slate-200 rounded-xl flex items-center gap-4 hover:bg-slate-50 transition-all">
+                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-black text-slate-800">Chỉnh sửa thông tin</p>
+                            <p class="text-xs text-slate-400">Cập nhật thông tin cá nhân</p>
+                        </div>
+                    </button>
+
+                    <button id="linkParentBtn" onclick="openLinkParentModal(currentUserId)" class="w-full p-4 border border-slate-200 rounded-xl flex items-center gap-4 hover:bg-slate-50 transition-all">
+                        <div class="w-10 h-10 bg-teal-100 text-teal-600 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-black text-slate-800">Liên kết Phụ huynh</p>
+                            <p class="text-xs text-slate-400">Gán phụ huynh cho học sinh</p>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Delete Action -->
+                <div class="pt-6 border-t border-slate-200">
+                    <button onclick="deleteUser()" class="w-full p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-4 hover:bg-red-100 transition-all">
+                        <div class="w-10 h-10 bg-red-600 text-white rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                <line x1="10" y1="11" x2="10" y2="17" />
+                                <line x1="14" y1="11" x2="14" y2="17" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-black text-red-600">Xóa người dùng</p>
+                            <p class="text-xs text-red-400">Hành động này không thể hoàn tác</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LINK PARENT MODAL -->
+    <div id="linkParentModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0" onclick="closeLinkParentModal()"></div>
+        <div class="absolute right-0 top-0 h-full w-full max-w-lg bg-white shadow-2xl slide-in overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="sticky top-0 bg-white border-b border-slate-200 px-8 py-6 flex items-center justify-between z-10">
+                <div>
+                    <h3 class="text-xl font-black text-slate-800">Liên kết Phụ huynh</h3>
+                    <p class="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">Gán phụ huynh cho học sinh</p>
+                </div>
+                <button onclick="closeLinkParentModal()" class="p-2 hover:bg-slate-100 rounded-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+
+            <form onsubmit="saveParentLink(event)" class="p-8 space-y-6">
+                <!-- Student Info -->
+                <div class="p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl font-black">
+                            NA
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-black text-slate-800">Nguyễn Văn An</h4>
+                            <p class="text-sm font-medium text-slate-500">HS2024001 - Lớp 6A</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Parent -->
+                <div>
+                    <label class="block text-sm font-black text-slate-700 mb-2">Tìm kiếm Phụ huynh</label>
+                    <div class="flex gap-3">
+                        <input type="text" id="parentSearchInput"
+                            class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none"
+                            placeholder="Nhập SĐT hoặc Mã phụ huynh...">
+                        <button type="button" onclick="searchParentForLink()"
+                            class="px-6 py-3 bg-blue-100 text-blue-600 rounded-xl font-bold text-sm hover:bg-blue-200 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                            Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div id="parentSearchResults" class="hidden space-y-3">
+                    <p class="text-xs font-black text-slate-400 uppercase tracking-wider">Kết quả tìm kiếm</p>
+                    <!-- Results will appear here -->
+                </div>
+
+                <!-- Selected Parent Info -->
+                <div id="selectedParentInfo" class="hidden">
+                    <label class="block text-sm font-black text-slate-700 mb-3">Phụ huynh đã chọn</label>
+                    <div class="p-4 bg-teal-50 border-2 border-teal-200 rounded-xl">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center font-bold text-sm">
+                                    NV
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800" id="selectedParentName">Nguyễn Văn X</p>
+                                    <p class="text-xs text-slate-400" id="selectedParentCode">PH20260001 - 0912345678</p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="clearSelectedParent()" class="p-2 hover:bg-teal-100 rounded-lg text-teal-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Relationship Selection -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-black text-slate-700 mb-2">Mối quan hệ</label>
+                        <select name="relationship" required
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none">
+                            <option value="">Chọn mối quan hệ</option>
+                            <option value="father">Cha</option>
+                            <option value="mother">Mẹ</option>
+                            <option value="guardian">Người giám hộ</option>
+                        </select>
+                    </div>
+
+                    <!-- Primary Contact -->
+                    <div class="mt-4">
+                        <label class="flex items-center justify-between w-full p-4 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100">
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">Đặt làm liên hệ chính</p>
+                                <p class="text-[10px] text-slate-400">Ưu tiên nhận thông báo OTP/Học phí</p>
+                            </div>
+                            <input type="checkbox" name="isPrimaryContact" class="w-5 h-5 text-blue-600">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-3 pt-4 border-t border-slate-200">
+                    <button type="button" onclick="closeLinkParentModal()"
+                        class="flex-1 px-6 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-700 hover:bg-slate-50">
+                        Hủy bỏ
+                    </button>
+                    <button type="submit" id="saveParentLinkBtn" disabled
+                        class="flex-1 px-6 py-3 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1] disabled:bg-slate-300 disabled:cursor-not-allowed">
+                        Lưu liên kết
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast"
+        class="fixed bottom-8 right-8 bg-slate-900 text-white px-8 py-4 rounded-2xl shadow-2xl transition-all transform translate-y-20 opacity-0 font-bold z-50">
+        Thông báo hệ thống
+    </div>
+
+    <script>
+        // Sample user data
+        const usersData = [
+            { id: 1, name: 'Nguyễn Văn An', code: 'HS2024001', role: 'student', class: '6A', grade: '6', status: 'active', lastLogin: '2 giờ trước', phone: '0912345678', email: 'an.nv@example.com', parentCode: null },
+            { id: 2, name: 'Trần Thị Bình', code: 'HS2024002', role: 'student', class: '6A', grade: '6', status: 'active', lastLogin: '5 giờ trước', phone: '0912345679', email: 'binh.tt@example.com', parentCode: 'PH2024001' },
+            { id: 3, name: 'Lê Văn Cường', code: 'HS2024003', role: 'student', class: '7B', grade: '7', status: 'locked', lastLogin: '2 ngày trước', phone: '0912345680', email: 'cuong.lv@example.com', parentCode: 'PH2024002' },
+            { id: 4, name: 'Phạm Thị Dung', code: 'GV2024001', role: 'teacher', class: 'GVCN 6A', grade: null, status: 'active', lastLogin: '30 phút trước', phone: '0912345681', email: 'dung.pt@school.edu' },
+            { id: 5, name: 'Nguyễn Thanh E', code: 'PH2024001', role: 'parent', class: null, grade: null, status: 'active', lastLogin: '1 giờ trước', phone: '0912345682', email: 'e.nt@parent.com', linkedStudents: ['HS2024002'] },
+            { id: 6, name: 'Trần Văn F', code: 'HS2024004', role: 'student', class: '8A', grade: '8', status: 'active', lastLogin: 'Hôm qua', phone: '0912345683', email: 'f.tv@example.com', parentCode: null },
+            { id: 7, name: 'Lê Thị G', code: 'HS2024005', role: 'student', class: '9A', grade: '9', status: 'active', lastLogin: '3 ngày trước', phone: '0912345684', email: 'g.lt@example.com', parentCode: 'PH2024003' },
+            { id: 8, name: 'Phạm Văn H', code: 'GV2024002', role: 'teacher', class: 'GVBM Toán', grade: null, status: 'active', lastLogin: '1 ngày trước', phone: '0912345685', email: 'h.pv@school.edu' },
+            { id: 9, name: 'Nguyễn Thị I', code: 'PH2024002', role: 'parent', class: null, grade: null, status: 'active', lastLogin: '4 giờ trước', phone: '0912345686', email: 'i.nt@parent.com', linkedStudents: ['HS2024003'] },
+            { id: 10, name: 'Admin Admin', code: 'ADMIN001', role: 'admin', class: 'Administrator', grade: null, status: 'active', lastLogin: 'Đang hoạt động', phone: '0912345687', email: 'admin@econtact.vn' }
+        ];
+
+        let currentUserId = null;
+        let selectedRole = null;
+        let selectedParent = null;
+        let currentStudentId = null;
+
+        // Role code prefixes and counters
+        const roleConfig = {
+            'student': { prefix: 'HS', name: 'Học sinh', counter: 1248 },
+            'teacher': { prefix: 'GV', name: 'Giáo viên', counter: 85 },
+            'parent': { prefix: 'PH', name: 'Phụ huynh', counter: 2186 }
+        };
+
+        const currentYear = new Date().getFullYear();
+
+        // Update form fields based on selected role
+        function updateFormFields() {
+            const selectedRoleInput = document.querySelector('input[name="role"]:checked');
+            if (!selectedRoleInput) return;
+
+            selectedRole = selectedRoleInput.value;
+
+            // Hide all role-specific fields
+            document.querySelectorAll('.role-fields').forEach(field => field.classList.add('hidden'));
+
+            // Show fields for selected role
+            const roleFieldMap = {
+                'student': 'studentFields',
+                'teacher': 'teacherFields',
+                'parent': 'parentFields'
+            };
+
+            const targetFieldId = roleFieldMap[selectedRole];
+            if (targetFieldId) {
+                document.getElementById(targetFieldId).classList.remove('hidden');
+            }
+
+            // Generate and display code
+            generateUserCode();
+        }
+
+        // Generate user code based on role
+        function generateUserCode() {
+            if (!selectedRole) return;
+
+            const config = roleConfig[selectedRole];
+            if (!config) return;
+
+            // Increment counter
+            config.counter++;
+
+            // Generate code: [Prefix] + [Year] + [Counter padded to 4 digits]
+            const code = `${config.prefix}${currentYear}${String(config.counter).padStart(4, '0')}`;
+
+            // Update preview
+            const codePreview = document.getElementById('codePreview');
+            codePreview.textContent = code;
+            codePreview.classList.add('text-blue-600', 'font-black');
+
+            // Update step indicators
+            document.getElementById('stepIndicator2').classList.add('bg-blue-500');
+            document.getElementById('stepIndicator2').classList.remove('bg-slate-200');
+
+            // Auto-fill enrollment date for students
+            if (selectedRole === 'student') {
+                const enrollmentDate = document.getElementById('studentEnrollmentDate');
+                if (enrollmentDate && !enrollmentDate.value) {
+                    enrollmentDate.value = new Date().toISOString().split('T')[0];
+                }
+            }
+        }
+
+        // Render users table
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = users.map(user => `
+                <tr class="user-row" data-user-id="${user.id}">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full ${getRoleBgColor(user.role)} flex items-center justify-center font-bold text-xs ${getRoleTextColor(user.role)}">
+                                ${getInitials(user.name)}
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">${user.name}</p>
+                                <p class="text-xs text-slate-400">${user.code}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-lg text-xs font-bold ${getRoleBadgeClass(user.role)}">
+                            ${getRoleLabel(user.role)}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm font-medium text-slate-600">${user.class || '-'}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-lg text-xs font-bold ${user.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">
+                            ${user.status === 'active' ? 'Hoạt động' : 'Bị khóa'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm font-medium text-slate-400">${user.lastLogin}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-2">
+                            <button onclick="openUserActionsModal(${user.id})" class="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600" title="Thao tác">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="1" />
+                                    <circle cx="12" cy="5" r="1" />
+                                    <circle cx="12" cy="19" r="1" />
+                                </svg>
+                            </button>
+                            <button onclick="editUserDirect(${user.id})" class="p-2 hover:bg-blue-50 rounded-lg text-slate-400 hover:text-blue-600" title="Sửa">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+        }
+
+        function getRoleLabel(role) {
+            const labels = {
+                'admin': 'Admin',
+                'teacher': 'Giáo viên',
+                'parent': 'Phụ huynh',
+                'student': 'Học sinh'
+            };
+            return labels[role] || role;
+        }
+
+        function getRoleBgColor(role) {
+            const colors = {
+                'admin': 'bg-red-100',
+                'teacher': 'bg-purple-100',
+                'parent': 'bg-teal-100',
+                'student': 'bg-blue-100'
+            };
+            return colors[role] || 'bg-slate-100';
+        }
+
+        function getRoleTextColor(role) {
+            const colors = {
+                'admin': 'text-red-600',
+                'teacher': 'text-purple-600',
+                'parent': 'text-teal-600',
+                'student': 'text-blue-600'
+            };
+            return colors[role] || 'text-slate-600';
+        }
+
+        function getRoleBadgeClass(role) {
+            const classes = {
+                'admin': 'bg-red-100 text-red-600',
+                'teacher': 'bg-purple-100 text-purple-600',
+                'parent': 'bg-teal-100 text-teal-600',
+                'student': 'bg-blue-100 text-blue-600'
+            };
+            return classes[role] || 'bg-slate-100 text-slate-600';
+        }
+
+        // Filter functions
+        function applyFilters() {
+            const roleFilter = document.getElementById('roleFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const gradeFilter = document.getElementById('gradeFilter').value;
+
+            let filtered = usersData.filter(user => {
+                if (roleFilter && user.role !== roleFilter) return false;
+                if (statusFilter && user.status !== statusFilter) return false;
+                if (gradeFilter && user.grade !== gradeFilter) return false;
+                return true;
+            });
+
+            renderUsersTable(filtered);
+            updateActiveFilters();
+            showToast(`Đã lọc: ${filtered.length} người dùng`);
+        }
+
+        function clearFilters() {
+            document.getElementById('roleFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('gradeFilter').value = '';
+            renderUsersTable(usersData);
+            document.getElementById('activeFilters').classList.add('hidden');
+            showToast('Đã xóa bộ lọc');
+        }
+
+        function updateActiveFilters() {
+            const container = document.getElementById('activeFilters');
+            const roleFilter = document.getElementById('roleFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            const gradeFilter = document.getElementById('gradeFilter');
+
+            let filters = [];
+
+            if (roleFilter.value) {
+                filters.push({ label: getRoleLabel(roleFilter.value), value: 'role' });
+            }
+            if (statusFilter.value) {
+                filters.push({ label: statusFilter.value === 'active' ? 'Hoạt động' : 'Bị khóa', value: 'status' });
+            }
+            if (gradeFilter.value) {
+                filters.push({ label: `Khối ${gradeFilter.value}`, value: 'grade' });
+            }
+
+            if (filters.length > 0) {
+                container.classList.remove('hidden');
+                container.innerHTML = filters.map(f => `
+                    <span class="filter-tag px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-xs font-bold flex items-center gap-2">
+                        ${f.label}
+                        <button onclick="removeFilter('${f.value}')" class="hover:text-blue-800">×</button>
+                    </span>
+                `).join('');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function removeFilter(filterType) {
+            if (filterType === 'role') document.getElementById('roleFilter').value = '';
+            if (filterType === 'status') document.getElementById('statusFilter').value = '';
+            if (filterType === 'grade') document.getElementById('gradeFilter').value = '';
+            applyFilters();
+        }
+
+        // Modal functions
+        function openAddUserModal() {
+            document.getElementById('addUserModal').classList.remove('hidden');
+        }
+
+        function closeAddUserModal() {
+            document.getElementById('addUserModal').classList.add('hidden');
+        }
+
+        function openImportModal() {
+            document.getElementById('importModal').classList.remove('hidden');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.add('hidden');
+        }
+
+        function openUserActionsModal(userId) {
+            currentUserId = userId;
+            const user = usersData.find(u => u.id === userId);
+            if (!user) return;
+
+            document.getElementById('modalUserAvatar').textContent = getInitials(user.name);
+            document.getElementById('modalUserAvatar').className = `w-16 h-16 rounded-full ${getRoleBgColor(user.role)} flex items-center justify-center text-xl font-black ${getRoleTextColor(user.role)}`;
+            document.getElementById('modalUserName').textContent = user.name;
+            document.getElementById('modalUserCode').textContent = user.code;
+            document.getElementById('modalUserRole').textContent = getRoleLabel(user.role);
+            document.getElementById('modalUserRole').className = `inline-block mt-1 px-3 py-1 text-xs font-bold rounded-lg ${getRoleBadgeClass(user.role)}`;
+
+            // Show/hide link parent button for students
+            const linkParentBtn = document.getElementById('linkParentBtn');
+            if (user.role === 'student') {
+                linkParentBtn.classList.remove('hidden');
+            } else {
+                linkParentBtn.classList.add('hidden');
+            }
+
+            // Update lock/unlock button
+            const lockUnlockBtn = document.getElementById('lockUnlockBtn');
+            if (user.status === 'locked') {
+                lockUnlockBtn.querySelector('p:first-child').textContent = 'Mở khóa tài khoản';
+                lockUnlockBtn.querySelector('p:last-child').textContent = 'Khôi phục quyền truy cập';
+            } else {
+                lockUnlockBtn.querySelector('p:first-child').textContent = 'Khóa tài khoản';
+                lockUnlockBtn.querySelector('p:last-child').textContent = 'Tạm dừng quyền truy cập';
+            }
+
+            document.getElementById('userActionsModal').classList.remove('hidden');
+        }
+
+        function closeUserActionsModal() {
+            document.getElementById('userActionsModal').classList.add('hidden');
+            currentUserId = null;
+        }
+
+        // Action functions
+        function saveUser(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const userData = Object.fromEntries(formData);
+
+            console.log('Saving user:', userData);
+            showToast('Đã thêm người dùng thành công!');
+            closeAddUserModal();
+        }
+
+        function resetPassword() {
+            showToast('Đã gửi mật khẩu mới qua SMS/Email');
+        }
+
+        function toggleLockAccount() {
+            const user = usersData.find(u => u.id === currentUserId);
+            if (!user) return;
+
+            user.status = user.status === 'active' ? 'locked' : 'active';
+            showToast(user.status === 'locked' ? 'Đã khóa tài khoản' : 'Đã mở khóa tài khoản');
+            renderUsersTable(usersData);
+            closeUserActionsModal();
+        }
+
+        function manageDevices() {
+            showToast('Đang mở quản lý thiết bị...');
+        }
+
+        function editUser() {
+            showToast('Đang mở form chỉnh sửa...');
+        }
+
+        function editUserDirect(userId) {
+            currentUserId = userId;
+            showToast('Đang mở form chỉnh sửa...');
+        }
+
+        function linkParent() {
+            showToast('Đang mở giao diện liên kết Phụ huynh...');
+        }
+
+        function deleteUser() {
+            if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
+                showToast('Đã xóa người dùng');
+                closeUserActionsModal();
+            }
+        }
+
+        // Link Parent Modal Functions
+        function openLinkParentModal(studentId) {
+            currentStudentId = studentId;
+            const student = usersData.find(u => u.id === studentId);
+            if (!student) return;
+
+            // Update student info in modal
+            const studentInfo = document.querySelector('#linkParentModal .p-4.bg-blue-50');
+            studentInfo.innerHTML = `
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl font-black">
+                        ${getInitials(student.name)}
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-black text-slate-800">${student.name}</h4>
+                        <p class="text-sm font-medium text-slate-500">${student.code} - Lớp ${student.class}</p>
+                    </div>
+                </div>
+            `;
+
+            // Reset form
+            document.getElementById('parentSearchInput').value = '';
+            document.getElementById('parentSearchResults').classList.add('hidden');
+            document.getElementById('parentSearchResults').innerHTML = '<p class="text-xs font-black text-slate-400 uppercase tracking-wider">Kết quả tìm kiếm</p>';
+            document.getElementById('selectedParentInfo').classList.add('hidden');
+            document.getElementById('saveParentLinkBtn').disabled = true;
+            selectedParent = null;
+
+            document.getElementById('linkParentModal').classList.remove('hidden');
+        }
+
+        function closeLinkParentModal() {
+            document.getElementById('linkParentModal').classList.add('hidden');
+            currentStudentId = null;
+            selectedParent = null;
+        }
+
+        function searchParentForLink() {
+            const searchTerm = document.getElementById('parentSearchInput').value.trim();
+
+            if (!searchTerm) {
+                showToast('Vui lòng nhập SĐT hoặc Mã phụ huynh');
+                return;
+            }
+
+            // Mock parent data
+            const mockParents = [
+                { id: 101, name: 'Nguyễn Văn X', code: 'PH20260001', phone: '0912345678', email: 'x.nguyen@example.com' },
+                { id: 102, name: 'Trần Thị Y', code: 'PH20260002', phone: '0912345679', email: 'y.tran@example.com' },
+                { id: 103, name: 'L Thị Z', code: 'PH20260003', phone: '0912345680', email: 'z.l@example.com' },
+                { id: 104, name: 'Phạm Quốc A', code: 'PH20260004', phone: '0912345681', email: 'a.pham@example.com' }
+            ];
+
+            // Search by phone or code
+            const results = mockParents.filter(p =>
+                p.phone.includes(searchTerm) || p.code.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            const resultsContainer = document.getElementById('parentSearchResults');
+            resultsContainer.classList.remove('hidden');
+
+            if (results.length > 0) {
+                resultsContainer.innerHTML = `
+                    <p class="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Kết quả tìm kiếm (${results.length})</p>
+                    ${results.map(parent => `
+                        <div class="p-4 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md cursor-pointer transition-all"
+                            onclick="selectParentForLink(${parent.id}, '${parent.name}', '${parent.code}', '${parent.phone}')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center font-bold text-sm">
+                                    ${getInitials(parent.name)}
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold text-slate-800">${parent.name}</p>
+                                    <p class="text-xs text-slate-400">${parent.code} - ${parent.phone}</p>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-teal-600">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polyline points="12 6 12 12 16 14" />
+                                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                                </svg>
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+            } else {
+                resultsContainer.innerHTML = `
+                    <p class="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Kết quả tìm kiếm</p>
+                    <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-center">
+                        <p class="text-sm font-bold text-red-600">Không tìm thấy phụ huynh</p>
+                        <p class="text-xs text-red-400 mt-1">Thử tìm kiếm với SĐT hoặc Mã khác</p>
+                    </div>
+                `;
+            }
+        }
+
+        function selectParentForLink(parentId, parentName, parentCode, parentPhone) {
+            selectedParent = { id: parentId, name: parentName, code: parentCode, phone: parentPhone };
+
+            // Update selected parent info
+            document.getElementById('selectedParentName').textContent = parentName;
+            document.getElementById('selectedParentCode').textContent = `${parentCode} - ${parentPhone}`;
+            document.getElementById('selectedParentInfo').classList.remove('hidden');
+
+            // Enable save button
+            document.getElementById('saveParentLinkBtn').disabled = false;
+
+            // Hide search results
+            document.getElementById('parentSearchResults').classList.add('hidden');
+
+            showToast('Đã chọn phụ huynh');
+        }
+
+        function clearSelectedParent() {
+            selectedParent = null;
+            document.getElementById('selectedParentInfo').classList.add('hidden');
+            document.getElementById('saveParentLinkBtn').disabled = true;
+        }
+
+        function saveParentLink(event) {
+            event.preventDefault();
+
+            if (!selectedParent || !currentStudentId) return;
+
+            const formData = new FormData(event.target);
+            const relationship = formData.get('relationship');
+            const isPrimary = formData.get('isPrimaryContact');
+
+            // Mock save - update student data
+            const student = usersData.find(u => u.id === currentStudentId);
+            if (student) {
+                student.parentCode = selectedParent.code;
+                student.relationship = relationship;
+                student.isPrimaryContact = isPrimary === 'on';
+            }
+
+            showToast(`Đã liên kết ${selectedParent.name} với ${student.name}`);
+            closeLinkParentModal();
+            renderUsersTable(usersData);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            renderUsersTable(usersData);
+        });
+    </script>
+
+</body>
+
+</html>

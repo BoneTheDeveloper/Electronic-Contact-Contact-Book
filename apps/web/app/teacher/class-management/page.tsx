@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,30 +13,78 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { getTeacherClasses, getClassManagementData } from '@/lib/mock-data'
 import { Users, Mail, Phone, Search, Download } from 'lucide-react'
+
+interface ClassInfo {
+  id: string
+  name: string
+  subject: string
+  studentCount: number
+}
+
+interface Student {
+  id: string
+  name: string
+  code: string
+  email?: string
+  phone?: string
+  status: 'active' | 'withdrawn'
+}
+
+interface ClassData {
+  classId: string
+  className: string
+  subject: string
+  grade: string
+  room: string
+  students: Student[]
+}
 
 export default function ClassManagementPage() {
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [classes, setClasses] = useState<ClassInfo[]>([])
+  const [classData, setClassData] = useState<ClassData | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  // Mock data - in real app, these would be loaded server-side
-  const classes = [
-    { id: '10A1', name: '10A1', subject: 'Toán', studentCount: 35 },
-    { id: '9A3', name: '9A3', subject: 'Toán', studentCount: 32 },
-    { id: '8B', name: '8B', subject: 'Toán', studentCount: 38 },
-  ]
+  // Fetch classes on mount
+  useEffect(() => {
+    async function fetchClasses() {
+      try {
+        const res = await fetch('/api/teacher/classes')
+        const json = await res.json()
+        setClasses(json.data)
+        if (json.data.length > 0 && !selectedClassId) {
+          setSelectedClassId(json.data[0].id)
+        }
+      } catch (error) {
+        console.error('Failed to fetch classes:', error)
+      }
+    }
+    fetchClasses()
+  }, [selectedClassId])
 
-  const mockStudents = [
-    { id: '1', name: 'Nguyễn Văn An', code: 'HV001', email: 'an.nv@school.edu', phone: '0901234567', status: 'active' },
-    { id: '2', name: 'Trần Thị Bình', code: 'HV002', email: 'binh.tt@school.edu', phone: '0901234568', status: 'active' },
-    { id: '3', name: 'Lê Văn Cường', code: 'HV003', email: 'cuong.lv@school.edu', phone: '0901234569', status: 'active' },
-    { id: '4', name: 'Phạm Thị Dung', code: 'HV004', email: 'dung.pt@school.edu', phone: '0901234570', status: 'active' },
-    { id: '5', name: 'Hoàng Văn Em', code: 'HV005', phone: '0901234571', status: 'withdrawn' },
-    { id: '6', name: 'Ngô Thị Giang', code: 'HV006', email: 'giang.nt@school.edu', phone: '0901234572', status: 'active' },
-  ]
+  // Fetch class data when selection changes
+  useEffect(() => {
+    if (!selectedClassId) return
 
-  const filteredStudents = mockStudents.filter((student) =>
+    async function fetchClassData() {
+      setLoading(true)
+      try {
+        const res = await fetch(`/api/teacher/classes/${selectedClassId}`)
+        const json = await res.json()
+        setClassData(json.data)
+      } catch (error) {
+        console.error('Failed to fetch class data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchClassData()
+  }, [selectedClassId])
+
+  const students = classData?.students || []
+  const filteredStudents = students.filter((student) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.code.toLowerCase().includes(searchQuery.toLowerCase())
   )

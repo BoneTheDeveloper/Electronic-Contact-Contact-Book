@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECONTACT Teacher - Nhập điểm số</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --primary: #0284C7;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            transition: all 0.3s ease;
+        }
+
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+
+        .nav-item.active {
+            background-color: rgba(2, 132, 199, 0.1);
+            color: var(--primary);
+            border-right: 4px solid var(--primary);
+        }
+
+        .card-shadow {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        /* Grade Input Styles */
+        .grade-input {
+            width: 100%;
+            padding: 8px;
+            text-align: center;
+            font-weight: 600;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .grade-input:focus {
+            outline: none;
+            border-color: #0284C7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+        }
+
+        .grade-input.filled {
+            background-color: #f0fdf4;
+            border-color: #86efac;
+        }
+
+        .grade-input.locked {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        /* Average Display */
+        .average-display {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            font-weight: 800;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .average-display.excellent {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .average-display.good {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .average-display.average {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .average-display.poor {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Table Styles */
+        .grade-table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .grade-table th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .grade-table thead tr:last-child th {
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .grade-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .grade-table tbody tr:hover td {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+
+<body class="flex">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar h-screen bg-white border-r border-slate-200 flex flex-col sticky top-0 shrink-0">
+        <!-- Brand -->
+        <div class="p-6 border-b border-slate-100 flex items-center gap-3">
+            <div class="p-2 bg-blue-50 rounded-xl">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.5">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M2 17L12 22L22 17" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-black text-slate-800 tracking-tight leading-none">ECONTACT</h1>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Teacher Portal</span>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Cá nhân</p>
+
+            <a href="dashboard.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Tổng quan
+            </a>
+
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-6">Giảng dạy (GVBM)
+            </p>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                Lịch giảng dạy
+            </a>
+
+            <a href="attendance.html"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                Điểm danh
+            </a>
+
+            <a href="class-management.html"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                </svg>
+                Quản lý lớp dạy
+            </a>
+
+            <a href="grade-entry.html" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+                Nhập điểm số
+            </a>
+
+            <a href="regular-assessment.html"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                </svg>
+                Đánh giá nhận xét
+            </a>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50 relative">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                </svg>
+                Phúc khảo điểm
+                <span
+                    class="absolute right-4 top-3 w-5 h-5 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">2</span>
+            </a>
+
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-6">Chủ nhiệm (GVCN)
+            </p>
+
+            <a href="academic-conduct-rating.html"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                </svg>
+                Học tập & Hạnh kiểm
+            </a>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Quản lý lớp CN
+            </a>
+
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50 relative">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                Phê duyệt nghỉ phép
+                <span
+                    class="absolute right-4 top-3 w-5 h-5 bg-orange-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">3</span>
+            </a>
+        </nav>
+
+        <!-- User Profile Sidebar Bottom -->
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="flex items-center gap-3 p-2">
+                <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white overflow-hidden">
+                    <img src="https://ui-avatars.com/api/?name=Thanh+Tung&background=0284C7&color=fff" alt="Avatar">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate">Nguyễn Thanh T.</p>
+                    <p class="text-[10px] text-slate-400 font-medium truncate">Giáo viên</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 min-w-0 h-screen overflow-y-auto bg-slate-50">
+
+        <!-- TOP HEADER -->
+        <header
+            class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-40">
+            <div class="flex items-center gap-4">
+                <h2 class="text-lg font-extrabold text-slate-800">Nhập điểm số</h2>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div id="lockStatusBadge"
+                    class="hidden sm:flex items-center gap-2 bg-green-100 px-4 py-2 rounded-xl text-xs font-bold text-green-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                    </svg>
+                    <span id="lockStatusText">Chưa khóa điểm</span>
+                </div>
+                <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg relative" title="Tin nhắn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                    <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white font-black">5</span>
+                </button>
+                <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg relative" title="Thông báo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full border-2 border-white"></span>
+                </button>
+                <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-200 transition-all">
+                    <img src="https://ui-avatars.com/api/?name=Thanh+Tung&background=0284C7&color=fff" alt="Avatar">
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENT BODY -->
+        <div class="p-8">
+
+            <!-- FILTERS CARD -->
+            <div class="bg-white rounded-[32px] card-shadow border border-slate-100 p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- School Year -->
+                    <div>
+                        <label class="block text-sm font-black text-slate-700 mb-2">Năm học</label>
+                        <select id="schoolYearSelect" onchange="loadGradeTable()"
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none">
+                            <option value="2024-2025" selected>2024 - 2025</option>
+                            <option value="2023-2024">2023 - 2024</option>
+                        </select>
+                    </div>
+
+                    <!-- Semester -->
+                    <div>
+                        <label class="block text-sm font-black text-slate-700 mb-2">Học kỳ</label>
+                        <select id="semesterSelect" onchange="loadGradeTable()"
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none">
+                            <option value="1">Học kỳ I</option>
+                            <option value="2" selected>Học kỳ II</option>
+                        </select>
+                    </div>
+
+                    <!-- Class -->
+                    <div>
+                        <label class="block text-sm font-black text-slate-700 mb-2">Lớp học</label>
+                        <select id="classSelect" onchange="loadGradeTable()"
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none">
+                            <option value="">Chọn lớp</option>
+                            <option value="9A" selected>9A</option>
+                            <option value="9B">9B</option>
+                            <option value="8A">8A</option>
+                        </select>
+                    </div>
+
+                    <!-- Subject -->
+                    <div>
+                        <label class="block text-sm font-black text-slate-700 mb-2">Môn học</label>
+                        <select id="subjectSelect" onchange="loadGradeTable()"
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none">
+                            <option value="">Chọn môn</option>
+                            <option value="toan" selected>Toán học</option>
+                            <option value="van">Ngữ văn</option>
+                            <option value="anh">Tiếng Anh</option>
+                            <option value="ly">Vật lý</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRADE TABLE -->
+            <div class="bg-white rounded-[32px] card-shadow border border-slate-100 overflow-hidden">
+                <!-- Table Header -->
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-black text-slate-800 tracking-tight">Bảng điểm</h4>
+                        <p class="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">
+                            TX: HS 1 • GK: HS 2 • CK: HS 3
+                        </p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="downloadTemplate()"
+                            class="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold hover:bg-blue-100 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Tải template Excel
+                        </button>
+                        <button onclick="importFromExcel()"
+                            class="px-4 py-2 bg-green-50 text-green-700 rounded-xl text-xs font-bold hover:bg-green-100 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                            Import từ Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Formula Legend -->
+                <div class="px-6 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-4 text-xs">
+                    <span class="font-black text-slate-400 uppercase tracking-wider">Công thức ĐTB:</span>
+                    <code class="px-3 py-1 bg-white border border-slate-200 rounded-lg text-slate-600 font-mono">
+                        ĐTB = (TX1 + TX2 + TX3) × 1 + GK × 2 + CK × 3 ÷ 8
+                    </code>
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left grade-table">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th rowspan="2"
+                                    class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest sticky left-0 bg-slate-50 z-20">
+                                    Học sinh
+                                </th>
+                                <th colspan="3"
+                                    class="px-4 py-3 text-[10px] font-black text-blue-600 uppercase tracking-wider text-center bg-blue-50">
+                                    Điểm TX (HS 1)
+                                </th>
+                                <th rowspan="2"
+                                    class="px-4 py-4 text-[10px] font-black text-purple-600 uppercase tracking-wider text-center bg-purple-50">
+                                    GK (HS 2)
+                                </th>
+                                <th rowspan="2"
+                                    class="px-4 py-4 text-[10px] font-black text-orange-600 uppercase tracking-wider text-center bg-orange-50">
+                                    CK (HS 3)
+                                </th>
+                                <th rowspan="2"
+                                    class="px-4 py-4 text-[10px] font-black text-green-600 uppercase tracking-wider text-center bg-green-50">
+                                    ĐTB
+                                </th>
+                            </tr>
+                            <tr>
+                                <th
+                                    class="px-4 py-2 text-[10px] font-black text-blue-400 uppercase tracking-wider text-center bg-blue-50/50 w-20">
+                                    TX1</th>
+                                <th
+                                    class="px-4 py-2 text-[10px] font-black text-blue-400 uppercase tracking-wider text-center bg-blue-50/50 w-20">
+                                    TX2</th>
+                                <th
+                                    class="px-4 py-2 text-[10px] font-black text-blue-400 uppercase tracking-wider text-center bg-blue-50/50 w-20">
+                                    TX3</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gradeTableBody" class="divide-y divide-slate-100">
+                            <!-- Students will be rendered here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="p-12 text-center">
+                    <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" class="text-slate-400">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <polyline points="10 9 9 9 8 9" />
+                        </svg>
+                    </div>
+                    <p class="text-slate-400 font-bold">Chọn lớp và môn học để bắt đầu nhập điểm</p>
+                </div>
+            </div>
+
+            <!-- CLASS STATISTICS -->
+            <div class="mt-6 bg-white rounded-[32px] card-shadow border border-slate-100 p-6">
+                <h4 class="text-sm font-black text-slate-800 tracking-tight mb-4">Thống kê lớp</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="p-4 bg-green-50 rounded-2xl">
+                        <p class="text-[10px] font-black text-green-600 uppercase tracking-wider mb-1">Giỏi (≥ 8.0)</p>
+                        <p class="text-2xl font-black text-green-700" id="excellentCount">0</p>
+                    </div>
+                    <div class="p-4 bg-blue-50 rounded-2xl">
+                        <p class="text-[10px] font-black text-blue-600 uppercase tracking-wider mb-1">Khá (6.5 - 7.9)
+                        </p>
+                        <p class="text-2xl font-black text-blue-700" id="goodCount">0</p>
+                    </div>
+                    <div class="p-4 bg-yellow-50 rounded-2xl">
+                        <p class="text-[10px] font-black text-yellow-600 uppercase tracking-wider mb-1">Trung bình (5.0
+                            - 6.4)</p>
+                        <p class="text-2xl font-black text-yellow-700" id="averageCount">0</p>
+                    </div>
+                    <div class="p-4 bg-red-50 rounded-2xl">
+                        <p class="text-[10px] font-black text-red-600 uppercase tracking-wider mb-1">Yếu (< 5.0)</p>
+                                <p class="text-2xl font-black text-red-700" id="poorCount">0</p>
+                    </div>
+                </div>
+                <div class="mt-4 p-4 bg-slate-50 rounded-2xl">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-bold text-slate-700">Điểm trung bình lớp</p>
+                        <p class="text-2xl font-black text-slate-800" id="classAverage">--</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="mt-6 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <button onclick="saveDraftGrades()"
+                        class="px-6 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                            <polyline points="17 21 17 13 7 13 7 21" />
+                            <polyline points="7 3 7 8 15 8" />
+                        </svg>
+                        Lưu nháp
+                    </button>
+                    <button id="lockBtn" onclick="lockGrades()"
+                        class="px-6 py-3 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1] flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                        </svg>
+                        Xác nhận & Khóa điểm
+                    </button>
+                </div>
+                <div id="lastSavedInfo" class="hidden text-xs text-slate-400">
+                    Lưu lần cuối: <span id="lastSavedTime">--</span>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast"
+        class="fixed bottom-8 right-8 bg-slate-900 text-white px-8 py-4 rounded-2xl shadow-2xl transition-all transform translate-y-20 opacity-0 font-bold z-50">
+        Thông báo hệ thống
+    </div>
+
+    <script>
+        // Mock student data (15 học sinh)
+        const studentsData = [
+            { id: 1, name: 'Nguyễn Văn An', code: 'HS2024001', seat: 1, approvedLeave: false },
+            { id: 2, name: 'Trần Thị Bình', code: 'HS2024002', seat: 2, approvedLeave: true },
+            { id: 3, name: 'Lê Văn Cường', code: 'HS2024003', seat: 3, approvedLeave: false },
+            { id: 4, name: 'Phạm Minh Dung', code: 'HS2024004', seat: 4, approvedLeave: false },
+            { id: 5, name: 'Hoàng Thị Emma', code: 'HS2024005', seat: 5, approvedLeave: true },
+            { id: 6, name: 'Vũ Quốc F', code: 'HS2024006', seat: 6, approvedLeave: false },
+            { id: 7, name: 'Đặng Thị Giang', code: 'HS2024007', seat: 7, approvedLeave: false },
+            { id: 8, name: 'Bùi Văn Hùng', code: 'HS2024008', seat: 8, approvedLeave: false },
+            { id: 9, name: 'Đỗ Thị Irene', code: 'HS2024009', seat: 9, approvedLeave: false },
+            { id: 10, name: 'Huỳnh Văn Jack', code: 'HS2024010', seat: 10, approvedLeave: false },
+            { id: 11, name: 'Lý Thị Khanh', code: 'HS2024011', seat: 11, approvedLeave: true },
+            { id: 12, name: 'Ngô Văn Long', code: 'HS2024012', seat: 12, approvedLeave: false },
+            { id: 13, name: 'Mai Thị My', code: 'HS2024013', seat: 13, approvedLeave: false },
+            { id: 14, name: 'Trương Văn Nam', code: 'HS2024014', seat: 14, approvedLeave: false },
+            { id: 15, name: 'Võ Thị Olivia', code: 'HS2024015', seat: 15, approvedLeave: false },
+        ];
+
+        // Grade records storage with demo data for class 9A - Toan (completed & locked)
+        let gradeRecords = {
+            '9A_toan': {
+                locked: true,
+                1: { tx1: 8.5, tx2: 9, tx3: 8.75, gk: 8, ck: 9 },
+                2: { tx1: 7.5, tx2: 8, tx3: 7.25, gk: 7.5, ck: 8 },
+                3: { tx1: 9, tx2: 9.5, tx3: 9.25, gk: 9, ck: 9.5 },
+                4: { tx1: 6.5, tx2: 7, tx3: 6.75, gk: 6.5, ck: 7 },
+                5: { tx1: 5.5, tx2: 6, tx3: 5.75, gk: 5.5, ck: 6 },
+                6: { tx1: 8, tx2: 8.5, tx3: 8.25, gk: 8, ck: 8.5 },
+                7: { tx1: 7, tx2: 7.5, tx3: 7.25, gk: 7, ck: 7.5 },
+                8: { tx1: 9.5, tx2: 9.75, tx3: 9.5, gk: 9.5, ck: 9.75 },
+                9: { tx1: 6, tx2: 6.5, tx3: 6.25, gk: 6, ck: 6.5 },
+                10: { tx1: 8.25, tx2: 8.75, tx3: 8.5, gk: 8.25, ck: 8.75 },
+                11: { tx1: 7.75, tx2: 8, tx3: 7.85, gk: 7.75, ck: 8 },
+                12: { tx1: 5, tx2: 5.5, tx3: 5.25, gk: 5, ck: 5.5 },
+                13: { tx1: 8.75, tx2: 9, tx3: 8.85, gk: 8.75, ck: 9 },
+                14: { tx1: 6.75, tx2: 7.25, tx3: 7, gk: 6.75, ck: 7.25 },
+                15: { tx1: 9.25, tx2: 9.5, tx3: 9.35, gk: 9.25, ck: 9.5 }
+            }
+        };
+        let isGradesLocked = false;
+        let currentClass = '';
+        let currentSubject = '';
+
+        // Initialize
+        window.addEventListener('load', () => {
+            console.log('ECONTACT Teacher Grade Entry Loaded');
+        });
+
+        // Load grade table
+        function loadGradeTable() {
+            const classSelect = document.getElementById('classSelect');
+            const subjectSelect = document.getElementById('subjectSelect');
+            currentClass = classSelect.value;
+            currentSubject = subjectSelect.value;
+
+            const tbody = document.getElementById('gradeTableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (!currentClass || !currentSubject) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                updateClassStats();
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            // Initialize grade records for this class/subject
+            const key = getGradeKey();
+            if (!gradeRecords[key]) {
+                gradeRecords[key] = {};
+            }
+
+            // Check if grades are locked
+            isGradesLocked = gradeRecords[key].locked || false;
+            updateLockStatusUI();
+
+            // Render student rows
+            tbody.innerHTML = studentsData.map(student => {
+                const grades = gradeRecords[key][student.id] || { tx1: '', tx2: '', tx3: '', gk: '', ck: '' };
+                const avg = calcAverage(grades.tx1, grades.tx2, grades.tx3, grades.gk, grades.ck);
+
+                return `
+                    <tr data-student-id="${student.id}" class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4 sticky left-0 bg-white z-10">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm shrink-0">
+                                    ${getInitials(student.name)}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800">${student.name}</p>
+                                    <p class="text-xs text-slate-400">${student.code}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-4">
+                            <input type="number" min="0" max="10" step="0.25" value="${grades.tx1}"
+                                onchange="updateGrade(${student.id}, 'tx1', this.value)"
+                                oninput="inputGrade(${student.id}, 'tx1', this)"
+                                class="grade-input ${grades.tx1 ? 'filled' : ''} ${isGradesLocked ? 'locked' : ''}"
+                                ${isGradesLocked ? 'disabled' : ''}>
+                        </td>
+                        <td class="px-4 py-4">
+                            <input type="number" min="0" max="10" step="0.25" value="${grades.tx2}"
+                                onchange="updateGrade(${student.id}, 'tx2', this.value)"
+                                oninput="inputGrade(${student.id}, 'tx2', this)"
+                                class="grade-input ${grades.tx2 ? 'filled' : ''} ${isGradesLocked ? 'locked' : ''}"
+                                ${isGradesLocked ? 'disabled' : ''}>
+                        </td>
+                        <td class="px-4 py-4">
+                            <input type="number" min="0" max="10" step="0.25" value="${grades.tx3}"
+                                onchange="updateGrade(${student.id}, 'tx3', this.value)"
+                                oninput="inputGrade(${student.id}, 'tx3', this)"
+                                class="grade-input ${grades.tx3 ? 'filled' : ''} ${isGradesLocked ? 'locked' : ''}"
+                                ${isGradesLocked ? 'disabled' : ''}>
+                        </td>
+                        <td class="px-4 py-4">
+                            <input type="number" min="0" max="10" step="0.25" value="${grades.gk}"
+                                onchange="updateGrade(${student.id}, 'gk', this.value)"
+                                oninput="inputGrade(${student.id}, 'gk', this)"
+                                class="grade-input ${grades.gk ? 'filled' : ''} ${isGradesLocked ? 'locked' : ''}"
+                                ${isGradesLocked ? 'disabled' : ''}>
+                        </td>
+                        <td class="px-4 py-4">
+                            <input type="number" min="0" max="10" step="0.25" value="${grades.ck}"
+                                onchange="updateGrade(${student.id}, 'ck', this.value)"
+                                oninput="inputGrade(${student.id}, 'ck', this)"
+                                class="grade-input ${grades.ck ? 'filled' : ''} ${isGradesLocked ? 'locked' : ''}"
+                                ${isGradesLocked ? 'disabled' : ''}>
+                        </td>
+                        <td class="px-4 py-4">
+                            <div class="average-display ${getAverageClass(avg)}" id="avg-${student.id}">
+                                ${avg !== '--' ? avg.toFixed(2) : '--'}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            updateClassStats();
+        }
+
+        // Input grade (for live validation)
+        function inputGrade(studentId, field, input) {
+            const value = parseFloat(input.value);
+            if (isNaN(value) || value < 0 || value > 10) {
+                input.classList.add('border-red-500');
+            } else {
+                input.classList.remove('border-red-500');
+            }
+        }
+
+        // Update grade (on change)
+        function updateGrade(studentId, field, value) {
+            const numValue = parseFloat(value);
+            if (isNaN(numValue) || numValue < 0 || numValue > 10) {
+                showToast('Vui lòng nhập điểm từ 0 đến 10');
+                return;
+            }
+
+            const key = getGradeKey();
+            if (!gradeRecords[key]) gradeRecords[key] = {};
+            if (!gradeRecords[key][studentId]) gradeRecords[key][studentId] = { tx1: '', tx2: '', tx3: '', gk: '', ck: '' };
+
+            gradeRecords[key][studentId][field] = numValue;
+
+            // Update input styling
+            const input = event.target;
+            input.classList.add('filled');
+
+            // Recalculate average
+            const grades = gradeRecords[key][studentId];
+            const avg = calcAverage(grades.tx1, grades.tx2, grades.tx3, grades.gk, grades.ck);
+            const avgDisplay = document.getElementById(`avg-${studentId}`);
+            avgDisplay.textContent = avg !== '--' ? avg.toFixed(2) : '--';
+            avgDisplay.className = `average-display ${getAverageClass(avg)}`;
+
+            updateClassStats();
+        }
+
+        // Calculate average
+        function calcAverage(tx1, tx2, tx3, gk, ck) {
+            const values = [tx1, tx2, tx3, gk, ck].map(v => parseFloat(v));
+            if (values.some(v => isNaN(v))) return '--';
+
+            // Weights: TX (1 each), GK (2), CK (3)
+            const weights = [1, 1, 1, 2, 3];
+            const totalWeight = weights.reduce((a, b) => a + b, 0);
+
+            const weightedSum = values.reduce((sum, val, i) => {
+                return sum + (val * weights[i]);
+            }, 0);
+
+            return weightedSum / totalWeight;
+        }
+
+        // Get average display class based on value
+        function getAverageClass(avg) {
+            if (avg === '--') return '';
+            if (avg >= 8.0) return 'excellent';
+            if (avg >= 6.5) return 'good';
+            if (avg >= 5.0) return 'average';
+            return 'poor';
+        }
+
+        // Update class statistics
+        function updateClassStats() {
+            const key = getGradeKey();
+            const records = gradeRecords[key] || {};
+
+            let averages = [];
+            studentsData.forEach(student => {
+                const grades = records[student.id];
+                if (grades) {
+                    const avg = calcAverage(grades.tx1, grades.tx2, grades.tx3, grades.gk, grades.ck);
+                    if (avg !== '--') averages.push(avg);
+                }
+            });
+
+            if (averages.length === 0) {
+                document.getElementById('excellentCount').textContent = '0';
+                document.getElementById('goodCount').textContent = '0';
+                document.getElementById('averageCount').textContent = '0';
+                document.getElementById('poorCount').textContent = '0';
+                document.getElementById('classAverage').textContent = '--';
+                return;
+            }
+
+            const excellent = averages.filter(a => a >= 8.0).length;
+            const good = averages.filter(a => a >= 6.5 && a < 8.0).length;
+            const average = averages.filter(a => a >= 5.0 && a < 6.5).length;
+            const poor = averages.filter(a => a < 5.0).length;
+            const classAvg = averages.reduce((a, b) => a + b, 0) / averages.length;
+
+            document.getElementById('excellentCount').textContent = excellent;
+            document.getElementById('goodCount').textContent = good;
+            document.getElementById('averageCount').textContent = average;
+            document.getElementById('poorCount').textContent = poor;
+            document.getElementById('classAverage').textContent = classAvg.toFixed(2);
+        }
+
+        // Save draft grades
+        function saveDraftGrades() {
+            const key = getGradeKey();
+            if (!gradeRecords[key] || Object.keys(gradeRecords[key]).length === 0) {
+                showToast('Chưa có dữ liệu điểm để lưu');
+                return;
+            }
+
+            const now = new Date();
+            const timeStr = now.toLocaleString('vi-VN');
+            document.getElementById('lastSavedTime').textContent = timeStr;
+            document.getElementById('lastSavedInfo').classList.remove('hidden');
+
+            showToast('Đã lưu nháp thành công');
+        }
+
+        // Lock grades
+        function lockGrades() {
+            const key = getGradeKey();
+            if (!gradeRecords[key] || Object.keys(gradeRecords[key]).length === 0) {
+                showToast('Vui lòng nhập điểm trước khi khóa');
+                return;
+            }
+
+            if (confirm('Xác nhận khóa điểm? Sau khi khóa, chỉ Admin mới có thể mở lại. Bạn có chắc chắn?')) {
+                isGradesLocked = true;
+                gradeRecords[key].locked = true;
+
+                updateLockStatusUI();
+                loadGradeTable(); // Reload to disable inputs
+
+                showToast('Đã khóa điểm thành công');
+            }
+        }
+
+        // Update lock status UI
+        function updateLockStatusUI() {
+            const badge = document.getElementById('lockStatusBadge');
+            const text = document.getElementById('lockStatusText');
+            const lockBtn = document.getElementById('lockBtn');
+
+            if (isGradesLocked) {
+                badge.className = 'hidden sm:flex items-center gap-2 bg-red-100 px-4 py-2 rounded-xl text-xs font-bold text-red-700';
+                badge.querySelector('svg').innerHTML = '<rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />';
+                text.textContent = 'Đã khóa điểm';
+                lockBtn.disabled = true;
+                lockBtn.classList.add('bg-slate-300', 'cursor-not-allowed');
+                lockBtn.classList.remove('bg-[#0284C7]', 'hover:bg-[#0369a1]');
+            } else {
+                badge.className = 'hidden sm:flex items-center gap-2 bg-green-100 px-4 py-2 rounded-xl text-xs font-bold text-green-700';
+                badge.querySelector('svg').innerHTML = '<rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" />';
+                text.textContent = 'Chưa khóa điểm';
+                lockBtn.disabled = false;
+                lockBtn.classList.remove('bg-slate-300', 'cursor-not-allowed');
+                lockBtn.classList.add('bg-[#0284C7]', 'hover:bg-[#0369a1]');
+            }
+        }
+
+        // Download template (UI demo only)
+        function downloadTemplate() {
+            showToast('Đang tải template Excel... (Demo)');
+        }
+
+        // Import from Excel (UI demo only)
+        function importFromExcel() {
+            showToast('Chọn file Excel để import... (Demo)');
+        }
+
+        // Helper functions
+        function getGradeKey() {
+            return `${currentClass}_${currentSubject}`;
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+
+</body>
+
+</html>

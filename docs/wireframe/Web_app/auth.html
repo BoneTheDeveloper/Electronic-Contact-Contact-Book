@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECONTACT - Đăng nhập Hệ thống Quản lý</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --primary: #0284C7;
+            --primary-dark: #0369a1;
+            --secondary: #E0F2FE;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .bg-gradient-custom {
+            background: linear-gradient(135deg, #0284C7 0%, #075985 100%);
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .role-btn {
+            transition: all 0.3s ease;
+        }
+
+        .role-btn.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.3);
+        }
+
+        .screen {
+            display: none;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .floating {
+            animation: floating 6s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0% {
+                transform: translate(0, 0px);
+            }
+
+            50% {
+                transform: translate(0, 15px);
+            }
+
+            100% {
+                transform: translate(0, -0px);
+            }
+        }
+
+        .otp-input {
+            width: 54px;
+            height: 64px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 800;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .otp-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+
+    <div class="flex min-h-screen">
+
+        <!-- PHẦN BÊN TRÁI: LOGO & BRANDING (Cố định) -->
+        <div
+            class="hidden lg:flex lg:w-1/2 bg-gradient-custom relative overflow-hidden items-center justify-center p-12">
+            <div
+                class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 floating">
+            </div>
+            <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-sky-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 floating"
+                style="animation-delay: 2s;"></div>
+
+            <div class="relative z-10 flex flex-col items-center text-center">
+                <div class="mb-8 p-6 glass-effect rounded-[40px] shadow-2xl">
+                    <svg width="100" height="100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M2 17L12 22L22 17" stroke="white" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M2 12L12 17L22 12" stroke="white" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+
+                <h1 class="text-6xl font-black text-white tracking-tighter mb-4">ECONTACT</h1>
+                <div class="h-1.5 w-24 bg-white/30 rounded-full mb-6"></div>
+
+                <p class="text-blue-100 text-xl font-medium max-w-md leading-relaxed">
+                    Hệ thống Quản lý Sổ liên lạc điện tử <br>
+                    Dành cho Cán bộ quản lý & Giáo viên
+                </p>
+
+                <div class="mt-12 flex gap-4">
+                    <div class="px-6 py-3 glass-effect rounded-2xl text-white text-sm font-semibold">Trực quan</div>
+                    <div class="px-6 py-3 glass-effect rounded-2xl text-white text-sm font-semibold">Chính xác</div>
+                    <div class="px-6 py-3 glass-effect rounded-2xl text-white text-sm font-semibold">Bảo mật</div>
+                </div>
+            </div>
+
+            <div class="absolute bottom-10 left-12 text-blue-200/50 text-xs font-bold tracking-widest uppercase">
+                © 2026 Project 2 - ĐẠI HỌC BÁCH KHOA HÀ NỘI
+            </div>
+        </div>
+
+        <!-- PHẦN BÊN PHẢI: LOGIN & OTHER SCREENS -->
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white overflow-y-auto">
+            <div class="w-full max-w-md">
+
+                <!-- MÀN HÌNH ĐĂNG NHẬP -->
+                <div id="loginScreen" class="screen active">
+                    <div class="mb-10">
+                        <h2 class="text-4xl font-black text-gray-900 mb-2 tracking-tight">Đăng nhập</h2>
+                        <p class="text-gray-500 font-medium">Vui lòng đăng nhập vào cổng thông tin của bạn.</p>
+                    </div>
+
+                    <div class="bg-gray-100 p-1.5 rounded-2xl flex mb-8">
+                        <button onclick="setRole('teacher')" id="teacherBtn"
+                            class="role-btn active flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
+                            Giáo viên
+                        </button>
+                        <button onclick="setRole('admin')" id="adminBtn"
+                            class="role-btn flex-1 py-3 rounded-xl text-sm font-bold text-gray-400 flex items-center justify-center gap-2">
+                            Quản trị viên
+                        </button>
+                    </div>
+
+                    <form onsubmit="handleLogin(event)" class="space-y-6">
+                        <div>
+                            <label id="userLabel"
+                                class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Mã
+                                giáo viên / Email</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                        <circle cx="12" cy="7" r="4" />
+                                    </svg>
+                                </span>
+                                <input type="text" id="userInput"
+                                    class="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all font-semibold">
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between mb-2 ml-1">
+                                <label class="block text-xs font-black text-gray-400 uppercase tracking-widest">Mật
+                                    khẩu</label>
+                                <button type="button" onclick="showScreen('forgotScreen')"
+                                    class="text-xs font-bold text-[#0284C7] hover:underline">Quên mật khẩu?</button>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                    </svg>
+                                </span>
+                                <input type="password" id="passInput" required placeholder="••••••••"
+                                    class="w-full pl-12 pr-12 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all font-semibold">
+                                <button type="button" onclick="togglePass('passInput')"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full py-5 bg-[#0284C7] hover:bg-[#0369a1] text-white font-black text-lg rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3">
+                            ĐĂNG NHẬP HỆ THỐNG
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="3">
+                                <path d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- MÀN HÌNH QUÊN MẬT KHẨU -->
+                <div id="forgotScreen" class="screen">
+                    <button onclick="showScreen('loginScreen')"
+                        class="mb-8 text-gray-400 flex items-center font-bold text-sm">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3" class="mr-1">
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                        Quay lại đăng nhập
+                    </button>
+                    <h2 class="text-4xl font-black text-gray-900 mb-2">Quên mật khẩu?</h2>
+                    <p class="text-gray-500 font-medium mb-10">Nhập Email hoặc SĐT đã đăng ký để nhận mã xác thực.</p>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label
+                                class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Thông
+                                tin xác thực</label>
+                            <input type="text" id="forgotInput" placeholder="Nhập Email hoặc Số điện thoại"
+                                class="w-full px-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all font-semibold">
+                        </div>
+                        <button onclick="handleForgot()"
+                            class="w-full py-5 bg-[#0284C7] text-white font-black text-lg rounded-2xl shadow-xl">GỬI MÃ
+                            XÁC THỰC</button>
+                    </div>
+                </div>
+
+                <!-- MÀN HÌNH XÁC THỰC OTP -->
+                <div id="otpScreen" class="screen text-center">
+                    <h2 class="text-4xl font-black text-gray-900 mb-2">Xác thực OTP</h2>
+                    <p class="text-gray-500 font-medium mb-10">Mã xác thực đã được gửi đến thiết bị của bạn.</p>
+
+                    <div class="flex justify-center gap-3 mb-10">
+                        <input type="text" maxlength="1" class="otp-input" value="8">
+                        <input type="text" maxlength="1" class="otp-input" value="4">
+                        <input type="text" maxlength="1" class="otp-input" value="2">
+                        <input type="text" maxlength="1" class="otp-input">
+                        <input type="text" maxlength="1" class="otp-input">
+                        <input type="text" maxlength="1" class="otp-input">
+                    </div>
+
+                    <button onclick="showToast('Xác thực thành công!', 'success'); showScreen('loginScreen')"
+                        class="w-full py-5 bg-[#0284C7] text-white font-black text-lg rounded-2xl shadow-xl mb-6">XÁC
+                        NHẬN</button>
+                    <p class="text-gray-400 font-bold">Chưa nhận được mã? <span
+                            class="text-[#0284C7] cursor-pointer">Gửi lại (59s)</span></p>
+                </div>
+
+                <div class="mt-12 pt-8 border-t border-gray-100 flex justify-between items-center text-gray-400">
+                    <p class="text-xs font-bold uppercase tracking-widest">ECONTACT v1.0.2</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="hover:text-blue-500"><svg width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                                <line x1="12" y1="17" x2="12.01" y2="17" />
+                            </svg></a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"
+        class="fixed top-8 right-8 bg-gray-900 text-white px-8 py-4 rounded-2xl shadow-2xl transition-all transform translate-x-full opacity-0 font-bold z-50">
+        Thông báo
+    </div>
+
+    <script>
+        let currentRole = 'teacher';
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function setRole(role) {
+            currentRole = role;
+            document.getElementById('teacherBtn').className = `role-btn flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${role === 'teacher' ? 'active' : 'text-gray-400'}`;
+            document.getElementById('adminBtn').className = `role-btn flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${role === 'admin' ? 'active' : 'text-gray-400'}`;
+
+            const label = document.getElementById('userLabel');
+            const input = document.getElementById('userInput');
+            if (role === 'teacher') {
+                label.innerText = "Mã giáo viên / Email";
+                input.placeholder = "GVXXXX";
+            } else {
+                label.innerText = "Mã quản trị viên / Email";
+                input.placeholder = "ADXXXX";
+            }
+        }
+
+        function togglePass(id) {
+            const x = document.getElementById(id);
+            x.type = x.type === 'password' ? 'text' : 'password';
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            showToast("Đang xác thực...", "info");
+            setTimeout(() => {
+                showToast("Đăng nhập thành công!", "success");
+            }, 1000);
+        }
+
+        function handleForgot() {
+            const val = document.getElementById('forgotInput').value;
+            if (!val) return showToast("Vui lòng nhập thông tin", "error");
+            showScreen('otpScreen');
+        }
+
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.className = `fixed top-8 right-8 px-8 py-4 rounded-2xl shadow-2xl transition-all transform font-bold z-50 text-white ${type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-gray-900')}`;
+            toast.classList.remove("translate-x-full", "opacity-0");
+            setTimeout(() => { toast.classList.add("translate-x-full", "opacity-0"); }, 3000);
+        }
+    </script>
+</body>
+
+</html>

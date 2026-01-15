@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EContact - Chi tiết Phiếu thu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --primary-blue: #0284C7;
+            --light-blue: #E0F2FE;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background-color: #F8FAFC;
+            border: 12px solid #333;
+            border-radius: 40px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .notch {
+            width: 160px;
+            height: 30px;
+            background-color: #333;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+            z-index: 20;
+        }
+
+        .header-bg {
+            background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+            height: 120px;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            z-index: 0;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .bottom-panel {
+            animation: slideUp 0.3s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="phone-frame">
+        <div class="notch"></div>
+        <div class="header-bg"></div>
+
+        <!-- Header -->
+        <div class="relative z-10 px-6 pt-14 pb-4">
+            <div class="flex items-center justify-between">
+                <button onclick="window.location.href='payment-overview.html'" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <h1 class="text-white text-lg font-black">Chi tiết Phiếu thu</h1>
+                <button class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="1"></circle>
+                        <circle cx="19" cy="12" r="1"></circle>
+                        <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-y-auto hide-scrollbar px-6 pt-4 pb-40">
+
+            <!-- Invoice Info Card -->
+            <div class="bg-white rounded-3xl p-5 shadow-lg shadow-blue-900/10 border border-blue-50 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-gray-800 font-black text-base">Học phí HK1 - 2025</h3>
+                        <p class="text-gray-400 text-xs font-medium mt-0.5">#PT20251101</p>
+                    </div>
+                    <span class="px-3 py-1 bg-red-100 text-red-600 text-[10px] font-black uppercase rounded-full">Chưa thanh toán</span>
+                </div>
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                    <div>
+                        <p class="text-gray-400 text-[10px] font-medium uppercase tracking-wider">Hạn thanh toán</p>
+                        <p class="text-red-500 text-sm font-bold mt-1">30/11/2025</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-400 text-[10px] font-medium uppercase tracking-wider">Số ngày còn lại</p>
+                        <p class="text-orange-500 text-sm font-bold mt-1">7 ngày</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fee Items Detail (Read-only) -->
+            <div class="mb-6">
+                <h3 class="text-gray-800 font-extrabold text-base mb-4">Chi tiết khoản thu</h3>
+
+                <div class="space-y-3" id="feeItemsList">
+                    <!-- Fee Item 1: Tuition -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h4 class="text-gray-800 font-bold text-sm">Học phí chính khóa</h4>
+                                    <span class="px-2 py-0.5 bg-red-100 text-red-600 text-[8px] font-black uppercase rounded">Bắt buộc</span>
+                                </div>
+                                <p class="text-gray-400 text-xs">Học kỳ 1 • Năm học 2025-2026</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-800 text-base font-black">2.500.000 ₫</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fee Item 2: Insurance -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h4 class="text-gray-800 font-bold text-sm">Bảo hiểm y tế</h4>
+                                    <span class="px-2 py-0.5 bg-red-100 text-red-600 text-[8px] font-black uppercase rounded">Bắt buộc</span>
+                                </div>
+                                <p class="text-gray-400 text-xs">Cả năm học</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-800 text-base font-black">700.000 ₫</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fee Item 3: Boarding -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h4 class="text-gray-800 font-bold text-sm">Tiền bán trú</h4>
+                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-600 text-[8px] font-black uppercase rounded">Tự nguyện</span>
+                                </div>
+                                <p class="text-gray-400 text-xs">Học kỳ 1</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-800 text-base font-black">1.500.000 ₫</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fee Item 4: Discount -->
+                    <div class="bg-green-50 rounded-2xl p-4 shadow-sm border-2 border-green-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h4 class="text-green-800 font-bold text-sm">Giảm trừ ưu đãi</h4>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-green-600 text-xs">Học bạ xuất sắc HK2</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-green-600 text-base font-black">-200.000 ₫</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Note Section -->
+            <div class="bg-amber-50 rounded-2xl p-4 border border-amber-200">
+                <div class="flex items-start gap-2">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" class="mt-0.5 flex-shrink-0">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <div>
+                        <p class="text-amber-800 text-xs font-bold mb-1">Lưu ý thanh toán</p>
+                        <p class="text-amber-700 text-xs leading-relaxed">Vui lòng thanh toán đầy đủ trước hạn để tránh bị tính phí trễ hạn. Sau khi thanh toán, hệ thống sẽ tự động cập nhật trong vòng 5-10 phút.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Payment Panel -->
+        <div class="bottom-panel absolute bottom-0 w-full bg-white border-t border-gray-200 px-6 py-5 z-30">
+            <!-- Payment Type Selection -->
+            <div class="mb-4">
+                <h4 class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-3">Chọn hình thức thanh toán</h4>
+                <div class="grid grid-cols-2 gap-3">
+                    <label id="fullPaymentOption" class="payment-type-option block bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border-2 border-blue-300 cursor-pointer transition-all">
+                        <input type="radio" name="paymentType" value="full" class="hidden" checked>
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-5 h-5 bg-[#0284C7] rounded-full flex items-center justify-center">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-bold text-gray-800">Toàn bộ</span>
+                        </div>
+                        <p class="text-[10px] text-gray-400">Thanh toán đầy đủ</p>
+                    </label>
+                    <label id="partialPaymentOption" class="payment-type-option block bg-white rounded-2xl p-4 border-2 border-gray-200 cursor-pointer transition-all hover:border-blue-200">
+                        <input type="radio" name="paymentType" value="partial" class="hidden">
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center">
+                                <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
+                            </div>
+                            <span class="text-sm font-bold text-gray-800">Một phần</span>
+                        </div>
+                        <p class="text-[10px] text-gray-400">Nhập số tiền</p>
+                    </label>
+                </div>
+
+                <!-- Partial Payment Input (Hidden by default) -->
+                <div id="partialPaymentInput" class="hidden mt-3">
+                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Nhập số tiền muốn thanh toán</label>
+                    <div class="relative">
+                        <input type="number" id="partialAmountInput" placeholder="0" class="w-full px-4 py-3 bg-slate-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none pr-16" oninput="updatePartialTotal()">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">₫</span>
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-1">Số tiền còn lại: <span id="remainingAmount" class="font-bold text-orange-500">4.500.000 ₫</span></p>
+                </div>
+            </div>
+
+            <!-- Total Summary -->
+            <div class="mb-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-500 text-xs font-bold uppercase tracking-wider">Tổng tiền cần thanh toán</span>
+                </div>
+                <p class="text-3xl font-black text-[#0284C7]" id="totalAmount">4.500.000 ₫</p>
+            </div>
+
+            <!-- Action Button -->
+            <button onclick="proceedToPayment()" class="w-full py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl font-bold text-base hover:from-blue-600 hover:to-cyan-600 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
+                <span>Tiếp tục thanh toán</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const TOTAL_AMOUNT = 4500000; // Tổng số tiền cần thanh toán
+
+        // Payment type selection
+        document.querySelectorAll('input[name="paymentType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const fullOption = document.getElementById('fullPaymentOption');
+                const partialOption = document.getElementById('partialPaymentOption');
+                const partialInput = document.getElementById('partialPaymentInput');
+
+                if (this.value === 'full') {
+                    // Full payment selected
+                    fullOption.className = 'payment-type-option block bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border-2 border-blue-300 cursor-pointer transition-all';
+                    fullOption.querySelector('div > div').className = 'w-5 h-5 bg-[#0284C7] rounded-full flex items-center justify-center';
+                    fullOption.querySelector('div > div').innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+                    partialOption.className = 'payment-type-option block bg-white rounded-2xl p-4 border-2 border-gray-200 cursor-pointer transition-all hover:border-blue-200';
+                    partialOption.querySelector('div > div').className = 'w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center';
+                    partialOption.querySelector('div > div').innerHTML = '<div class="w-2.5 h-2.5 bg-white rounded-full"></div>';
+
+                    partialInput.classList.add('hidden');
+                    document.getElementById('totalAmount').textContent = formatCurrency(TOTAL_AMOUNT);
+                } else {
+                    // Partial payment selected
+                    partialOption.className = 'payment-type-option block bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border-2 border-blue-300 cursor-pointer transition-all';
+                    partialOption.querySelector('div > div').className = 'w-5 h-5 bg-[#0284C7] rounded-full flex items-center justify-center';
+                    partialOption.querySelector('div > div').innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+                    fullOption.className = 'payment-type-option block bg-white rounded-2xl p-4 border-2 border-gray-200 cursor-pointer transition-all hover:border-blue-200';
+                    fullOption.querySelector('div > div').className = 'w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center';
+                    fullOption.querySelector('div > div').innerHTML = '<div class="w-2.5 h-2.5 bg-white rounded-full"></div>';
+
+                    partialInput.classList.remove('hidden');
+                    document.getElementById('partialAmountInput').value = '';
+                    document.getElementById('totalAmount').textContent = '0 ₫';
+                    document.getElementById('remainingAmount').textContent = formatCurrency(TOTAL_AMOUNT);
+                }
+            });
+        });
+
+        function updatePartialTotal() {
+            const input = document.getElementById('partialAmountInput');
+            const amount = parseInt(input.value) || 0;
+
+            if (amount > TOTAL_AMOUNT) {
+                input.value = TOTAL_AMOUNT;
+                document.getElementById('totalAmount').textContent = formatCurrency(TOTAL_AMOUNT);
+                document.getElementById('remainingAmount').textContent = '0 ₫';
+            } else if (amount <= 0) {
+                document.getElementById('totalAmount').textContent = '0 ₫';
+                document.getElementById('remainingAmount').textContent = formatCurrency(TOTAL_AMOUNT);
+            } else {
+                document.getElementById('totalAmount').textContent = formatCurrency(amount);
+                document.getElementById('remainingAmount').textContent = formatCurrency(TOTAL_AMOUNT - amount);
+            }
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+        }
+
+        function proceedToPayment() {
+            const paymentType = document.querySelector('input[name="paymentType"]:checked').value;
+            const totalAmount = document.getElementById('totalAmount').textContent;
+
+            if (paymentType === 'partial') {
+                const amount = parseInt(document.getElementById('partialAmountInput').value) || 0;
+                if (amount <= 0) {
+                    alert('Vui lòng nhập số tiền cần thanh toán!');
+                    return;
+                }
+            }
+
+            // Store payment info in sessionStorage for next screen
+            const paymentInfo = {
+                type: paymentType,
+                amount: totalAmount,
+                invoiceId: 'PT20251101'
+            };
+            sessionStorage.setItem('paymentInfo', JSON.stringify(paymentInfo));
+
+            window.location.href = 'payment-method.html';
+        }
+
+        // Initialize
+        document.getElementById('totalAmount').textContent = formatCurrency(TOTAL_AMOUNT);
+    </script>
+</body>
+</html>

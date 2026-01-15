@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,83 +13,72 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { getHomeroomClassData } from '@/lib/mock-data'
 import { Users, User, UserCircle, Phone, MessageSquare, Search, MapPin } from 'lucide-react'
+
+interface Student {
+  id: string
+  name: string
+  code: string
+  dob: string
+  parentName: string
+  parentPhone: string
+  address: string
+}
+
+interface HomeroomData {
+  classId: string
+  className: string
+  grade: string
+  room: string
+  studentCount: number
+  maleCount: number
+  femaleCount: number
+  classMonitor: string
+  students: Student[]
+}
 
 export default function HomeroomPage() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [homeroomData, setHomeroomData] = useState<HomeroomData | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  // Mock data - in real app, load server-side
-  const mockHomeroomData = {
-    classId: '10A1',
-    className: '10A1',
-    grade: '10',
-    room: 'P.101',
-    studentCount: 45,
-    maleCount: 23,
-    femaleCount: 22,
-    classMonitor: 'Nguyễn Văn An',
-    students: [
-      {
-        id: '1',
-        name: 'Nguyễn Văn An',
-        code: 'HS001',
-        dob: '2008-05-15',
-        parentName: 'Nguyễn Văn X',
-        parentPhone: '0901234567',
-        address: '123 Đường A, Quận B, TP HCM',
-      },
-      {
-        id: '2',
-        name: 'Trần Thị Bình',
-        code: 'HS002',
-        dob: '2008-08-20',
-        parentName: 'Trần Thị Y',
-        parentPhone: '0901234568',
-        address: '456 Đường B, Quận C, TP HCM',
-      },
-      {
-        id: '3',
-        name: 'Lê Văn Cường',
-        code: 'HS003',
-        dob: '2008-03-10',
-        parentName: 'Lê Văn Z',
-        parentPhone: '0901234569',
-        address: '789 Đường C, Quận D, TP HCM',
-      },
-      {
-        id: '4',
-        name: 'Phạm Thị Dung',
-        code: 'HS004',
-        dob: '2008-12-25',
-        parentName: 'Phạm Văn T',
-        parentPhone: '0901234570',
-        address: '321 Đường D, Quận E, TP HCM',
-      },
-      {
-        id: '5',
-        name: 'Hoàng Văn Em',
-        code: 'HS005',
-        dob: '2008-07-08',
-        parentName: 'Hoàng Thị V',
-        parentPhone: '0901234571',
-        address: '654 Đường E, Quận A, TP HCM',
-      },
-    ],
-  }
+  // Fetch homeroom data on mount
+  useEffect(() => {
+    async function fetchHomeroomData() {
+      setLoading(true)
+      try {
+        const res = await fetch('/api/teacher/homeroom')
+        const json = await res.json()
+        setHomeroomData(json.data)
+      } catch (error) {
+        console.error('Failed to fetch homeroom data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchHomeroomData()
+  }, [])
 
-  const filteredStudents = mockHomeroomData.students.filter(
-    (student) =>
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.code.toLowerCase().includes(searchQuery.toLowerCase())
+  const students = homeroomData?.students || []
+  const filteredStudents = students.filter((student) =>
+    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.code.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  if (loading) {
+    return (
+      <div className="space-y-6 p-8">
+        <div className="text-center py-12 text-gray-500">Đang tải...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 p-8">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Quản lý lớp chủ nhiệm</h1>
-        <p className="text-gray-500">{mockHomeroomData.className} • Phòng {mockHomeroomData.room}</p>
+        <p className="text-gray-500">{homeroomData?.className} • Phòng {homeroomData?.room}</p>
       </div>
 
       {/* Class Overview Stats */}
@@ -99,7 +88,7 @@ export default function HomeroomPage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-3xl font-black text-sky-600">
-                  {mockHomeroomData.studentCount}
+                  {homeroomData?.studentCount}
                 </div>
                 <div className="text-sm text-gray-600 font-medium mt-1">Tổng số</div>
               </div>
@@ -112,7 +101,7 @@ export default function HomeroomPage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-3xl font-black text-blue-600">
-                  {mockHomeroomData.maleCount}
+                  {homeroomData?.maleCount}
                 </div>
                 <div className="text-sm text-gray-600 font-medium mt-1">Nam</div>
               </div>
@@ -125,7 +114,7 @@ export default function HomeroomPage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-3xl font-black text-pink-600">
-                  {mockHomeroomData.femaleCount}
+                  {homeroomData?.femaleCount || 0}
                 </div>
                 <div className="text-sm text-gray-600 font-medium mt-1">Nữ</div>
               </div>
@@ -138,7 +127,7 @@ export default function HomeroomPage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-lg font-black text-purple-600">
-                  {mockHomeroomData.classMonitor}
+                  {homeroomData?.classMonitor || '-'}
                 </div>
                 <div className="text-sm text-gray-600 font-medium mt-1">Lớp trưởng</div>
               </div>

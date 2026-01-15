@@ -1,97 +1,59 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { StudentAssessmentCard, RegularAssessment } from '@/components/teacher/StudentAssessmentCard'
-import { getRegularAssessments } from '@/lib/mock-data'
 import { CheckCircle, Clock, AlertCircle, TrendingUp, Search } from 'lucide-react'
 
 export default function RegularAssessmentPage() {
   const [selectedClass, setSelectedClass] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [assessments, setAssessments] = useState<RegularAssessment[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Mock data - in real app, load server-side
-  const mockAssessments: RegularAssessment[] = [
-    {
-      studentId: '1',
-      studentName: 'Nguyễn Văn An',
-      classId: '10A1',
-      className: '10A1',
-      subject: 'Toán',
-      status: 'evaluated',
-      comment: { category: 'Tiến bộ học tập', content: 'Có tiến bộ tốt trong giải toán' },
-      rating: 4,
-      createdAt: '2026-01-14',
-    },
-    {
-      studentId: '2',
-      studentName: 'Trần Thị Bình',
-      classId: '10A1',
-      className: '10A1',
-      subject: 'Toán',
-      status: 'evaluated',
-      comment: { category: 'Đóng góp lớp', content: 'Học sinh tích cực, giúp đỡ bạn bè' },
-      rating: 5,
-      createdAt: '2026-01-14',
-    },
-    {
-      studentId: '3',
-      studentName: 'Lê Văn Cường',
-      classId: '10A1',
-      className: '10A1',
-      subject: 'Toán',
-      status: 'pending',
-      createdAt: '2026-01-14',
-    },
-    {
-      studentId: '4',
-      studentName: 'Phạm Thị Dung',
-      classId: '10A1',
-      className: '10A1',
-      subject: 'Toán',
-      status: 'needs-attention',
-      comment: { category: 'Cần cải thiện', content: 'Cần chú ý hơn trong lớp, làm bài tập chưa đầy đủ' },
-      rating: 2,
-      createdAt: '2026-01-13',
-    },
-    {
-      studentId: '5',
-      studentName: 'Ngô Thị Giang',
-      classId: '10A1',
-      className: '10A1',
-      subject: 'Toán',
-      status: 'evaluated',
-      comment: { category: 'Tiến bộ học tập', content: 'Nắm bắt kiến thức tốt, làm bài tập cẩn thận' },
-      rating: 5,
-      createdAt: '2026-01-14',
-    },
-    {
-      studentId: '6',
-      studentName: 'Đỗ Văn Hùng',
-      classId: '10A1',
-      className: '10A1',
-      subject: 'Toán',
-      status: 'pending',
-      createdAt: '2026-01-14',
-    },
-  ]
+  // Fetch assessments on mount
+  useEffect(() => {
+    async function fetchAssessments() {
+      setLoading(true)
+      try {
+        const params = new URLSearchParams()
+        if (selectedClass !== 'all') params.append('classId', selectedClass)
+        if (selectedStatus !== 'all') params.append('status', selectedStatus)
 
-  const filteredAssessments = mockAssessments.filter((assessment) => {
-    const matchesClass = selectedClass === 'all' || assessment.classId === selectedClass
-    const matchesStatus = selectedStatus === 'all' || assessment.status === selectedStatus
-    const matchesSearch =
-      searchQuery === '' ||
-      assessment.studentName.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesClass && matchesStatus && matchesSearch
-  })
+        const res = await fetch(`/api/teacher/assessments?${params.toString()}`)
+        const json = await res.json()
+        setAssessments(json.data)
+      } catch (error) {
+        console.error('Failed to fetch assessments:', error)
+        setAssessments([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchAssessments()
+  }, [selectedClass, selectedStatus])
 
-  const evaluatedCount = mockAssessments.filter((a) => a.status === 'evaluated').length
-  const pendingCount = mockAssessments.filter((a) => a.status === 'pending').length
-  const positiveCount = mockAssessments.filter((a) => a.rating && a.rating >= 4).length
-  const needsAttentionCount = mockAssessments.filter((a) => a.status === 'needs-attention').length
+  // Filter by search query
+  const filteredAssessments = assessments.filter((assessment) =>
+    assessment.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    assessment.className.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  // Calculate stats
+  const evaluatedCount = assessments.filter(a => a.status === 'evaluated').length
+  const pendingCount = assessments.filter(a => a.status === 'pending').length
+  const positiveCount = assessments.filter(a => a.rating && a.rating >= 4).length
+  const needsAttentionCount = assessments.filter(a => a.status === 'needs-attention').length
+
+  if (loading) {
+    return (
+      <div className="space-y-6 p-8">
+        <div className="text-center py-12 text-gray-500">Đang tải...</div>
+      </div>
+    )
+  }
 
   const handleEvaluate = (studentId: string) => {
     console.log('Evaluate student:', studentId)

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EContact - Thanh toán</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --primary-blue: #0284C7;
+            --light-blue: #E0F2FE;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background-color: #F8FAFC;
+            border: 12px solid #333;
+            border-radius: 40px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .notch {
+            width: 160px;
+            height: 30px;
+            background-color: #333;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+            z-index: 20;
+        }
+
+        .header-bg {
+            background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+            height: 90px;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            z-index: 0;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        /* QR Scanner Effect */
+        .qr-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .qr-scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #22c55e, transparent);
+            box-shadow: 0 0 20px #22c55e, 0 0 40px #22c55e;
+            animation: scan 2s ease-in-out infinite;
+            z-index: 10;
+        }
+
+        .qr-scanner-line::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #fff, transparent);
+        }
+
+        @keyframes scan {
+            0%, 100% {
+                top: 0;
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+
+        /* QR Corner Brackets */
+        .qr-corner {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-color: #0284C7;
+            border-style: solid;
+            z-index: 5;
+        }
+
+        .qr-corner-tl {
+            top: 8px;
+            left: 8px;
+            border-width: 4px 0 0 4px;
+            border-radius: 8px 0 0 0;
+        }
+
+        .qr-corner-tr {
+            top: 8px;
+            right: 8px;
+            border-width: 4px 4px 0 0;
+            border-radius: 0 8px 0 0;
+        }
+
+        .qr-corner-bl {
+            bottom: 8px;
+            left: 8px;
+            border-width: 0 0 4px 4px;
+            border-radius: 0 0 0 8px;
+        }
+
+        .qr-corner-br {
+            bottom: 8px;
+            right: 8px;
+            border-width: 0 4px 4px 0;
+            border-radius: 0 0 8px 0;
+        }
+
+        /* Pulse effect for corners */
+        .qr-corner {
+            animation: pulse-border 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% {
+                border-color: #0284C7;
+                box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.4);
+            }
+            50% {
+                border-color: #22c55e;
+                box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="phone-frame">
+        <div class="notch"></div>
+        <div class="header-bg"></div>
+
+        <!-- Header -->
+        <div class="relative z-10 px-6 pt-12 pb-2">
+            <div class="flex items-center justify-between">
+                <button onclick="window.location.href='payment-detail.html'" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <h1 class="text-white text-lg font-black">Thanh toán</h1>
+                <div class="w-10 h-10"></div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-y-auto hide-scrollbar px-4 pt-2 pb-20 flex flex-col">
+
+            <!-- QR Code Section -->
+            <div class="bg-white rounded-3xl p-3 shadow-lg border border-gray-100 flex flex-col">
+                <!-- Main Instruction -->
+                <div class="text-center mb-3">
+                    <h3 class="text-base font-black text-gray-800 mb-1">
+                        Quét QR để thanh toán
+                    </h3>
+                    <p class="text-gray-400 text-[10px]">
+                        App ngân hàng hoặc ví điện tử
+                    </p>
+                </div>
+
+                <!-- QR Code Image -->
+                <div class="flex items-center justify-center mb-3">
+                    <img
+                        id="vietQrImage"
+                        src="https://img.vietqr.io/image/970436-1018768879-compact2.png?amount=4500000&addInfo=PT20251101%2020250912&template=compact2"
+                        alt="VietQR Code"
+                        class="w-full max-w-[280px]"
+                        style="height: auto;"
+                        onload="hideLoading()"
+                        onerror="handleQRError()"
+                    >
+
+                    <!-- Loading indicator -->
+                    <div id="qrLoading" class="absolute bg-white/95 flex items-center justify-center z-20" style="width: 280px; height: 280px;">
+                        <svg class="animate-spin w-16 h-16 text-[#0284C7]" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Payment Info - Important for matching -->
+                <div class="mt-2 space-y-1.5">
+                    <div class="bg-blue-50 rounded-xl p-2.5 border border-blue-100">
+                        <div class="flex items-center justify-between">
+                            <span class="text-blue-600 text-[10px] font-bold uppercase tracking-wider">Nội dung CK</span>
+                            <button onclick="copyPaymentContent()" class="text-[#0284C7] hover:bg-blue-100 p-1 rounded-lg transition-colors" title="Sao chép">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <p id="paymentContentDisplay" class="text-red-500 text-sm font-black font-mono mt-1 break-all">PT20251101 20250912</p>
+                        <p class="text-blue-600 text-[9px] mt-1">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="inline mr-1">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            Hệ thống tự động đối soát
+                        </p>
+                    </div>
+
+                    <div class="flex items-center justify-between text-[10px]">
+                        <span class="text-gray-400">Ngân hàng</span>
+                        <span class="text-gray-700 font-bold">Vietcombank</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px]">
+                        <span class="text-gray-400">Số TK</span>
+                        <span class="text-[#0284C7] font-bold">1018768879</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Action -->
+        <div class="absolute bottom-0 w-full bg-white border-t border-gray-200 px-6 py-5 z-30">
+            <button onclick="confirmPayment()" class="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-bold text-base hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg shadow-green-200 flex items-center justify-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Xác nhận đã thanh toán</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Payment Configuration - Số tài khoản Vietcombank thật
+        const BANK_CONFIG = {
+            bankId: '970436',          // Bank ID Vietcombank
+            account: '1018768879',     // Số tài khoản thật
+            accountName: 'TRUONG THPT HUST'
+        };
+
+        // Default payment content
+        let currentPaymentContent = 'PT20251101 20250912';
+
+        // Load payment info from sessionStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedPaymentInfo = sessionStorage.getItem('paymentInfo');
+
+            if (savedPaymentInfo) {
+                const paymentInfo = JSON.parse(savedPaymentInfo);
+                // Update QR code with actual amount
+                updateQRCode(paymentInfo);
+            }
+            // Default QR already loaded in src attribute
+        });
+
+        function updateQRCode(paymentInfo) {
+            // Show loading
+            const loadingEl = document.getElementById('qrLoading');
+            loadingEl.classList.remove('hidden');
+
+            // Extract numeric amount from string (remove currency symbol and spaces)
+            const amountStr = paymentInfo.amount.replace(/[^\d]/g, '');
+            const amount = parseInt(amountStr) || 4500000;
+
+            // Update payment content display
+            currentPaymentContent = `${paymentInfo.invoiceId} 20250912`;
+            document.getElementById('paymentContentDisplay').textContent = currentPaymentContent;
+
+            // Build VietQR URL
+            // Format: https://img.vietqr.io/image/<BANK_ID>-<ACCOUNT_NO>-<TEMPLATE>.png?amount=<AMOUNT>&addInfo=<DESCRIPTION>
+            const qrUrl = `https://img.vietqr.io/image/${BANK_CONFIG.bankId}-${BANK_CONFIG.account}-compact2.png?amount=${amount}&addInfo=${paymentInfo.invoiceId}%2020250912&template=compact2`;
+
+            // Update QR image
+            const qrImage = document.getElementById('vietQrImage');
+            qrImage.src = qrUrl;
+        }
+
+        function hideLoading() {
+            const loadingEl = document.getElementById('qrLoading');
+            if (loadingEl) {
+                loadingEl.classList.add('hidden');
+            }
+        }
+
+        function handleQRError() {
+            console.error('Failed to load QR code from VietQR API');
+            hideLoading();
+        }
+
+        function copyPaymentContent() {
+            // Copy payment content to clipboard
+            navigator.clipboard.writeText(currentPaymentContent).then(() => {
+                // Show feedback
+                const btn = event.target.closest('button');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                btn.classList.add('bg-green-100');
+
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('bg-green-100');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        function confirmPayment() {
+            // Show loading
+            const btn = event.target.closest('button');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<svg class="animate-spin mr-2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg><span>Đang xác thực...</span>';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                window.location.href = 'payment-receipt.html';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

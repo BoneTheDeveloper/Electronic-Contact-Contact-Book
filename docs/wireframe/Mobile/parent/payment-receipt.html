@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EContact - Biên lai thanh toán</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --primary-blue: #0284C7;
+            --light-blue: #E0F2FE;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background-color: #F8FAFC;
+            border: 12px solid #333;
+            border-radius: 40px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .notch {
+            width: 160px;
+            height: 30px;
+            background-color: #333;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+            z-index: 20;
+        }
+
+        .header-bg {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            height: 200px;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            z-index: 0;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes confetti {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+            }
+        }
+
+        .success-icon {
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        .receipt-card {
+            animation: slideUp 0.6s ease-out 0.2s both;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            animation: confetti 3s ease-in-out infinite;
+        }
+
+        .action-btn {
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="phone-frame">
+        <div class="notch"></div>
+        <div class="header-bg"></div>
+
+        <!-- Confetti decorations -->
+        <div class="confetti" style="left: 10%; animation-delay: 0s; background: #fbbf24;"></div>
+        <div class="confetti" style="left: 30%; animation-delay: 0.5s; background: #f472b6;"></div>
+        <div class="confetti" style="left: 50%; animation-delay: 1s; background: #60a5fa;"></div>
+        <div class="confetti" style="left: 70%; animation-delay: 1.5s; background: #4ade80;"></div>
+        <div class="confetti" style="left: 90%; animation-delay: 2s; background: #a78bfa;"></div>
+
+        <!-- Header -->
+        <div class="relative z-10 px-6 pt-14 pb-4">
+            <div class="flex items-center justify-between">
+                <button onclick="window.location.href='payment-overview.html'" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <h1 class="text-white text-lg font-black">Biên lai</h1>
+                <button class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                        <polyline points="16 6 12 2 8 6"></polyline>
+                        <line x1="12" y1="2" x2="12" y2="15"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-y-auto hide-scrollbar px-6 pt-4 pb-20 relative z-10">
+
+            <!-- Success Message -->
+            <div class="text-center mb-6 success-icon">
+                <div class="w-24 h-24 bg-white rounded-full mx-auto flex items-center justify-center shadow-xl shadow-green-500/30 mb-4">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <h2 class="text-white text-2xl font-black mb-2">Thanh toán thành công!</h2>
+                <p class="text-green-100 text-sm font-medium">Giao dịch đã được xác nhận</p>
+            </div>
+
+            <!-- Receipt Card -->
+            <div class="receipt-card bg-white rounded-3xl shadow-xl overflow-hidden">
+                <!-- Receipt Header -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-6 border-b border-green-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white font-black text-lg">
+                                HB
+                            </div>
+                            <div>
+                                <h3 class="text-gray-800 font-bold">Nguyễn Hoàng B</h3>
+                                <p class="text-gray-400 text-xs">Lớp 9A • MHS: 20250912</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Số tiền thanh toán</p>
+                        <h2 class="text-3xl font-black text-green-600">4.500.000 ₫</h2>
+                    </div>
+                </div>
+
+                <!-- Receipt Details -->
+                <div class="p-6">
+                    <h4 class="text-gray-800 font-bold text-sm mb-4 flex items-center gap-2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.5">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Thông tin giao dịch
+                    </h4>
+
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <span class="text-gray-500 text-xs font-bold uppercase tracking-wider">Mã giao dịch</span>
+                            <span class="text-gray-800 text-sm font-black">TXN2025111512345</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <span class="text-gray-500 text-xs font-bold uppercase tracking-wider">Phiếu thu</span>
+                            <span class="text-gray-800 text-sm font-black">#PT20251101</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <span class="text-gray-500 text-xs font-bold uppercase tracking-wider">Thời gian</span>
+                            <span class="text-gray-800 text-sm font-black">15/11/2025 - 14:32</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <span class="text-gray-500 text-xs font-bold uppercase tracking-wider">Phương thức</span>
+                            <span class="text-gray-800 text-sm font-black">VietQR - VCB</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500 text-xs font-bold uppercase tracking-wider">Trạng thái</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-600 text-[10px] font-black uppercase rounded-full">Hoàn thành</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Items -->
+                    <div class="mt-6 pt-6 border-t border-gray-100">
+                        <h4 class="text-gray-800 font-bold text-sm mb-3 flex items-center gap-2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.5">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            Chi tiết khoản thu
+                        </h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600 text-xs font-medium">Học phí chính khóa</span>
+                                <span class="text-gray-800 text-xs font-bold">2.500.000 ₫</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600 text-xs font-medium">Bảo hiểm y tế</span>
+                                <span class="text-gray-800 text-xs font-bold">700.000 ₫</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600 text-xs font-medium">Tiền bán trú</span>
+                                <span class="text-gray-800 text-xs font-bold">1.500.000 ₫</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-t border-dashed border-gray-200">
+                                <span class="text-green-600 text-xs font-bold">Giảm trừ ưu đãi</span>
+                                <span class="text-green-600 text-xs font-bold">-200.000 ₫</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-t-2 border-gray-200">
+                                <span class="text-gray-800 text-sm font-black">Tổng cộng</span>
+                                <span class="text-green-600 text-sm font-black">4.500.000 ₫</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Receipt Footer -->
+                <div class="bg-slate-50 px-6 py-4 border-t border-gray-100">
+                    <div class="flex items-center justify-center gap-2 text-gray-400 text-[10px]">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                            <path d="M2 17l10 5 10-5"></path>
+                            <path d="M2 12l10 5 10-5"></path>
+                        </svg>
+                        <span>Biên lai điện tử được tạo tự động bởi EContact</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="mt-6 bg-blue-50 rounded-2xl p-4 border border-blue-100">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.5">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-blue-800 text-xs font-bold mb-1">Cần hỗ trợ?</p>
+                        <p class="text-blue-600 text-xs leading-relaxed">Nếu có bất kỳ thắc mắc nào về giao dịch này, vui lòng liên hệ văn phòng trường hoặc gửi yêu cầu hỗ trợ qua ứng dụng.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Actions -->
+        <div class="absolute bottom-0 w-full bg-white border-t border-gray-200 px-6 py-5 z-30">
+            <div class="flex gap-3">
+                <button class="action-btn flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all flex items-center justify-center gap-2">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Tải biên lai
+                </button>
+                <button onclick="window.location.href='payment-overview.html'" class="action-btn flex-[2] py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl font-bold text-sm hover:from-blue-600 hover:to-cyan-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Về trang chủ
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
