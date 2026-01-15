@@ -365,8 +365,10 @@ export interface Assessment {
 export interface ConductRating {
   studentId: string
   studentName: string
-  academicRating: 'excellent' | 'good' | 'fair' | 'poor'
-  conductRating: 'excellent' | 'good' | 'fair' | 'poor'
+  mssv: string
+  academicRating: 'excellent-plus' | 'excellent' | 'good' | 'average' | 'needs-improvement'
+  academicScore?: number
+  conductRating: 'good' | 'fair' | 'average' | 'poor'
   semester: '1' | '2'
   notes?: string
 }
@@ -375,9 +377,12 @@ export interface Conversation {
   id: string
   parentName: string
   studentName: string
+  studentId: string
+  className: string
   lastMessage: string
   timestamp: string
   unreadCount: number
+  online: boolean
   avatar?: string
 }
 
@@ -612,26 +617,52 @@ export async function getConductRatings(classId: string, semester: '1' | '2' = '
     {
       studentId: '1',
       studentName: 'Trần Hoàng',
-      academicRating: 'excellent',
-      conductRating: 'excellent',
+      mssv: 'HS001',
+      academicRating: 'excellent-plus',
+      academicScore: 9.2,
+      conductRating: 'good',
       semester: '2',
       notes: 'Học tập tốt, ngoan ngoãn',
     },
     {
       studentId: '2',
       studentName: 'Nguyễn Minh Anh',
-      academicRating: 'good',
-      conductRating: 'excellent',
+      mssv: 'HS002',
+      academicRating: 'excellent',
+      academicScore: 8.5,
+      conductRating: 'good',
       semester: '2',
       notes: 'Tiến bộ tốt',
     },
     {
       studentId: '3',
       studentName: 'Lê Quang Nam',
-      academicRating: 'fair',
+      mssv: 'HS003',
+      academicRating: 'good',
+      academicScore: 7.2,
       conductRating: 'fair',
       semester: '2',
       notes: 'Cần cố gắng hơn',
+    },
+    {
+      studentId: '4',
+      studentName: 'Phạm Thị Lan',
+      mssv: 'HS004',
+      academicRating: 'average',
+      academicScore: 5.8,
+      conductRating: 'average',
+      semester: '2',
+      notes: 'Cần chú ý hơn',
+    },
+    {
+      studentId: '5',
+      studentName: 'Đỗ Văn Hùng',
+      mssv: 'HS005',
+      academicRating: 'needs-improvement',
+      academicScore: 4.5,
+      conductRating: 'poor',
+      semester: '2',
+      notes: 'Cần gặp phụ huynh',
     },
   ]
 }
@@ -642,26 +673,35 @@ export async function getTeacherConversations(teacherId: string = '2'): Promise<
     {
       id: '1',
       parentName: 'Nguyễn Văn An',
-      studentName: 'Nguyễn Văn An (10A)',
+      studentName: 'Nguyễn Văn An',
+      studentId: 'HS001',
+      className: '10A1',
       lastMessage: 'Thưa thầy, em có thể xin lịch hẹn gặp không ạ?',
       timestamp: '10 phút trước',
       unreadCount: 2,
+      online: true,
     },
     {
       id: '2',
       parentName: 'Trần Thị Bình',
-      studentName: 'Trần Thị Bình (10A)',
+      studentName: 'Trần Thị Bình',
+      studentId: 'HS002',
+      className: '10A1',
       lastMessage: 'Cảm ơn thầy đã thông báo',
       timestamp: '2 giờ trước',
       unreadCount: 0,
+      online: false,
     },
     {
       id: '3',
       parentName: 'Lê Văn Cường',
-      studentName: 'Lê Văn Cường (10A)',
+      studentName: 'Lê Văn Cường',
+      studentId: 'HS003',
+      className: '10A1',
       lastMessage: 'Con đã nộp bài tập chưa thầy?',
       timestamp: 'Hôm qua',
       unreadCount: 1,
+      online: true,
     },
   ]
 }

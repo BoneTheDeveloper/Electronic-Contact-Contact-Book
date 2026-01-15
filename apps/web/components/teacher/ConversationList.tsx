@@ -5,6 +5,7 @@ import { Conversation } from '@/lib/mock-data'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Search, MessageCircle } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface ConversationListProps {
   conversations: Conversation[]
@@ -20,10 +21,18 @@ export function ConversationList({ conversations, selectedId, onSelectConversati
     conv.studentName.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  const getAvatarInitials = (name: string) => {
+    return name
+      .split(' ')
+      .slice(-1)[0]
+      .substring(0, 2)
+      .toUpperCase()
+  }
+
   return (
-    <div className="flex flex-col h-full bg-gray-50 border-r border-gray-200">
+    <div className="flex flex-col h-full bg-white">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-white">
+      <div className="p-4 border-b border-gray-200">
         <h3 className="font-semibold text-gray-900 mb-3">Tin nhắn</h3>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -37,6 +46,19 @@ export function ConversationList({ conversations, selectedId, onSelectConversati
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200">
+        <button className="flex-1 py-3 text-sm font-medium text-sky-600 border-b-2 border-sky-600">
+          Tất cả
+        </button>
+        <button className="flex-1 py-3 text-sm font-medium text-gray-500 hover:text-gray-700">
+          Chưa đọc
+        </button>
+        <button className="flex-1 py-3 text-sm font-medium text-gray-500 hover:text-gray-700">
+          Đánh dấu
+        </button>
+      </div>
+
       {/* Conversation List */}
       <div className="flex-1 overflow-y-auto">
         {filteredConversations.length === 0 ? (
@@ -47,23 +69,29 @@ export function ConversationList({ conversations, selectedId, onSelectConversati
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-100">
             {filteredConversations.map((conversation) => (
               <button
                 key={conversation.id}
                 onClick={() => onSelectConversation(conversation.id)}
-                className={`w-full p-4 text-left hover:bg-gray-100 transition-colors ${
-                  selectedId === conversation.id ? 'bg-sky-50 border-l-4 border-sky-600' : ''
-                }`}
+                className={cn(
+                  'w-full p-4 text-left hover:bg-gray-50 transition-colors',
+                  selectedId === conversation.id && 'bg-sky-50 border-l-4 border-sky-600'
+                )}
               >
                 <div className="flex items-start gap-3">
-                  {/* Avatar */}
-                  <div className="w-12 h-12 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 font-bold shrink-0">
-                    {conversation.parentName
-                      .split(' ')
-                      .slice(-1)[0]
-                      .substring(0, 2)
-                      .toUpperCase()}
+                  {/* Avatar with Online Indicator */}
+                  <div className="relative shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 font-bold">
+                      {getAvatarInitials(conversation.parentName)}
+                    </div>
+                    {/* Online Indicator */}
+                    <div
+                      className={cn(
+                        'absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white',
+                        conversation.online ? 'bg-green-500' : 'bg-gray-400'
+                      )}
+                    ></div>
                   </div>
 
                   {/* Content */}
@@ -78,7 +106,10 @@ export function ConversationList({ conversations, selectedId, onSelectConversati
 
                   {/* Unread Badge */}
                   {conversation.unreadCount > 0 && (
-                    <Badge variant="destructive" className="shrink-0 ml-2">
+                    <Badge
+                      variant="destructive"
+                      className="shrink-0 ml-2 h-5 w-5 flex items-center justify-center p-0 rounded-full text-xs"
+                    >
                       {conversation.unreadCount}
                     </Badge>
                   )}

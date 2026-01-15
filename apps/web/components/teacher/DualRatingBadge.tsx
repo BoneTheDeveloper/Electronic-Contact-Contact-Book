@@ -4,7 +4,9 @@ import { Badge } from '@/components/ui/badge'
 import { GraduationCap, Heart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type RatingType = 'excellent' | 'good' | 'fair' | 'poor'
+type AcademicRatingType = 'excellent-plus' | 'excellent' | 'good' | 'average' | 'needs-improvement'
+type ConductRatingType = 'good' | 'fair' | 'average' | 'poor'
+type RatingType = AcademicRatingType | ConductRatingType
 
 interface DualRatingBadgeProps {
   type: 'academic' | 'conduct'
@@ -25,29 +27,53 @@ const ratingConfig: Record<
     borderClass: string
   }
 > = {
-  excellent: {
-    label: 'Giỏi',
-    labelEn: 'Excellent',
+  'excellent-plus': {
+    label: 'Giỏi xuất sắc',
+    labelEn: 'Excellent Plus',
     color: 'green',
     bgClass: 'bg-green-50',
     textClass: 'text-green-700',
     borderClass: 'border-green-300',
   },
-  good: {
-    label: 'Khá',
-    labelEn: 'Good',
+  excellent: {
+    label: 'Giỏi',
+    labelEn: 'Excellent',
     color: 'blue',
     bgClass: 'bg-blue-50',
     textClass: 'text-blue-700',
     borderClass: 'border-blue-300',
   },
+  good: {
+    label: 'Khá',
+    labelEn: 'Good',
+    color: 'sky',
+    bgClass: 'bg-sky-50',
+    textClass: 'text-sky-700',
+    borderClass: 'border-sky-300',
+  },
   fair: {
-    label: 'Trung bình',
+    label: 'Khá',
     labelEn: 'Fair',
-    color: 'amber',
-    bgClass: 'bg-amber-50',
-    textClass: 'text-amber-700',
-    borderClass: 'border-amber-300',
+    color: 'yellow',
+    bgClass: 'bg-yellow-50',
+    textClass: 'text-yellow-700',
+    borderClass: 'border-yellow-300',
+  },
+  average: {
+    label: 'Trung bình',
+    labelEn: 'Average',
+    color: 'orange',
+    bgClass: 'bg-orange-50',
+    textClass: 'text-orange-700',
+    borderClass: 'border-orange-300',
+  },
+  'needs-improvement': {
+    label: 'Cần cố gắng',
+    labelEn: 'Needs Improvement',
+    color: 'red',
+    bgClass: 'bg-red-50',
+    textClass: 'text-red-700',
+    borderClass: 'border-red-300',
   },
   poor: {
     label: 'Yếu',
@@ -93,7 +119,7 @@ export function DualRatingBadge({
         sizeClasses[size]
       )}
     >
-      {showIcon && <Icon className={iconSizes[size]} />}
+      {showIcon && type === 'academic' && <Icon className={iconSizes[size]} />}
       <span>{config.label}</span>
       {score !== undefined && (
         <span className="opacity-75">({score})</span>
@@ -103,11 +129,12 @@ export function DualRatingBadge({
 }
 
 // Helper function to get rating from score
-export function getRatingFromScore(score: number): RatingType {
-  if (score >= 9) return 'excellent'
-  if (score >= 8) return 'good'
-  if (score >= 6.5) return 'fair'
-  return 'poor'
+export function getRatingFromScore(score: number): AcademicRatingType {
+  if (score >= 9) return 'excellent-plus'
+  if (score >= 8) return 'excellent'
+  if (score >= 6.5) return 'good'
+  if (score >= 5) return 'average'
+  return 'needs-improvement'
 }
 
 // Helper function to get all rating options
@@ -117,3 +144,4 @@ export function getAllRatings(): { value: RatingType; label: string }[] {
     label: config.label,
   }))
 }
+

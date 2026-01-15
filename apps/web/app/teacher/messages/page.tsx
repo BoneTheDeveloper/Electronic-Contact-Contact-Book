@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { getTeacherConversations, getConversationMessages, type Conversation, type Message } from '@/lib/mock-data'
 import { ConversationList } from '@/components/teacher/ConversationList'
 import { ChatWindow } from '@/components/teacher/ChatWindow'
+import { ContactInfoPanel } from '@/components/teacher/ContactInfoPanel'
 
 export default function MessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>([])
@@ -37,16 +38,18 @@ export default function MessagesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-[calc(100vh-64px)]">
         <p className="text-gray-500">Đang tải...</p>
       </div>
     )
   }
 
+  const selectedConversation = conversations.find(c => c.id === selectedConversationId)
+
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar - Conversation List */}
-      <div className="w-80 flex-shrink-0">
+    <div className="flex h-[calc(100vh-64px)]">
+      {/* Left Column - Chat List (320px) */}
+      <div className="w-80 flex-shrink-0 border-r border-gray-200">
         <ConversationList
           conversations={conversations}
           selectedId={selectedConversationId}
@@ -54,21 +57,27 @@ export default function MessagesPage() {
         />
       </div>
 
-      {/* Main Chat Area */}
-      <div className="flex-1">
+      {/* Center Column - Active Conversation (flex-1) */}
+      <div className="flex-1 flex flex-col bg-gray-50">
         {selectedConversationId ? (
           <ChatWindow
             conversationId={selectedConversationId}
             messages={messages}
             onSendMessage={handleSendMessage}
+            conversation={selectedConversation}
           />
         ) : (
-          <div className="flex items-center justify-center h-full bg-white">
-            <div className="text-center">
-              <p className="text-gray-500 mb-4">Chọn một cuộc trò chuyện để bắt đầu</p>
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center text-gray-400">
+              <p>Chọn một cuộc hội thoại</p>
             </div>
           </div>
         )}
+      </div>
+
+      {/* Right Column - Contact Info (320px, hidden on mobile) */}
+      <div className="hidden lg:block w-80 flex-shrink-0 border-l border-gray-200 bg-white">
+        <ContactInfoPanel conversation={selectedConversation} />
       </div>
     </div>
   )
