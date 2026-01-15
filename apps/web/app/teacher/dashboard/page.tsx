@@ -12,7 +12,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { getTeacherStats, getGradeReviewRequests, getLeaveRequests, getTeacherClasses } from '@/lib/mock-data'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { getTeacherStats, getGradeReviewRequests, getLeaveRequests, getTeacherClasses, getRegularAssessments, getTeacherSchedule } from '@/lib/mock-data'
 import Link from 'next/link'
 
 export default async function TeacherDashboard() {
@@ -20,6 +21,8 @@ export default async function TeacherDashboard() {
   const gradeReviews = await getGradeReviewRequests()
   const leaveRequests = await getLeaveRequests('10A', 'pending')
   const classes = await getTeacherClasses()
+  const regularAssessments = await getRegularAssessments()
+  const schedule = await getTeacherSchedule()
 
   return (
     <div className="space-y-8 p-8">
@@ -124,6 +127,9 @@ export default async function TeacherDashboard() {
                         {request.assessmentType === 'final' ? 'Thi cuối kỳ' : 'Kiểm tra 15 phút'} • Điểm hiện tại:{' '}
                         <span className="font-bold text-red-500">{request.currentScore}</span>
                       </p>
+                      {request.reason && (
+                        <p className="text-xs text-gray-600 mt-1 italic">Lý do: {request.reason}</p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -134,6 +140,64 @@ export default async function TeacherDashboard() {
                   </div>
                 </div>
               ))}
+              {gradeReviews.length === 0 && (
+                <div className="text-center text-gray-400 py-8">Không có yêu cầu phúc khảo nào</div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Regular Assessment Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-black">Đánh giá nhận xét</CardTitle>
+                  <p className="text-xs text-gray-500 font-medium uppercase tracking-widest mt-1">
+                    Đánh giá học sinh theo môn
+                  </p>
+                </div>
+                <Link href="/teacher/assessments">
+                  <Button variant="link" className="text-sky-600 text-xs font-black uppercase tracking-widest p-0 h-auto">
+                    Xem tất cả
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                  <CardContent className="pt-6">
+                    <div className="text-3xl font-bold text-green-600">
+                      {regularAssessments.filter(a => a.status === 'evaluated').length}
+                    </div>
+                    <div className="text-sm text-green-700 font-bold mt-1">Đã đánh giá</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
+                  <CardContent className="pt-6">
+                    <div className="text-3xl font-bold text-amber-600">
+                      {regularAssessments.filter(a => a.status === 'pending').length}
+                    </div>
+                    <div className="text-sm text-amber-700 font-bold mt-1">Chưa đánh giá</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                  <CardContent className="pt-6">
+                    <div className="text-3xl font-bold text-blue-600">
+                      {regularAssessments.filter(a => a.rating && a.rating >= 4).length}
+                    </div>
+                    <div className="text-sm text-blue-700 font-bold mt-1">Tiếp tục cố gắng</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+                  <CardContent className="pt-6">
+                    <div className="text-3xl font-bold text-red-600">
+                      {regularAssessments.filter(a => a.status === 'needs-attention').length}
+                    </div>
+                    <div className="text-sm text-red-700 font-bold mt-1">Cần lưu ý</div>
+                  </CardContent>
+                </Card>
+              </div>
             </CardContent>
           </Card>
 
@@ -256,21 +320,23 @@ export default async function TeacherDashboard() {
               <CardTitle className="text-lg font-black">Lịch dạy hôm nay</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {stats.todaySchedule.map((schedule, index) => (
-                <div key={schedule.id} className="relative pl-6 border-l-2 border-blue-500/30">
+              {schedule.map((item, index) => (
+                <div key={item.period} className="relative pl-6 border-l-2 border-blue-500/30">
                   <div className={`absolute -left-[5px] top-0 w-2 h-2 rounded-full ${index === 0 ? 'bg-blue-500' : 'bg-gray-600'}`} />
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                    {schedule.period}
+                    Tiết {item.period}
                   </p>
-                  <p className="text-sm font-bold">{schedule.subject} • {schedule.className}</p>
-                  <p className="text-xs text-gray-500">Phòng {schedule.room}</p>
+                  <p className="text-sm font-bold">{item.subject} • {item.className}</p>
+                  <p className="text-xs text-gray-500">{item.time} • Phòng {item.room}</p>
                 </div>
               ))}
             </CardContent>
             <div className="p-6 pt-0">
-              <Button variant="outline" className="w-full bg-white/10 text-white hover:bg-white/20 border-white/20">
-                Xem toàn bộ lịch
-              </Button>
+              <Link href="/teacher/schedule">
+                <Button variant="outline" className="w-full bg-white/10 text-white hover:bg-white/20 border-white/20">
+                  Xem toàn bộ lịch
+                </Button>
+              </Link>
             </div>
           </Card>
 

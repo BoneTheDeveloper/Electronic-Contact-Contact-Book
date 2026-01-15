@@ -3,10 +3,9 @@
 import { useState } from 'react'
 import { GradeEntry } from '@/lib/mock-data'
 import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Save, AlertCircle } from 'lucide-react'
+import { Save, Download, Upload, Lock, Unlock, AlertCircle } from 'lucide-react'
+import { GradeInputCell } from './GradeInputCell'
 
 interface GradeEntryFormProps {
   students: GradeEntry[]
@@ -14,276 +13,264 @@ interface GradeEntryFormProps {
   classId?: string
 }
 
+interface StudentGrades {
+  tx1?: number
+  tx2?: number
+  tx3?: number
+  gk?: number
+  ck?: number
+}
+
 export function GradeEntryForm({ students, subject, classId }: GradeEntryFormProps) {
-  const [grades, setGrades] = useState<Record<string, GradeEntry>>(
-    students.reduce((acc, student) => {
-      acc[student.studentId] = { ...student }
-      return acc
-    }, {} as Record<string, GradeEntry>)
-  )
-
-  const [errors, setErrors] = useState<Record<string, string>>({})
-
-  const updateScore = (
-    studentId: string,
-    type: 'oral' | 'quiz' | 'midterm' | 'final',
-    value: string,
-    index?: number
-  ) => {
-    const numValue = parseFloat(value)
-    const student = grades[studentId]
-
-    if (type === 'oral' && typeof index !== 'undefined') {
-      const newOral = [...student.oral]
-      newOral[index] = isNaN(numValue) ? 0 : numValue
-      setGrades(prev => ({
-        ...prev,
-        [studentId]: { ...student, oral: newOral },
-      }))
-    } else if (type === 'quiz' && typeof index !== 'undefined') {
-      const newQuiz = [...student.quiz]
-      newQuiz[index] = isNaN(numValue) ? 0 : numValue
-      setGrades(prev => ({
-        ...prev,
-        [studentId]: { ...student, quiz: newQuiz },
-      }))
-    } else if (type === 'midterm') {
-      setGrades(prev => ({
-        ...prev,
-        [studentId]: { ...student, midterm: isNaN(numValue) ? 0 : numValue },
-      }))
-    } else if (type === 'final') {
-      setGrades(prev => ({
-        ...prev,
-        [studentId]: { ...student, final: isNaN(numValue) ? 0 : numValue },
-      }))
-    }
-
-    // Clear error for this field
-    setErrors(prev => {
-      const newErrors = { ...prev }
-      delete newErrors[`${studentId}-${type}`]
-      return newErrors
-    })
-  }
-
-  const addOralScore = (studentId: string) => {
-    const student = grades[studentId]
-    setGrades(prev => ({
-      ...prev,
-      [studentId]: { ...student, oral: [...student.oral, 0] },
-    }))
-  }
-
-  const addQuizScore = (studentId: string) => {
-    const student = grades[studentId]
-    setGrades(prev => ({
-      ...prev,
-      [studentId]: { ...student, quiz: [...student.quiz, 0] },
-    }))
-  }
-
-  const validateScore = (value: number): boolean => {
-    return value >= 0 && value <= 10
-  }
-
-  const calculateAverage = (studentId: string): number => {
-    const student = grades[studentId]
-    const oralAvg = student.oral.length > 0 ? student.oral.reduce((a, b) => a + b, 0) / student.oral.length : 0
-    const quizAvg = student.quiz.length > 0 ? student.quiz.reduce((a, b) => a + b, 0) / student.quiz.length : 0
-    const avg = (oralAvg + quizAvg * 2 + student.midterm * 3 + student.final * 4) / 10
-    return Math.round(avg * 100) / 100
-  }
-
-  const handleSubmit = async () => {
-    const newErrors: Record<string, string> = {}
-
-    // Validate all scores
-    Object.entries(grades).forEach(([studentId, student]) => {
-      student.oral.forEach((score, index) => {
-        if (!validateScore(score)) {
-          newErrors[`${studentId}-oral-${index}`] = 'Điểm phải từ 0-10'
-        }
-      })
-      student.quiz.forEach((score, index) => {
-        if (!validateScore(score)) {
-          newErrors[`${studentId}-quiz-${index}`] = 'Điểm phải từ 0-10'
-        }
-      })
-      if (!validateScore(student.midterm)) {
-        newErrors[`${studentId}-midterm`] = 'Điểm phải từ 0-10'
-      }
-      if (!validateScore(student.final)) {
-        newErrors[`${studentId}-final`] = 'Điểm phải từ 0-10'
+  const [grades, setGrades] = useState<Record<string, StudentGrades>>(() => {
+    const initial: Record<string, StudentGrades> = {}
+    students.forEach((student, index) => {
+      initial[student.studentId] = {
+        tx1: student.oral[0] || student.oral[1] || undefined,
+        tx2: student.quiz[0] || undefined,
+        tx3: student.oral[2] || student.quiz[1] || undefined,
+        gk: student.midterm || undefined,
+        ck: student.final || undefined,
       }
     })
+    return initial
+  })
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      alert('Vui lòng kiểm tra lại các điểm nhập!')
-      return
+  const [isLocked, setIsLocked] = useState(false)
+  const [hasChanges, setHasChanges] = useState(false)
+
+  // Calculate average: ĐTB = (TX1 + TX2 + TX3) × 1 + GK × 2 + CK × 3 ÷ 8
+  const calculateAverage = (studentId: string): string => {
+    const g = grades[studentId]
+    if (!g) return '--'
+
+    const tx1 = g.tx1 ?? 0
+    const tx2 = g.tx2 ?? 0
+    const tx3 = g.tx3 ?? 0
+    const gk = g.gk ?? 0
+    const ck = g.ck ?? 0
+
+    // Check if any required grades are missing
+    if (g.tx1 === undefined || g.tx2 === undefined || g.tx3 === undefined ||
+        g.gk === undefined || g.ck === undefined) {
+      return '--'
     }
 
-    // Mock save - in real app, would call API
+    const avg = ((tx1 + tx2 + tx3) * 1 + gk * 2 + ck * 3) / 8
+    return avg.toFixed(2)
+  }
+
+  // Get color class for average
+  const getAverageColor = (avg: string) => {
+    if (avg === '--') return 'bg-gray-100 text-gray-400 border border-gray-300'
+    const num = parseFloat(avg)
+    if (num >= 8.0) return 'bg-green-100 text-green-700 border border-green-300'
+    if (num >= 6.5) return 'bg-blue-100 text-blue-700 border border-blue-300'
+    if (num >= 5.0) return 'bg-amber-100 text-amber-700 border border-amber-300'
+    return 'bg-red-100 text-red-700 border border-red-300'
+  }
+
+  // Calculate statistics
+  const calculateStatistics = () => {
+    const averages = students
+      .map(s => calculateAverage(s.studentId))
+      .filter(a => a !== '--')
+      .map(a => parseFloat(a))
+
+    return {
+      excellent: averages.filter(a => a >= 8.0).length,
+      good: averages.filter(a => a >= 6.5 && a < 8.0).length,
+      average: averages.filter(a => a >= 5.0 && a < 6.5).length,
+      poor: averages.filter(a => a < 5.0).length,
+      classAverage: averages.length > 0
+        ? (averages.reduce((a, b) => a + b, 0) / averages.length).toFixed(2)
+        : '--',
+    }
+  }
+
+  const stats = calculateStatistics()
+
+  const updateGrade = (studentId: string, field: keyof StudentGrades, value: number | undefined) => {
+    setGrades(prev => ({
+      ...prev,
+      [studentId]: {
+        ...prev[studentId],
+        [field]: value,
+      },
+    }))
+    setHasChanges(true)
+  }
+
+  const saveDraft = () => {
+    console.log('Saving draft:', { classId, subject, grades })
+    setHasChanges(false)
+    alert('Đã lưu nháp thành công!')
+  }
+
+  const saveGrades = () => {
     console.log('Saving grades:', { classId, subject, grades })
+    setHasChanges(false)
     alert('Đã lưu điểm thành công!')
   }
 
-  const getGradeBadge = (avg: number) => {
-    if (avg >= 9) return <Badge variant="success">Giỏi</Badge>
-    if (avg >= 7) return <Badge variant="default">Khá</Badge>
-    if (avg >= 5) return <Badge variant="warning">Trung bình</Badge>
-    return <Badge variant="destructive">Yếu</Badge>
+  const downloadTemplate = () => {
+    alert('Tải xuống mẫu Excel...')
+  }
+
+  const importExcel = () => {
+    alert('Nhập điểm từ Excel...')
   }
 
   return (
     <div className="space-y-6">
-      {/* Info Card */}
+      {/* Formula Display */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
           <div>
-            <h4 className="font-semibold text-blue-900">Thang điểm 10</h4>
-            <p className="text-sm text-blue-700 mt-1">
-              • Điểm miệng: hệ số 1 • Điểm 15 phút: hệ số 2 • Điểm giữa kỳ: hệ số 3 • Điểm cuối kỳ: hệ số 4
+            <h4 className="font-semibold text-blue-900 text-sm">CÔNG THỨC TÍNH ĐIỂM TRUNG BÌNH</h4>
+            <p className="text-base text-blue-800 mt-1 font-medium">
+              ĐTB = (TX1 + TX2 + TX3) × 1 + GK × 2 + CK × 3 ÷ 8
+            </p>
+            <p className="text-xs text-blue-700 mt-2">
+              • TX1, TX2, TX3: Điểm kiểm tra viết (hệ số 1) • GK: Giữa kỳ (hệ số 2) • CK: Cuối kỳ (hệ số 3)
             </p>
           </div>
         </div>
       </div>
 
-      {/* Grade Entry Table */}
-      <div className="bg-white border border-gray-200 rounded-lg overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12">STT</TableHead>
-              <TableHead className="min-w-[200px]">Họ và tên</TableHead>
-              <TableHead>Điểm miệng</TableHead>
-              <TableHead>Điểm 15 phút</TableHead>
-              <TableHead>Điểm giữa kỳ</TableHead>
-              <TableHead>Điểm cuối kỳ</TableHead>
-              <TableHead>Trung bình</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {students.map((student, index) => {
-              const avg = calculateAverage(student.studentId)
-              return (
-                <TableRow key={student.studentId}>
-                  <TableCell className="font-medium">{index + 1}</TableCell>
-                  <TableCell className="font-medium">{student.studentName}</TableCell>
-                  <TableCell>
-                    <div className="space-y-2">
-                      {grades[student.studentId].oral.map((score, i) => (
-                        <div key={i} className="flex gap-2">
-                          <Input
-                            type="number"
-                            min="0"
-                            max="10"
-                            step="0.5"
-                            value={score === 0 ? '' : score}
-                            onChange={(e) => updateScore(student.studentId, 'oral', e.target.value, i)}
-                            className="w-20"
-                          />
-                          {errors[`${student.studentId}-oral-${i}`] && (
-                            <span className="text-xs text-red-500">
-                              {errors[`${student.studentId}-oral-${i}`]}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addOralScore(student.studentId)}
-                        type="button"
-                      >
-                        + Thêm
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-2">
-                      {grades[student.studentId].quiz.map((score, i) => (
-                        <div key={i} className="flex gap-2">
-                          <Input
-                            type="number"
-                            min="0"
-                            max="10"
-                            step="0.5"
-                            value={score === 0 ? '' : score}
-                            onChange={(e) => updateScore(student.studentId, 'quiz', e.target.value, i)}
-                            className="w-20"
-                          />
-                          {errors[`${student.studentId}-quiz-${i}`] && (
-                            <span className="text-xs text-red-500">
-                              {errors[`${student.studentId}-quiz-${i}`]}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addQuizScore(student.studentId)}
-                        type="button"
-                      >
-                        + Thêm
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="10"
-                      step="0.5"
-                      value={grades[student.studentId].midterm === 0 ? '' : grades[student.studentId].midterm}
-                      onChange={(e) => updateScore(student.studentId, 'midterm', e.target.value)}
-                      className="w-20"
-                    />
-                    {errors[`${student.studentId}-midterm`] && (
-                      <span className="text-xs text-red-500 block">
-                        {errors[`${student.studentId}-midterm`]}
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="10"
-                      step="0.5"
-                      value={grades[student.studentId].final === 0 ? '' : grades[student.studentId].final}
-                      onChange={(e) => updateScore(student.studentId, 'final', e.target.value)}
-                      className="w-20"
-                    />
-                    {errors[`${student.studentId}-final`] && (
-                      <span className="text-xs text-red-500 block">
-                        {errors[`${student.studentId}-final`]}
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <p className="text-lg font-bold">{avg > 0 ? avg.toFixed(2) : '-'}</p>
-                      {avg > 0 && getGradeBadge(avg)}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
+      {/* Class Statistics */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="border-l-4 border-green-500 bg-white rounded-lg shadow-sm p-4">
+          <div className="text-3xl font-bold text-green-600">{stats.excellent}</div>
+          <div className="text-xs text-gray-500 mt-1">Giỏi (≥8.0)</div>
+        </div>
+        <div className="border-l-4 border-blue-500 bg-white rounded-lg shadow-sm p-4">
+          <div className="text-3xl font-bold text-blue-600">{stats.good}</div>
+          <div className="text-xs text-gray-500 mt-1">Khá (6.5-7.9)</div>
+        </div>
+        <div className="border-l-4 border-amber-500 bg-white rounded-lg shadow-sm p-4">
+          <div className="text-3xl font-bold text-amber-600">{stats.average}</div>
+          <div className="text-xs text-gray-500 mt-1">Trung bình (5.0-6.4)</div>
+        </div>
+        <div className="border-l-4 border-red-500 bg-white rounded-lg shadow-sm p-4">
+          <div className="text-3xl font-bold text-red-600">{stats.poor}</div>
+          <div className="text-xs text-gray-500 mt-1">Yếu (&lt;5.0)</div>
+        </div>
+        <div className="border-l-4 border-purple-500 bg-white rounded-lg shadow-sm p-4">
+          <div className="text-3xl font-bold text-purple-600">{stats.classAverage}</div>
+          <div className="text-xs text-gray-500 mt-1">Điểm TB lớp</div>
+        </div>
       </div>
 
-      {/* Submit Button */}
-      <div className="flex justify-end gap-3">
-        <Button variant="outline" type="button">
-          Hủy
+      {/* Lock Status */}
+      <div className="flex justify-between items-center bg-white rounded-lg p-4 border border-gray-200">
+        <Badge variant={isLocked ? "destructive" : "default"} className="text-sm px-3 py-1">
+          {isLocked ? 'Đã khóa điểm' : 'Chưa khóa điểm'}
+        </Badge>
+        <Button
+          variant={isLocked ? "outline" : "default"}
+          onClick={() => setIsLocked(!isLocked)}
+          className="gap-2"
+        >
+          {isLocked ? (
+            <>
+              <Unlock className="h-4 w-4" />
+              Mở khóa điểm
+            </>
+          ) : (
+            <>
+              <Lock className="h-4 w-4" />
+              Khóa điểm
+            </>
+          )}
         </Button>
-        <Button onClick={handleSubmit} type="button">
-          <Save className="h-4 w-4 mr-2" />
+      </div>
+
+      {/* Grade Table */}
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-wider sticky left-0 bg-gray-50 z-10">
+                  STT
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-wider sticky left-12 bg-gray-50 z-10 min-w-[200px]">
+                  Họ và tên
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-black text-gray-400 uppercase tracking-wider min-w-[100px]">
+                  TX1
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-black text-gray-400 uppercase tracking-wider min-w-[100px]">
+                  TX2
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-black text-gray-400 uppercase tracking-wider min-w-[100px]">
+                  TX3
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-black text-gray-400 uppercase tracking-wider min-w-[100px]">
+                  GK (x2)
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-black text-gray-400 uppercase tracking-wider min-w-[100px]">
+                  CK (x3)
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-black text-gray-400 uppercase tracking-wider min-w-[100px]">
+                  ĐTB
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {students.map((student, index) => {
+                const avg = calculateAverage(student.studentId)
+                return (
+                  <tr key={student.studentId} className="hover:bg-gray-50">
+                    <td className="px-4 py-4 text-sm font-bold sticky left-0 bg-white z-10">
+                      {index + 1}
+                    </td>
+                    <td className="px-4 py-4 text-sm font-bold sticky left-12 bg-white z-10">
+                      {student.studentName}
+                    </td>
+                    {(['tx1', 'tx2', 'tx3', 'gk', 'ck'] as const).map((field) => (
+                      <td key={field} className="px-2 py-4 text-center">
+                        <GradeInputCell
+                          value={grades[student.studentId]?.[field]}
+                          onChange={(val) => updateGrade(student.studentId, field, val)}
+                          disabled={isLocked}
+                          locked={isLocked}
+                          min={0}
+                          max={10}
+                          step={0.25}
+                        />
+                      </td>
+                    ))}
+                    <td className="px-4 py-4 text-center">
+                      <div className={`inline-block px-4 py-2 rounded-lg font-bold text-sm ${getAverageColor(avg)}`}>
+                        {avg}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-3 justify-end">
+        <Button variant="outline" onClick={saveDraft} disabled={!hasChanges} className="gap-2">
+          Lưu nháp
+        </Button>
+        <Button variant="outline" onClick={downloadTemplate} className="gap-2">
+          <Download className="h-4 w-4" />
+          Tải mẫu
+        </Button>
+        <Button variant="outline" onClick={importExcel} className="gap-2">
+          <Upload className="h-4 w-4" />
+          Nhập Excel
+        </Button>
+        <Button onClick={saveGrades} disabled={!hasChanges || isLocked} className="gap-2">
+          <Save className="h-4 w-4" />
           Lưu điểm
         </Button>
       </div>
