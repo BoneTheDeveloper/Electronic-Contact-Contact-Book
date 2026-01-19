@@ -18,9 +18,10 @@ import {
 import { TextInput, Button, Text, useTheme } from 'react-native-paper';
 import { useAuthStore } from '../../stores';
 import { colors } from '../../theme';
+import type { AuthStackNavigationProp } from '../../navigation/types';
 
 interface LoginScreenProps {
-  navigation: any;
+  navigation: AuthStackNavigationProp;
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {

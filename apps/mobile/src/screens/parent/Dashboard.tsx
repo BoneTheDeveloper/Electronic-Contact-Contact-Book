@@ -15,18 +15,21 @@ import { Text, Avatar, Card } from 'react-native-paper';
 import { useAuthStore } from '../../stores';
 import { useParentStore } from '../../stores';
 import { colors } from '../../theme';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { ParentHomeStackNavigationProp, ParentHomeStackParamList, ParentTabParamList } from '../../navigation/types';
 
 const { width } = Dimensions.get('window');
 const ICON_SIZE = 80;
 const GAP = 16;
+
+// Valid routes from Dashboard: HomeStack routes + tab navigation routes
+type DashboardRoute = keyof ParentHomeStackParamList | 'News' | 'PaymentOverview';
 
 interface ServiceIcon {
   id: string;
   label: string;
   icon: string;
   color: string;
-  route: string;
+  route: DashboardRoute;
 }
 
 const SERVICE_ICONS: ServiceIcon[] = [
@@ -42,7 +45,7 @@ const SERVICE_ICONS: ServiceIcon[] = [
 ];
 
 interface DashboardScreenProps {
-  navigation: NativeStackNavigationProp<any>;
+  navigation: ParentHomeStackNavigationProp;
 }
 
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
@@ -60,11 +63,15 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
 
   const renderServiceIcon = (item: ServiceIcon) => {
     const containerWidth = (width - 32 - GAP * 2) / 3;
+    const handlePress = () => {
+      // Navigate to route - works for both HomeStack routes and tab routes
+      navigation.navigate(item.route as keyof ParentHomeStackParamList);
+    };
     return (
       <TouchableOpacity
         key={item.id}
         style={[styles.iconContainer, { width: containerWidth }]}
-        onPress={() => navigation.navigate(item.route as never)}
+        onPress={handlePress}
         activeOpacity={0.7}
       >
         <View style={[styles.iconWrapper, { borderColor: item.color }]}>

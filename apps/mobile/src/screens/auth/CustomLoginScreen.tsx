@@ -22,13 +22,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Rect, Line, Polyline } from 'react-native-svg';
 import { useAuthStore } from '../../stores';
 import { colors } from '../../theme';
+import type { AuthStackNavigationProp } from '../../navigation/types';
 
 const { width } = Dimensions.get('window');
 
 type ScreenType = 'login' | 'forgotPassword' | 'enterPhone' | 'otp' | 'contactSchool' | 'contactParent' | 'changePassword';
 
 interface LoginScreenProps {
-  navigation: any;
+  navigation: AuthStackNavigationProp;
 }
 
 const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
@@ -109,10 +110,8 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       return;
     }
     // Password changed successfully, navigate to main app
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Main' }],
-    });
+    // The RootNavigator will handle redirection based on auth state
+    navigation.navigate('Login');
   };
 
   const getPasswordStrength = (pwd: string) => {

@@ -8,19 +8,19 @@ import { View, ScrollView, StyleSheet } from 'react-native';
 import { Text, Card, Button, Chip, Divider } from 'react-native-paper';
 import { getFeesByStudentId } from '../../mock-data';
 import { colors } from '../../theme';
+import type { RouteProp } from '@react-navigation/native';
+import type { ParentPaymentStackParamList } from '../../navigation/types';
+
+type PaymentDetailRouteProp = RouteProp<ParentPaymentStackParamList, 'PaymentDetail'>;
 
 interface PaymentDetailProps {
-  route: {
-    params: {
-      feeId: string;
-    };
-  };
+  route: PaymentDetailRouteProp;
 }
 
 export const PaymentDetailScreen: React.FC<PaymentDetailProps> = ({ route }) => {
-  const { feeId } = route.params;
+  const { paymentId } = route.params;
   const fees = getFeesByStudentId('2'); // Mock: using student ID 2
-  const fee = fees.find(f => f.id === feeId);
+  const fee = fees.find(f => f.id === paymentId);
 
   if (!fee) {
     return (

@@ -23,6 +23,7 @@ import {
   StudentPaymentScreen,
   StudentStudyMaterialsScreen,
 } from '../screens/student';
+import type { StudentTabParamList } from './types';
 
 // Home Stack (Dashboard, Schedule, Grades, Attendance, Study Materials, Leave Request, Teacher Feedback, News, Summary, Payment)
 const HomeStack = createNativeStackNavigator();
@@ -73,11 +74,6 @@ const ProfileIcon = ({ focused }: { focused: boolean }) => (
     </Svg>
   </View>
 );
-
-export type StudentTabParamList = {
-  StudentHome: undefined;
-  StudentProfile: undefined;
-};
 
 const Tab = createBottomTabNavigator<StudentTabParamList>();
 

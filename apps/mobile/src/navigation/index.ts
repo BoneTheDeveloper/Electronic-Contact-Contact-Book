@@ -7,7 +7,20 @@ export { default as AuthNavigator } from './AuthNavigator';
 export { default as ParentTabs } from './ParentTabs';
 export { default as StudentTabs } from './StudentTabs';
 
-export type { RootStackParamList } from './RootNavigator';
-export type { AuthStackParamList } from './AuthNavigator';
-export type { ParentTabParamList } from './ParentTabs';
-export type { StudentTabParamList } from './StudentTabs';
+// Export all centralized types from types.ts
+export type {
+  RootStackParamList,
+  RootStackNavigationProp,
+  AuthStackParamList,
+  AuthStackNavigationProp,
+  ParentTabParamList,
+  ParentHomeStackParamList,
+  ParentHomeStackNavigationProp,
+  ParentPaymentStackParamList,
+  ParentCommStackParamList,
+  ParentCommStackNavigationProp,
+  StudentTabParamList,
+  StudentHomeStackParamList,
+  StudentHomeStackNavigationProp,
+  NavigationProp,
+} from './types';

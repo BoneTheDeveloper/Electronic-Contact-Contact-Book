@@ -23,6 +23,7 @@ import {
 import { PaymentOverviewScreen, PaymentDetailScreen, PaymentMethodScreen, PaymentReceiptScreen } from '../screens/parent';
 import { MessagesScreen, NotificationsScreen, NewsScreen } from '../screens/parent';
 import { TeacherDirectoryScreen } from '../screens/parent';
+import type { ParentPaymentStackParamList, ParentTabParamList } from './types';
 
 // Home Stack (Dashboard, Schedule, Grades, Attendance, TeacherFeedback, LeaveRequest, Summary, TeacherDirectory)
 const HomeStack = createNativeStackNavigator();
@@ -40,14 +41,11 @@ const HomeStackNavigator = () => (
 );
 
 // Payment Stack (Overview, Detail, Method, Receipt)
-const PaymentStack = createNativeStackNavigator();
+const PaymentStack = createNativeStackNavigator<ParentPaymentStackParamList>();
 const PaymentStackNavigator: React.FC = () => (
   <PaymentStack.Navigator screenOptions={{ headerShown: false }}>
     <PaymentStack.Screen name="PaymentOverview" component={PaymentOverviewScreen} />
-    <PaymentStack.Screen
-      name="PaymentDetail"
-      component={({ route }: any) => <PaymentDetailScreen route={route} />}
-    />
+    <PaymentStack.Screen name="PaymentDetail" component={PaymentDetailScreen} />
     <PaymentStack.Screen name="PaymentMethod" component={PaymentMethodScreen} />
     <PaymentStack.Screen name="PaymentReceipt" component={PaymentReceiptScreen} />
   </PaymentStack.Navigator>
@@ -104,12 +102,6 @@ const ProfileIcon = ({ focused }: { focused: boolean }) => (
     </Svg>
   </View>
 );
-
-export type ParentTabParamList = {
-  ParentHome: undefined;
-  ParentMessages: undefined;
-  ParentProfile: undefined;
-};
 
 const Tab = createBottomTabNavigator<ParentTabParamList>();
 
