@@ -1,54 +1,54 @@
-# Tech Stack - Mobile EContact Mock UI
+# Tech Stack - Mobile EContact App
 
 ## Project Overview
-Mobile mock UI for school econtact app targeting students and parents. Built with React Native for iOS/Android compatibility.
+Mobile application for school econtact system targeting parents and students. Built with React Native and Expo for iOS/Android compatibility. Custom React Navigation implementation with Material Design components.
 
 ## Core Technologies
 
 ### Frontend Framework
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| **Expo** | latest | React Native development tooling |
-| **React Native** | latest | Cross-platform mobile framework |
-| **TypeScript** | latest | Type safety and developer experience |
+| **Expo** | ~54.0.0 | React Native development tooling |
+| **React Native** | 0.81.0 | Cross-platform mobile framework |
+| **TypeScript** | ^5.3.3 | Type safety and developer experience |
 
 ### Navigation & UI
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| **React Navigation** | v6+ | Screen navigation (Stack, Tab) |
-| **React Native Paper** | latest | Material Design components |
-| **React Native Vector Icons** | latest | Icon library |
+| **React Navigation** | ^7.0.0 | Screen navigation (Stack, Tab) |
+| **React Native Paper** | ^5.11.3 | Material Design components |
+| **React Native Vector Icons** | ^10.0.3 | Icon library |
+| **React Native SVG** | ^15.15.1 | SVG rendering |
 
 ### State & Data
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| **Zustand** | latest | Lightweight state management |
+| **Zustand** | ^4.4.7 | Lightweight state management |
 | **Context API** | built-in | Global state (auth, theme) |
-| **Axios** | latest | HTTP client (future API integration) |
+| **AsyncStorage** | ^1.21.0 | Persistent storage |
 
 ### Development Tools
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| **ESLint** | latest | Code linting |
-| **Prettier** | latest | Code formatting |
-| **TypeScript** | latest | Static typing |
+| **ESLint** | ^6.0.0 | Code linting |
+| **TypeScript ESLint** | ^6.0.0 | TypeScript linting |
+| **TypeScript** | ^5.3.3 | Static typing |
 
 ## Design System
 
-### Colors (Professional/Academic)
+### Colors (Sky Blue Theme - #0284C7)
 ```typescript
 const colors = {
-  primary: '#1e88e5',      // Trust, focus
-  primaryLight: '#42a5f5', // Lighter variant
-  secondary: '#43a047',    // Growth, harmony
-  success: '#4caf50',      // Positive feedback
-  warning: '#ff9800',      // Warnings
-  error: '#f44336',        // Errors, alerts
-  info: '#2196f3',         // Information
+  primary: '#0284C7',      // Main brand color
+  primaryDark: '#075985',  // Gradient end, hover states
+  primaryLight: '#E0F2FE', // Background highlights
+  secondary: '#10B981',     // Success, positive actions
+  warning: '#F59E0B',      // Warnings, pending items
+  error: '#EF4444',        // Errors, critical issues
   background: '#ffffff',
-  surface: '#f5f5f5',
-  text: '#212121',
-  textSecondary: '#757575',
+  surface: '#f3f4f6',
+  text: '#111827',
+  textSecondary: '#6B7280',
 }
 ```
 
@@ -73,45 +73,86 @@ const typography = {
 ## Project Structure
 
 ```
-mobile_mock_ui/
-├── assets/
-│   ├── icons/           # PNG/SVG icons
-│   ├── images/          # Logo, avatars
-│   └── styles/          # Theme, colors config
-├── mock_data/           # JSON mock data files
-│   ├── users.json
-│   ├── academic.json
-│   ├── attendance.json
-│   ├── grades.json
-│   ├── notifications.json
-│   └── fees.json
+apps/mobile/
+├── assets/                    # Images, icons, logos
+│   ├── icon.png               # App icon
+│   ├── splash.png             # Splash screen
+│   └── README.md              # Asset instructions
 ├── src/
-│   ├── components/      # Reusable UI components
-│   ├── screens/         # Screen components
-│   ├── navigation/      # Navigation config
-│   ├── store/           # Zustand stores
-│   ├── services/        # Data services
-│   ├── types/           # TypeScript types
-│   └── utils/           # Helper functions
-├── App.tsx              # Root component
-└── package.json
+│   ├── components/            # Reusable UI components
+│   ├── screens/               # Screen components
+│   ├── navigation/            # Navigation configs
+│   ├── stores/                # Zustand stores
+│   ├── mock-data/             # Mock data files
+│   └── utils/                 # Helper functions
+├── App.tsx                    # Root component & navigation
+├── package.json               # Dependencies & scripts
+├── app.json                   # Expo configuration
+└── tsconfig.json              # TypeScript config
 ```
 
-## MVP Screens (Phase 1)
+## Current Implementation Status
 
-1. **Auth Screen** - Login mock
-2. **Dashboard** - Overview of grades, attendance, notifications
-3. **Profile** - Student/parent info
-4. **Grades** - Subject-wise grades with trends
-5. **Attendance** - Calendar view with attendance records
-6. **Notifications** - Categorized alerts
-7. **Fees** - Payment status and history
+### Completed Components
+1. **Navigation Structure** - Custom React Navigation setup
+2. **Mock Authentication** - Role-based login (parent/student)
+3. **Dashboard Layout** - 9 service icon grid
+4. **Theme System** - Sky blue (#0284C7) with Material Design
 
-## Future Enhancements (Iterative)
+### Phase 1 Screens (In Progress)
+1. **Auth Screen** - Login with role selection
+2. **Dashboard** - Overview with service icons
+3. **Schedule** - Calendar and class schedule
+4. **Grades** - Academic performance tracking
+5. **Attendance** - Daily/weekly attendance records
 
-- Class schedule
-- Assignment tracker
-- Library portal
-- Parent-child linking
-- Push notifications
-- Payment gateway integration
+### Planned Features (Phase 2)
+- **Messages** - Teacher communication
+- **Notifications** - Push notifications
+- **News** - School announcements
+- **Teachers** - Teacher directory
+- **Leave Requests** - Absence management
+
+## Development Environment
+
+### Scripts
+```json
+{
+  "start": "expo start",
+  "dev": "expo start --clear",
+  "android": "expo start --android",
+  "ios": "expo start --ios",
+  "web": "expo start --web",
+  "lint": "eslint . --ext .ts,.tsx",
+  "typecheck": "tsc --noEmit"
+}
+```
+
+### Important Notes
+- **Expo SDK 54+ Requirement**: Now requires development builds (EAS) - Expo Go no longer supports this version
+- **Development Builds**: Use `npx expo install` for dependencies, then `npx eas build` for production builds
+- **Development Build Installation**: After creating a development build, use Expo Go to open the QR code for installation
+
+### Entry Point Configuration
+- **Main**: `./App.tsx` (Custom navigation)
+- **Asset Bundle**: `**/*` (All files in assets directory)
+- **Platform**: iOS/Android/Web support
+
+## Future Enhancements
+
+### Phase 2: Backend Integration
+- Real API endpoints (replace mock data)
+- Authentication service integration
+- Push notifications (Expo Notifications)
+
+### Phase 3: Advanced Features
+- Parent-child account linking
+- Class schedule with reminders
+- Assignment tracker with deadlines
+- Fee payment integration
+
+### Phase 4: Production Readiness
+- Offline mode support
+- Biometric authentication
+- Dark theme support
+- Performance optimization

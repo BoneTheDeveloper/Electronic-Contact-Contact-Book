@@ -12,9 +12,9 @@ This monorepo contains:
 ## Tech Stack
 
 ### Mobile App
-- React Native 0.73.6
-- Expo ~50.0.0
-- React Navigation 6.x
+- React Native 0.81.0
+- Expo ~54.0.0
+- React Navigation 7.x
 - React Native Paper 5.x (Material Design)
 - Zustand (state management)
 
@@ -96,6 +96,13 @@ Then:
 - Press `a` for Android emulator
 - Press `i` for iOS simulator
 - Scan QR code with Expo Go app (physical device)
+
+**Note**: Expo SDK 54+ requires development builds. For physical devices, you'll need to create a development build first:
+```bash
+cd apps/mobile
+npx eas build --platform ios
+npx eas build --platform android
+```
 
 #### Web App (Admin/Teacher Portal)
 
@@ -276,11 +283,17 @@ Used consistently across both apps for:
 ```bash
 # Clear cache
 npx expo start --clear
+npx expo start --clear --dev
 
 # Reset node modules
 rm -rf node_modules
 pnpm install
 ```
+
+**Development build issues (Expo SDK 54+):**
+- Expo Go no longer supports SDK 54+, use development builds
+- Create development build: `npx eas build --platform ios/android`
+- For OTA updates: `npx eas update`
 
 **TypeScript errors:**
 ```bash
