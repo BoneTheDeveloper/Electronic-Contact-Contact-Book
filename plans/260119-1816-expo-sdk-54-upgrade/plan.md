@@ -20,7 +20,7 @@ This plan upgrades the mobile app from Expo SDK 53 (React Native 0.76.5) to Expo
 | Phase | Focus | Status | Effort |
 |-------|-------|--------|--------|
 | [Phase 01: SDK Upgrade](./phase-01-sdk-upgrade.md) | Upgrade dependencies & SDK | pending | 4h |
-| [Phase 02: New Architecture](./phase-02-new-architecture.md) | Enable New Arch config | pending | 3h |
+| [Phase 02: New Architecture](./phase-02-new-architecture.md) | Enable New Arch config | completed | 3h |
 | [Phase 03: Component Compatibility](./phase-03-component-compatibility.md) | Fix 37 components/screens | pending | 5h |
 | [Phase 04: Testing](./phase-04-testing.md) | Validate all features | pending | 4h |
 

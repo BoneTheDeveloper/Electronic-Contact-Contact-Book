@@ -2,7 +2,7 @@
 
 **Version**: 1.0
 **Last Updated**: 2026-01-19
-**Status**: Mobile Entry Point Configuration Fixed
+**Status**: React Native New Architecture Enabled
 
 ## Table of Contents
 
@@ -676,6 +676,82 @@ const mockApi = {
 beforeEach(() => {
   jest.clearAllMocks();
 });
+```
+
+## React Native New Architecture Standards
+
+### New Architecture Compatibility
+```typescript
+// ✅ Use TurboModules for native performance
+import { TurboModuleRegistry } from 'react-native';
+
+const TurboSampleModule = TurboModuleRegistry.getEnforcing('SampleModule');
+
+// ✅ Use Fabric components for enhanced UI performance
+import { View } from 'react-native';
+
+const FabricOptimizedComponent = () => {
+  // Components automatically benefit from Fabric renderer
+  return <View style={styles.container} />;
+};
+
+// ✅ Use Bridgeless APIs when available
+const BridgelessFeature = () => {
+  // New Architecture provides direct native access
+  const nativeMethod = TurboSampleModule.bridgelessMethod();
+  return <Text>{nativeMethod}</Text>;
+};
+```
+
+### Performance Optimization with New Architecture
+```typescript
+// ✅ Leverage bridgeless communication
+const NativePerfComponent = () => {
+  // Direct native calls without JS bridge overhead
+  const perfData = TurboModuleRegistry.get('PerfModule').getMetrics();
+
+  return (
+    <View>
+      <Text>Performance: {perfData.bridgeTime}ms saved</Text>
+    </View>
+  );
+};
+
+// ✅ Use optimized event handlers
+const OptimizedInteraction = () => {
+  // New Architecture handles events more efficiently
+  const handlePress = useCallback(() => {
+    TurboModuleRegistry.get('Analytics').logEvent('button_press');
+  }, []);
+
+  return <Button onPress={handlePress} title="Click" />;
+};
+```
+
+### Memory Management
+```typescript
+// ✅ Proper cleanup for TurboModules
+useEffect(() => {
+  const module = TurboModuleRegistry.get('StreamingModule');
+
+  return () => {
+    // Clean up native resources
+    module?.dispose();
+  };
+}, []);
+
+// ✅ Avoid memory leaks with bridgeless architecture
+const MemoryEfficientComponent = () => {
+  // New Architecture has better garbage collection
+  const data = useRef(null).current;
+
+  useEffect(() => {
+    // Native modules don't hold JS references unnecessarily
+    return () => {
+      // Cleanup is more efficient
+    };
+  }, []);
+};
 ```
 
 ## Performance Guidelines

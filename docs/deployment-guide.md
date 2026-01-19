@@ -2,7 +2,7 @@
 
 **Version**: 1.0
 **Last Updated**: 2026-01-19
-**Status**: Mobile Entry Point Configuration Fixed
+**Status**: React Native New Architecture Enabled
 
 ## Table of Contents
 
@@ -396,6 +396,29 @@ cat apps/mobile/app.json
 # or using Expo defaults
 ```
 
+**New Architecture Compatibility Issues**
+```bash
+# Verify New Architecture configuration
+cat apps/mobile/app.json | grep newArchEnabled
+
+# Should output: "newArchEnabled": true
+
+# Check Babel configuration
+cat apps/mobile/babel.config.js
+
+# Should include necessary plugins for New Architecture
+```
+
+**New Architecture Build Issues**
+```bash
+# Clean and rebuild with New Architecture
+npx expo prebuild --clean
+npx expo start --clear
+
+# Check for specific New Architecture errors
+# in Metro bundler logs
+```
+
 **Build Issues**
 ```bash
 # Clean build
@@ -480,6 +503,8 @@ jobs:
       - run: pnpm install
       - run: cd apps/mobile && pnpm install
       - run: cd apps/mobile && eas build --platform ios --profile preview
+      # New Architecture builds may require additional configuration
+      - run: cd apps/mobile && eas build --platform ios --profile production --new-arch-only
 
   web-build:
     runs-on: ubuntu-latest
@@ -615,4 +640,4 @@ npm outdated
 
 ## Conclusion
 
-This deployment guide covers the complete process for setting up, building, and deploying the EContact school management system. The recent mobile app entry point configuration fix ensures smooth development and production workflows. Always follow security best practices and maintain regular backups for production deployments.
+This deployment guide covers the complete process for setting up, building, and deploying the EContact school management system. The recent mobile app entry point configuration fix and React Native New Architecture enablement ensures smooth development and production workflows with enhanced performance. Always follow security best practices and maintain regular backups for production deployments.
