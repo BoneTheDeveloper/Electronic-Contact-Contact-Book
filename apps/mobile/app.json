@@ -19,12 +19,12 @@
     "experiments": {
       "typedRoutes": false
     },
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "plugins": [
       [
         "expo-dev-client",
         {
-          "newArchEnabled": true
+          "newArchEnabled": false
         }
       ]
     ]

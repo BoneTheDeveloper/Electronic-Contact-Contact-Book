@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { StatusBar } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { PaperProvider } from 'react-native-paper';
 import { RootNavigator } from './src/navigation';
 import { lightTheme, darkTheme } from './src/theme';
@@ -18,10 +18,7 @@ const App: React.FC = () => {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
-        <StatusBar
-          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-          backgroundColor={theme.colors.primary}
-        />
+        <StatusBar style={isDarkMode ? 'light' : 'dark'} />
         <RootNavigator />
       </PaperProvider>
     </SafeAreaProvider>

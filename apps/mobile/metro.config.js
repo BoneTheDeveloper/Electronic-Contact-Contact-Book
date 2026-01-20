@@ -5,8 +5,8 @@ const config = getDefaultConfig(__dirname, {
   isCSSEnabled: true,
 });
 
-// Enable new architecture for react-native-paper v6+
-config.resolver.unstable_enablePackageExports = true;
+// Enable package exports for New Architecture (disabled for Expo Go)
+config.resolver.unstable_enablePackageExports = false;
 
 // Fix "Body has already been read" error by properly configuring the server
 config.server = {
