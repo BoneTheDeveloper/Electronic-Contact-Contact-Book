@@ -1,5 +1,9 @@
-import { redirect } from 'next/navigation'
+import { useEffect } from 'react'
 
 export default function HomePage() {
-  redirect('/login')
+  useEffect(() => {
+    window.location.href = '/login'
+  }, [])
+
+  return null
 }
