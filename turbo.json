@@ -4,7 +4,7 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "build/**", "expo-env.d.ts"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**", "expo-env.d.ts"]
     },
     "dev": {
       "cache": false,
