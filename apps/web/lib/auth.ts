@@ -192,7 +192,7 @@ export async function login(formData: FormData) {
   // Role-based redirect
   const redirectMap: Record<UserRole, string> = {
     admin: '/admin/dashboard',
-    teacher: '/teacher-temp/dashboard',
+    teacher: '/teacher/dashboard',
     parent: '/parent/dashboard',
     student: '/student/dashboard',
   };

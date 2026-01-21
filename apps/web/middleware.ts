@@ -35,7 +35,7 @@ function getUserFromCookie(request: NextRequest): User | null {
 const getRedirectForRole = (role: UserRole): string => {
   const redirectMap: Record<UserRole, string> = {
     admin: '/admin/dashboard',
-    teacher: '/teacher-temp/dashboard',
+    teacher: '/teacher/dashboard',
     parent: '/parent/dashboard',
     student: '/student/dashboard',
   }
