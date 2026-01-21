@@ -7,5 +7,9 @@ export default function HomePage() {
     window.location.href = '/login'
   }, [])
 
-  return null
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <p>Redirecting to login...</p>
+    </div>
+  )
 }
