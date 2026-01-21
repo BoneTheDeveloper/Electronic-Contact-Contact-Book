@@ -1,0 +1,10 @@
+{
+  "projectId": "prj_wWSY13W2bB3x2AsgbFTVJyI0SlH0",
+  "orgId": "team_SP7FhTrPKbQNbVLmBI5vx2vP",
+  "settings": {
+    "framework": "nextjs",
+    "buildCommand": "npm run build",
+    "outputDirectory": ".next",
+    "installCommand": "npm install --legacy-peer-deps"
+  }
+}
