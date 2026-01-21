@@ -1,7 +1,5 @@
 {
-  "buildCommand": "cd apps/web && pnpm run build",
+  "buildCommand": "pnpm build --filter=@school-management/web",
   "outputDirectory": "apps/web/.next",
-  "installCommand": "pnpm install --dir=apps/web",
-  "framework": "nextjs",
-  "packageManager": "pnpm"
+  "installCommand": "pnpm install"
 }
