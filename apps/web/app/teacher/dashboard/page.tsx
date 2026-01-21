@@ -59,8 +59,7 @@ interface DashboardData {
 }
 
 async function fetchDashboardData(): Promise<DashboardData> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/teacher/dashboard`, {
+  const res = await fetch('/api/teacher/dashboard', {
     cache: 'no-store',
   })
   const json = await res.json()

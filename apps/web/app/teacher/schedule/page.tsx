@@ -11,7 +11,7 @@ interface ScheduleItem {
 }
 
 async function fetchSchedule(): Promise<ScheduleItem[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/teacher/schedule`, {
+  const res = await fetch('/api/teacher/schedule', {
     cache: 'no-store',
   })
   const json = await res.json()
