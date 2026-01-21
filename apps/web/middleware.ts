@@ -49,6 +49,14 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const user = getUserFromCookie(request)
 
+  // Explicitly redirect root to login
+  if (pathname === '/') {
+    if (user) {
+      return NextResponse.redirect(new URL(getRedirectForRole(user.role), request.url))
+    }
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
   // Define route patterns
   const isAuthPage = pathname === '/login' || pathname.startsWith('/login')
   const isAdminRoute = pathname.startsWith('/admin')
