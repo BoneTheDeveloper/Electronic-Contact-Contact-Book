@@ -2,5 +2,6 @@
   "buildCommand": "cd apps/web && pnpm run build",
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install --dir=apps/web",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "ignoreCommand": "echo 'No turbo'"
 }
