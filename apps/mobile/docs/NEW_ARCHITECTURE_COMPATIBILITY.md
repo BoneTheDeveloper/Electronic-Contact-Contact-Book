@@ -1,11 +1,34 @@
 # New Architecture Compatibility Matrix
 
 **Last Updated:** 2026-01-21
-**React Native:** 0.81.5
-**React:** 19.1.0
-**Expo SDK:** ~54.0.0
+**React Native:** 0.76.9
+**React:** 18.3.1
+**Expo SDK:** ~52.0.0
 
-## Dependencies
+**IMPORTANT:** This app is currently configured with **New Architecture DISABLED** for Expo Go compatibility. This document is retained for reference if New Architecture is enabled in the future.
+
+## Current Dependencies (SDK 52 - New Architecture DISABLED)
+
+| Library | Version | Status | Notes |
+|---------|---------|--------|-------|
+| react | 18.3.1 | ✅ Compatible | React 18 stable |
+| react-native | 0.76.9 | ✅ Compatible | New Architecture disabled |
+| expo | ~52.0.0 | ✅ Compatible | Expo Go compatible |
+| @react-navigation/native | ^7.0.0 | ✅ Compatible | Static API |
+| @react-navigation/native-stack | ^7.0.0 | ✅ Compatible | Navigation stable |
+| @react-navigation/bottom-tabs | ^7.0.0 | ✅ Compatible | Tab navigation stable |
+| react-native-paper | ^5.14.5 | ✅ Compatible | Works with old architecture |
+| zustand | ^4.5.2 | ✅ Pure JS | No native dependencies |
+| @react-native-async-storage/async-storage | ^1.23.1 | ✅ Compatible | Old architecture implementation |
+| react-native-safe-area-context | 4.12.0 | ✅ Compatible | Old architecture implementation |
+| react-native-screens | ~4.4.0 | ✅ Compatible | Old architecture implementation |
+| react-native-svg | 15.8.0 | ✅ Compatible | SVG rendering stable |
+| expo-dev-client | ~5.0.20 | ✅ Compatible | Development builds |
+| expo-status-bar | ~2.0.0 | ✅ Compatible | No native code |
+
+## Future Dependencies (SDK 54 - New Architecture ENABLED)
+
+**For reference only - if upgrading to SDK 54 with New Architecture enabled:**
 
 | Library | Version | Status | Notes |
 |---------|---------|--------|-------|
@@ -15,7 +38,7 @@
 | @react-navigation/native | ^7.0.0 | ✅ Full Support | Static API optimized |
 | @react-navigation/native-stack | ^7.0.0 | ✅ Full Support | Fabric rendering |
 | @react-navigation/bottom-tabs | ^7.0.0 | ✅ Full Support | Fabric rendering |
-| react-native-paper | ^5.14.5 | ⚠️ Compatible | Compatibility layer, minor bugs |
+| react-native-paper | ^6.0.0 | ⚠️ Compatible | Upgrade needed for Fabric |
 | zustand | ^4.5.2 | ✅ Pure JS | No native dependencies |
 | @react-native-async-storage/async-storage | ^2.2.0 | ✅ TurboModule | Native JSI implementation |
 | react-native-safe-area-context | 4.14.0 | ✅ Compatible | Fabric compatible |

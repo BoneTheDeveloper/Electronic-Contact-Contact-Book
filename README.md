@@ -12,11 +12,12 @@ This monorepo contains:
 ## Tech Stack
 
 ### Mobile App
-- React Native 0.81.0
-- Expo ~54.0.0
+- React Native 0.76.9
+- Expo ~52.0.0
 - React Navigation 7.x
 - React Native Paper 5.x (Material Design)
 - Zustand (state management)
+- New Architecture: DISABLED (Expo Go compatible)
 
 ### Web App
 - Next.js 15 (App Router)
