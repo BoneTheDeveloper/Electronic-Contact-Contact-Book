@@ -22,33 +22,33 @@ interface DashboardData {
   }
   gradeReviews: Array<{
     id: string
-    studentName: string
-    className: string
-    assessmentType: string
-    currentScore: number
+    studentName?: string
+    className?: string
+    assessmentType?: string
+    currentScore?: number
     reason?: string
   }>
   leaveRequests: Array<{
     id: string
-    studentName: string
-    startDate: string
-    endDate: string
-    reason: string
+    studentName?: string
+    startDate?: string
+    endDate?: string
+    reason?: string
   }>
   classes: Array<{
     id: string
-    name: string
-    subject: string
-    studentCount: number
-    schedule: string
-    isHomeroom: boolean
+    name?: string
+    subject?: string
+    studentCount?: number
+    schedule?: string
+    isHomeroom?: boolean
   }>
   schedule: Array<{
     period: number
-    subject: string
-    className: string
-    time: string
-    room: string
+    subject?: string
+    className?: string
+    time?: string
+    room?: string
   }>
   assessments: {
     evaluated: number
@@ -56,6 +56,14 @@ interface DashboardData {
     positive: number
     needsAttention: number
   }
+}
+
+// Safe helper to extract initials from name
+function getInitials(name?: string): string {
+  if (!name) return '??'
+  const parts = name.trim().split(' ')
+  const lastPart = parts[parts.length - 1] || ''
+  return lastPart.substring(0, 2).toUpperCase()
 }
 
 async function fetchDashboardData(): Promise<DashboardData> {
@@ -168,15 +176,15 @@ export default async function TeacherDashboard() {
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center font-bold text-gray-400 border border-gray-200 shadow-sm">
-                      {request.studentName.split(' ').slice(-1)[0].substring(0, 2).toUpperCase()}
+                      {getInitials(request.studentName)}
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-900">
-                        {request.studentName} • {request.className}
+                        {request.studentName || 'N/A'} • {request.className || 'N/A'}
                       </p>
                       <p className="text-xs text-gray-500">
                         {request.assessmentType === 'final' ? 'Thi cuối kỳ' : 'Kiểm tra 15 phút'} • Điểm hiện tại:{' '}
-                        <span className="font-bold text-red-500">{request.currentScore}</span>
+                        <span className="font-bold text-red-500">{request.currentScore ?? 'N/A'}</span>
                       </p>
                       {request.reason && (
                         <p className="text-xs text-gray-600 mt-1 italic">Lý do: {request.reason}</p>
@@ -289,11 +297,11 @@ export default async function TeacherDashboard() {
                   <tbody className="divide-y divide-gray-100">
                     {leaveRequests.map((request) => (
                       <tr key={request.id}>
-                        <td className="px-4 py-4 font-bold text-sm text-gray-700">{request.studentName}</td>
+                        <td className="px-4 py-4 font-bold text-sm text-gray-700">{request.studentName || 'N/A'}</td>
                         <td className="px-4 py-4 text-xs font-medium text-gray-500">
-                          {new Date(request.startDate).toLocaleDateString('vi-VN')} - {new Date(request.endDate).toLocaleDateString('vi-VN')}
+                          {request.startDate ? new Date(request.startDate).toLocaleDateString('vi-VN') : 'N/A'} - {request.endDate ? new Date(request.endDate).toLocaleDateString('vi-VN') : 'N/A'}
                         </td>
-                        <td className="px-4 py-4 text-xs text-gray-400 italic">{request.reason}</td>
+                        <td className="px-4 py-4 text-xs text-gray-400 italic">{request.reason || 'N/A'}</td>
                         <td className="px-4 py-4">
                           <div className="flex gap-2">
                             <Button variant="outline" size="sm">
@@ -335,24 +343,24 @@ export default async function TeacherDashboard() {
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <h4 className="font-bold text-gray-900">{cls.name}</h4>
+                            <h4 className="font-bold text-gray-900">{cls.name || 'N/A'}</h4>
                             {cls.isHomeroom && (
                               <Badge variant="outline" className="text-xs">
                                 CN
                               </Badge>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500">{cls.subject}</p>
+                          <p className="text-xs text-gray-500">{cls.subject || 'N/A'}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 text-xs text-gray-600">
                         <div className="flex items-center gap-1">
                           <Users className="h-3 w-3" />
-                          <span>{cls.studentCount} HS</span>
+                          <span>{cls.studentCount ?? 0} HS</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          <span>{cls.schedule}</span>
+                          <span>{cls.schedule || 'N/A'}</span>
                         </div>
                       </div>
                     </div>
@@ -377,8 +385,8 @@ export default async function TeacherDashboard() {
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                     Tiết {item.period}
                   </p>
-                  <p className="text-sm font-bold">{item.subject} • {item.className}</p>
-                  <p className="text-xs text-gray-500">{item.time} • Phòng {item.room}</p>
+                  <p className="text-sm font-bold">{item.subject || 'N/A'} • {item.className || 'N/A'}</p>
+                  <p className="text-xs text-gray-500">{item.time || 'N/A'} • Phòng {item.room || 'N/A'}</p>
                 </div>
               ))}
             </CardContent>
