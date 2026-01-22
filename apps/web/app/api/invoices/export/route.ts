@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
         filename = `invoices-${timestamp}.json`
         break
 
-      case 'csv':
+      case 'csv': {
         // Generate CSV
         const headers = include.join(',')
         const rows = filteredInvoices.map(inv =>
@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
         contentType = 'text/csv'
         filename = `invoices-${timestamp}.csv`
         break
+      }
 
       case 'pdf':
         // For PDF, we'd need a PDF library
