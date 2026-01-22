@@ -59,7 +59,12 @@ interface DashboardData {
 }
 
 async function fetchDashboardData(): Promise<DashboardData> {
-  const res = await fetch('/api/teacher/dashboard', {
+  const headers = await import('next/headers').then(m => m.headers())
+  const host = headers.get('host') || 'localhost:3000'
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
+  const baseUrl = `${protocol}://${host}`
+
+  const res = await fetch(`${baseUrl}/api/teacher/dashboard`, {
     cache: 'no-store',
   })
   const json = await res.json()
