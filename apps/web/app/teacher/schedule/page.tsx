@@ -11,14 +11,12 @@ interface ScheduleItem {
 }
 
 async function fetchSchedule(): Promise<ScheduleItem[]> {
-  const headers = await import('next/headers').then(m => m.headers())
-  const host = headers.get('host') || 'localhost:3000'
-  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
-  const baseUrl = `${protocol}://${host}`
-
-  const res = await fetch(`${baseUrl}/api/teacher/schedule`, {
+  const res = await fetch('/api/teacher/schedule', {
     cache: 'no-store',
   })
+  if (!res.ok) {
+    throw new Error(`Failed to fetch schedule: ${res.status}`)
+  }
   const json = await res.json()
   return json.data
 }
