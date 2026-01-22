@@ -32,3 +32,7 @@ Fix the UsersManagement component to match the wireframe design at `docs/wirefra
 - Blue file upload area with icon
 - Green template download section
 - Proper success state display
+
+### page.tsx (admin/users)
+- Removed duplicate "Import Excel" and "Thêm người dùng" buttons from page header
+- Buttons now only exist in the filter bar within UsersManagement component
