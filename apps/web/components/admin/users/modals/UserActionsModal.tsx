@@ -1,9 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { BaseModal } from '@/components/admin/shared/modals/BaseModal'
-import { PrimaryButton, SecondaryButton } from '@/components/admin/shared'
-import { Lock, Unlock, RotateCcw, Edit, Link, Trash2, ShieldCheck } from 'lucide-react'
+import { X, Lock, RotateCcw, Edit, Smartphone, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface UserActionsModalProps {
@@ -23,264 +21,287 @@ interface UserActionsModalProps {
   }
 }
 
-type Action = 'resetPassword' | 'lockUnlock' | 'edit' | 'linkParent' | 'delete' | null
-
 export function UserActionsModal({ isOpen, onClose, onSuccess, user, currentUser }: UserActionsModalProps) {
-  const [selectedAction, setSelectedAction] = useState<Action>(null)
   const [loading, setLoading] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
 
   // Permission check: only admins can access sensitive actions
   const canPerformAction = currentUser?.role === 'admin'
 
-  const handleClose = () => {
-    setSelectedAction(null)
-    setConfirmDelete(false)
-    onClose()
+  const getInitials = (name: string) => {
+    return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
   }
 
-  const handleAction = async () => {
+  const getRoleBadgeClass = (role: string) => {
+    const classes: Record<string, string> = {
+      admin: 'bg-red-100 text-red-600',
+      teacher: 'bg-purple-100 text-purple-600',
+      parent: 'bg-teal-100 text-teal-600',
+      student: 'bg-blue-100 text-blue-600',
+    }
+    return classes[role] || 'bg-slate-100 text-slate-600'
+  }
+
+  const getRoleLabel = (role: string) => {
+    const labels: Record<string, string> = {
+      admin: 'Admin',
+      teacher: 'Giáo viên',
+      parent: 'Phụ huynh',
+      student: 'Học sinh',
+    }
+    return labels[role] || role
+  }
+
+  const handleResetPassword = async () => {
     if (!canPerformAction) {
       alert('Bạn không có quyền thực hiện hành động này')
       return
     }
 
     setLoading(true)
-
     try {
-      switch (selectedAction) {
-        case 'resetPassword':
-          // TODO: API - POST /api/users/:id/reset-password
-          console.log('[UserActionsModal] Reset password for user:', user.id)
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          alert(`Đã gửi mật khẩu mới cho ${user.name} qua SMS/Email`)
-          break
-
-        case 'lockUnlock':
-          // TODO: API - PUT /api/users/:id/lock
-          const newStatus = user.status === 'active' ? 'locked' : 'active'
-          console.log('[UserActionsModal] Toggle user status:', user.id, newStatus)
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          alert(`${user.name} đã được ${newStatus === 'active' ? 'mở khóa' : 'khóa'}`)
-          break
-
-        case 'edit':
-          // Would open EditUserModal (not in this phase)
-          console.log('[UserActionsModal] Edit user:', user.id)
-          alert('Tính năng sửa người dùng sẽ có ở modal riêng')
-          break
-
-        case 'linkParent':
-          // Would open LinkParentModal
-          console.log('[UserActionsModal] Link parent for student:', user.id)
-          handleClose()
-          // Parent component should handle opening LinkParentModal
-          return
-
-        case 'delete':
-          if (!confirmDelete) {
-            setConfirmDelete(true)
-            setLoading(false)
-            return
-          }
-          // TODO: API - DELETE /api/users/:id
-          console.log('[UserActionsModal] Delete user:', user.id)
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          alert(`Đã xóa người dùng ${user.name}`)
-          break
-      }
-
+      console.log('[UserActionsModal] Reset password for user:', user.id)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      alert(`Đã gửi mật khẩu mới cho ${user.name} qua SMS/Email`)
       onSuccess?.()
-      handleClose()
+      onClose()
     } catch (error) {
-      console.error('[UserActionsModal] Action failed:', error)
+      console.error('[UserActionsModal] Reset password failed:', error)
       alert('Thao tác thất bại. Vui lòng thử lại.')
     } finally {
       setLoading(false)
     }
   }
 
-  const actions = [
-    {
-      key: 'resetPassword' as Action,
-      label: 'Đặt lại mật khẩu',
-      icon: RotateCcw,
-      description: 'Gửi mật khẩu mới qua SMS/Email',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-    },
-    {
-      key: 'lockUnlock' as Action,
-      label: user.status === 'active' ? 'Khóa tài khoản' : 'Mở tài khoản',
-      icon: user.status === 'active' ? Lock : Unlock,
-      description: user.status === 'active' ? 'Người dùng không thể đăng nhập' : 'Cho phép đăng nhập lại',
-      color: user.status === 'active' ? 'text-orange-600' : 'text-green-600',
-      bgColor: user.status === 'active' ? 'bg-orange-50' : 'bg-green-50',
-      borderColor: user.status === 'active' ? 'border-orange-200' : 'border-green-200',
-    },
-    {
-      key: 'edit' as Action,
-      label: 'Sửa thông tin',
-      icon: Edit,
-      description: 'Cập nhật thông tin người dùng',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-200',
-    },
-    {
-      key: 'linkParent' as Action,
-      label: 'Liên kết phụ huynh',
-      icon: Link,
-      description: 'Liên kết với tài khoản phụ huynh',
-      color: 'text-cyan-600',
-      bgColor: 'bg-cyan-50',
-      borderColor: 'border-cyan-200',
-      showFor: ['student'],
-    },
-    {
-      key: 'delete' as Action,
-      label: 'Xóa người dùng',
-      icon: Trash2,
-      description: 'Xóa vĩnh viễn tài khoản',
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-200',
-      warning: true,
-    },
-  ]
+  const handleToggleLock = async () => {
+    if (!canPerformAction) {
+      alert('Bạn không có quyền thực hiện hành động này')
+      return
+    }
 
-  const filteredActions = actions.filter(action => {
-    if (!canPerformAction && action.key !== 'edit') return false
-    if (action.showFor && !action.showFor.includes(user.role as string)) return false
-    return true
-  })
+    setLoading(true)
+    try {
+      const newStatus = user.status === 'active' ? 'locked' : 'active'
+      console.log('[UserActionsModal] Toggle user status:', user.id, newStatus)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      alert(`${user.name} đã được ${newStatus === 'active' ? 'mở khóa' : 'khóa'}`)
+      onSuccess?.()
+      onClose()
+    } catch (error) {
+      console.error('[UserActionsModal] Toggle lock failed:', error)
+      alert('Thao tác thất bại. Vui lòng thử lại.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  const selectedActionConfig = actions.find(a => a.key === selectedAction)
+  const handleManageDevices = () => {
+    alert('Tính năng quản lý thiết bị đang phát triển')
+  }
+
+  const handleEdit = () => {
+    alert('Tính năng sửa người dùng sẽ có ở modal riêng')
+  }
+
+  const handleLinkParent = () => {
+    // Close this modal and let parent open LinkParentModal
+    onClose()
+    // The parent component should handle opening LinkParentModal
+    if (onSuccess) onSuccess()
+  }
+
+  const handleDelete = async () => {
+    if (!canPerformAction) {
+      alert('Bạn không có quyền thực hiện hành động này')
+      return
+    }
+
+    if (!confirm(`Bạn có chắc chắn muốn xóa người dùng ${user.name}?`)) {
+      return
+    }
+
+    setLoading(true)
+    try {
+      console.log('[UserActionsModal] Delete user:', user.id)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      alert(`Đã xóa người dùng ${user.name}`)
+      onSuccess?.()
+      onClose()
+    } catch (error) {
+      console.error('[UserActionsModal] Delete failed:', error)
+      alert('Thao tác thất bại. Vui lòng thử lại.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!isOpen) return null
 
   return (
-    <BaseModal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title={
-        selectedAction
-          ? (selectedActionConfig?.label ?? 'Thao tác')
-          : `Thao tác: ${user.name}`
-      }
-      size={selectedAction ? 'md' : 'lg'}
-      primaryAction={
-        selectedAction
-          ? {
-              label: confirmDelete ? 'Xác nhận xóa' : 'Thực hiện',
-              onClick: handleAction,
-              disabled: loading,
-              loading,
-            }
-          : undefined
-      }
-      secondaryAction={
-        selectedAction
-          ? {
-              label: 'Quay lại',
-              onClick: () => {
-                setSelectedAction(null)
-                setConfirmDelete(false)
-              },
-            }
-          : {
-              label: 'Đóng',
-              onClick: handleClose,
-            }
-      }
-    >
-      {!canPerformAction && (
-        <div className="mb-4 rounded-lg bg-yellow-50 border border-yellow-200 p-4">
-          <div className="flex items-start gap-3">
-            <ShieldCheck className="h-5 w-5 text-yellow-600 mt-0.5" />
-            <div>
-              <p className="text-sm font-bold text-yellow-800">Chỉ Admin mới có quyền thực hiện thao tác này</p>
-              <p className="text-xs text-yellow-700 mt-1">Vui lòng liên hệ quản trị viên nếu cần hỗ trợ.</p>
-            </div>
-          </div>
-        </div>
-      )}
+    <>
+      {/* Modal Overlay */}
+      <div
+        className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
-      {!selectedAction ? (
-        <div className="space-y-4">
+      {/* Slide-in Modal */}
+      <div className="fixed right-0 top-0 z-50 h-full w-full max-w-md bg-white shadow-2xl overflow-y-auto animate-slide-in">
+        {/* Modal Header */}
+        <div className="sticky top-0 bg-white border-b border-slate-200 px-8 py-6 flex items-center justify-between z-10">
+          <div>
+            <h3 className="text-xl font-black text-slate-800">Thao tác tài khoản</h3>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">
+              Quản lý bảo mật & truy cập
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-100 rounded-xl transition-all"
+          >
+            <X className="h-6 w-6 text-slate-400" />
+          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div className="p-8 space-y-6">
           {/* User Info */}
-          <div className="rounded-lg bg-slate-50 p-4 border border-slate-200">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 overflow-hidden rounded-full bg-gradient-to-br from-[#0284C7] to-[#0369a1] p-0.5">
-                <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-sm font-bold text-[#0284C7]">
-                  {user.name.split(' ').slice(0, 2).map((n: string) => n[0]).join('')}
-                </div>
-              </div>
-              <div className="flex-1">
-                <p className="text-base font-bold text-slate-900">{user.name}</p>
-                <p className="text-sm text-slate-500">{user.email || user.phone}</p>
-              </div>
-              <div className="text-right">
-                <span className={cn(
-                  'inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase',
-                  user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-                )}>
-                  {user.status === 'active' ? 'Hoạt động' : 'Đã khóa'}
-                </span>
-              </div>
+          <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
+            <div className={cn(
+              'w-16 h-16 rounded-full flex items-center justify-center text-xl font-black',
+              getRoleBadgeClass(user.role)
+            )}>
+              {getInitials(user.name)}
+            </div>
+            <div>
+              <h4 className="text-lg font-black text-slate-800">{user.name}</h4>
+              <p className="text-sm font-medium text-slate-500">{user.id}</p>
+              <span className={cn(
+                'inline-block mt-1 px-3 py-1 text-xs font-bold rounded-lg',
+                getRoleBadgeClass(user.role)
+              )}>
+                {getRoleLabel(user.role)}
+              </span>
             </div>
           </div>
 
-          {/* Action Grid */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {filteredActions.map(action => {
-              const Icon = action.icon
-              return (
-                <button
-                  key={action.key}
-                  onClick={() => setSelectedAction(action.key)}
-                  className={cn(
-                    'flex items-start gap-3 rounded-lg border-2 p-4 text-left transition-all',
-                    action.bgColor, action.borderColor,
-                    'hover:shadow-md hover:scale-[1.02]'
-                  )}
-                >
-                  <div className={cn('rounded-lg p-2', action.bgColor)}>
-                    <Icon className={cn('h-5 w-5', action.color)} />
-                  </div>
-                  <div className="flex-1">
-                    <p className={cn('text-sm font-bold', action.color)}>{action.label}</p>
-                    <p className="text-xs text-slate-600 mt-1">{action.description}</p>
-                  </div>
-                </button>
-              )
-            })}
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            {/* Reset Password */}
+            <button
+              onClick={handleResetPassword}
+              disabled={loading}
+              className="w-full p-4 border border-slate-200 rounded-xl flex items-center gap-4 hover:bg-slate-50 transition-all disabled:opacity-50"
+            >
+              <div className="w-10 h-10 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center">
+                <RotateCcw className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black text-slate-800">Reset mật khẩu</p>
+                <p className="text-xs text-slate-400">Gửi mật khẩu mới qua SMS/Email</p>
+              </div>
+            </button>
+
+            {/* Lock/Unlock Account */}
+            <button
+              onClick={handleToggleLock}
+              disabled={loading}
+              className="w-full p-4 border border-slate-200 rounded-xl flex items-center gap-4 hover:bg-slate-50 transition-all disabled:opacity-50"
+            >
+              <div className="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center">
+                <Lock className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black text-slate-800">
+                  {user.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}
+                </p>
+                <p className="text-xs text-slate-400">
+                  {user.status === 'active' ? 'Tạm dừng quyền truy cập' : 'Khôi phục quyền truy cập'}
+                </p>
+              </div>
+            </button>
+
+            {/* Manage Devices */}
+            <button
+              onClick={handleManageDevices}
+              className="w-full p-4 border border-slate-200 rounded-xl flex items-center gap-4 hover:bg-slate-50 transition-all"
+            >
+              <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center">
+                <Smartphone className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black text-slate-800">Thiết bị tin cậy</p>
+                <p className="text-xs text-slate-400">Quản lý danh sách thiết bị</p>
+              </div>
+            </button>
+
+            {/* Edit User */}
+            <button
+              onClick={handleEdit}
+              className="w-full p-4 border border-slate-200 rounded-xl flex items-center gap-4 hover:bg-slate-50 transition-all"
+            >
+              <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+                <Edit className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black text-slate-800">Chỉnh sửa thông tin</p>
+                <p className="text-xs text-slate-400">Cập nhật thông tin cá nhân</p>
+              </div>
+            </button>
+
+            {/* Link Parent - only show for students */}
+            {user.role === 'student' && (
+              <button
+                onClick={handleLinkParent}
+                className="w-full p-4 border border-slate-200 rounded-xl flex items-center gap-4 hover:bg-slate-50 transition-all"
+              >
+                <div className="w-10 h-10 bg-teal-100 text-teal-600 rounded-lg flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-black text-slate-800">Liên kết Phụ huynh</p>
+                  <p className="text-xs text-slate-400">Gán phụ huynh cho học sinh</p>
+                </div>
+              </button>
+            )}
+          </div>
+
+          {/* Delete Action */}
+          <div className="pt-6 border-t border-slate-200">
+            <button
+              onClick={handleDelete}
+              disabled={loading}
+              className="w-full p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-4 hover:bg-red-100 transition-all disabled:opacity-50"
+            >
+              <div className="w-10 h-10 bg-red-600 text-white rounded-lg flex items-center justify-center">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black text-red-600">Xóa người dùng</p>
+                <p className="text-xs text-red-400">Hành động này không thể hoàn tác</p>
+              </div>
+            </button>
           </div>
         </div>
-      ) : (
-        <div className="space-y-4">
-          {selectedAction === 'delete' && confirmDelete ? (
-            <div className="rounded-lg bg-red-50 border-2 border-red-200 p-4">
-              <p className="text-sm font-bold text-red-800 mb-2">Cảnh báo: Hành động này không thể hoàn tác!</p>
-              <p className="text-xs text-red-700">
-                Bạn đang xóa người dùng <strong>{user.name}</strong>. Tất cả dữ liệu liên quan sẽ bị mất vĩnh viễn.
-              </p>
-              <p className="text-xs text-red-700 mt-2">Nhấn "Xác nhận xóa" để tiếp tục.</p>
-            </div>
-          ) : (
-            <div className="rounded-lg bg-slate-50 p-4 border border-slate-200">
-              <div className="flex items-center gap-3 mb-3">
-                {selectedActionConfig && <selectedActionConfig.icon className={cn('h-6 w-6', selectedActionConfig.color)} />}
-                <p className="text-base font-bold text-slate-900">{selectedActionConfig?.label}</p>
-              </div>
-              <p className="text-sm text-slate-600">{selectedActionConfig?.description}</p>
-              <div className="mt-4 pt-4 border-t border-slate-200">
-                <p className="text-xs text-slate-500">Người dùng: <span className="font-semibold text-slate-700">{user.name}</span></p>
-                <p className="text-xs text-slate-500">ID: <span className="font-mono text-slate-700">{user.id}</span></p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </BaseModal>
+      </div>
+
+      {/* Add slide-in animation to global styles */}
+      <style jsx global>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(100%);
+          }
+          to {
+            transform: translateX(0);
+          }
+        }
+        .animate-slide-in {
+          animation: slideIn 0.3s ease-out;
+        }
+      `}</style>
+    </>
   )
 }

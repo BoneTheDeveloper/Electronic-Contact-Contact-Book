@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { Users, Shield, UserCheck, Users2, Plus, Upload, MoreVertical } from 'lucide-react'
-import { StatCard, DataTable, StatusBadge, FilterBar, PrimaryButton } from '@/components/admin/shared'
+import { Users, Shield, UserCheck, Users2, MoreVertical } from 'lucide-react'
+import { StatCard, DataTable, StatusBadge } from '@/components/admin/shared'
 import type { Column } from '@/components/admin/shared'
 import type { User } from '@/lib/mock-data'
 import { AddUserModal, UserActionsModal, LinkParentModal, ImportExcelModal } from './modals'
@@ -22,7 +22,12 @@ interface ApiResponse<T> {
   stats?: any
 }
 
-export function UsersManagement() {
+interface UsersManagementProps {
+  onAddUser?: () => void
+  onImportExcel?: () => void
+}
+
+export function UsersManagement({ onAddUser, onImportExcel }: UsersManagementProps) {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
@@ -129,6 +134,24 @@ export function UsersManagement() {
     setShowLinkParentModal(true)
   }, [])
 
+  // Handle add user from header button
+  const handleAddUserClick = useCallback(() => {
+    if (onAddUser) {
+      onAddUser()
+    } else {
+      setShowAddModal(true)
+    }
+  }, [onAddUser])
+
+  // Handle import excel from header button
+  const handleImportExcelClick = useCallback(() => {
+    if (onImportExcel) {
+      onImportExcel()
+    } else {
+      setShowImportModal(true)
+    }
+  }, [onImportExcel])
+
   // Table columns - memoized
   const columns = useMemo<Column<User>[]>(() => [
     {
@@ -222,49 +245,8 @@ export function UsersManagement() {
     { value: 'inactive', label: 'Không hoạt động' },
   ], [])
 
-  // Memoize filters array for FilterBar
-  const filterBarFilters = useMemo(() => [
-    {
-      key: 'role',
-      label: 'Vai trò',
-      type: 'select' as const,
-      options: roleFilterOptions,
-    },
-    {
-      key: 'status',
-      label: 'Trạng thái',
-      type: 'select' as const,
-      options: statusFilterOptions,
-    },
-    {
-      key: 'class',
-      label: 'Lớp',
-      type: 'select' as const,
-      options: classOptions,
-    },
-  ], [classOptions, roleFilterOptions, statusFilterOptions])
-
   return (
     <div className="space-y-6">
-      {/* Action Bar */}
-      <div className="flex items-center justify-end gap-3">
-        <PrimaryButton
-          onClick={() => setShowImportModal(true)}
-          size="small"
-          className="!bg-white !text-[#0284C7] border-2 border-[#0284C7] hover:!bg-slate-50"
-        >
-          <Upload className="mr-2 h-4 w-4" />
-          Nhập Excel
-        </PrimaryButton>
-        <PrimaryButton
-          onClick={() => setShowAddModal(true)}
-          size="small"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Thêm người dùng
-        </PrimaryButton>
-      </div>
-
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
         <StatCard
@@ -302,15 +284,79 @@ export function UsersManagement() {
         />
       </div>
 
-      {/* Filters */}
-      <FilterBar
-        searchKey="search"
-        searchPlaceholder="Tìm kiếm người dùng..."
-        filters={filterBarFilters}
-        values={filters}
-        onChange={handleFilterChange}
-        onClear={handleClearFilters}
-      />
+      {/* Filters - Buttons removed from here, now in page header */}
+      <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Bộ lọc:</span>
+
+          {/* Role Filter */}
+          <select
+            value={filters.role}
+            onChange={(e) => handleFilterChange('role', e.target.value)}
+            className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none"
+          >
+            <option value="">Tất cả vai trò</option>
+            {roleFilterOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+
+          {/* Status Filter */}
+          <select
+            value={filters.status}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+            className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none"
+          >
+            <option value="">Tất cả trạng thái</option>
+            {statusFilterOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+
+          {/* Grade/Class Filter */}
+          <select
+            value={filters.class}
+            onChange={(e) => handleFilterChange('class', e.target.value)}
+            className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none"
+          >
+            <option value="">Tất cả khối</option>
+            {classOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+
+          <button
+            onClick={handleClearFilters}
+            className="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-bold hover:bg-slate-50 rounded-xl transition-all"
+          >
+            Xóa bộ lọc
+          </button>
+        </div>
+
+        {/* Active Filters Display */}
+        {(filters.role || filters.status || filters.class) && (
+          <div className="flex flex-wrap gap-2 mt-4">
+            {filters.role && (
+              <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-xs font-bold flex items-center gap-2">
+                {roleFilterOptions.find(o => o.value === filters.role)?.label}
+                <button onClick={() => handleFilterChange('role', '')} className="hover:text-blue-800">×</button>
+              </span>
+            )}
+            {filters.status && (
+              <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-xs font-bold flex items-center gap-2">
+                {statusFilterOptions.find(o => o.value === filters.status)?.label}
+                <button onClick={() => handleFilterChange('status', '')} className="hover:text-blue-800">×</button>
+              </span>
+            )}
+            {filters.class && (
+              <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-xs font-bold flex items-center gap-2">
+                {classOptions.find(o => o.value === filters.class)?.label}
+                <button onClick={() => handleFilterChange('class', '')} className="hover:text-blue-800">×</button>
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Data Table */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

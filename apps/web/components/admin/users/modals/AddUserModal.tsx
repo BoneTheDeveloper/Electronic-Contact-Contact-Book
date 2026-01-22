@@ -232,28 +232,31 @@ export function AddUserModal({ isOpen, onClose, onSuccess, initialRole = 'studen
   const classOptions = ['6A', '6B', '7A', '7B', '8A', '8B', '9A', '9B'].map(c => ({ value: c, label: `Lớp ${c}` }))
   const subjectOptions = ['Toán', 'Ngữ văn', 'Tiếng Anh', 'Vật lý', 'Hóa học', 'Sinh học', 'Lịch sử', 'Địa lý', 'GDCD', 'Tin học', 'Thể dục', 'Nghệ thuật', 'Công nghệ'].map(s => ({ value: s, label: s }))
 
-  // Role radio cards config
-  const roleCards: { key: UserRole; label: string; icon: React.ReactNode; colorClass: string; bgClass: string }[] = [
+  // Role radio cards config with shadow colors
+  const roleCards: { key: UserRole; label: string; icon: React.ReactNode; shadowClass: string; bgClass: string; borderClass: string }[] = [
     {
       key: 'student',
       label: 'Học sinh',
       icon: <StudentIcon />,
-      colorClass: 'border-blue-500 bg-blue-50',
+      shadowClass: 'shadow-blue-200',
       bgClass: 'bg-blue-100 text-blue-600',
+      borderClass: 'peer-checked:border-blue-500 peer-checked:shadow-lg peer-checked:shadow-blue-200 peer-checked:bg-blue-50',
     },
     {
       key: 'teacher',
       label: 'Giáo viên',
       icon: <TeacherIcon />,
-      colorClass: 'border-purple-500 bg-purple-50',
+      shadowClass: 'shadow-purple-200',
       bgClass: 'bg-purple-100 text-purple-600',
+      borderClass: 'peer-checked:border-purple-500 peer-checked:shadow-lg peer-checked:shadow-purple-200 peer-checked:bg-purple-50',
     },
     {
       key: 'parent',
       label: 'Phụ huynh',
       icon: <ParentIcon />,
-      colorClass: 'border-teal-500 bg-teal-50',
+      shadowClass: 'shadow-teal-200',
       bgClass: 'bg-teal-100 text-teal-600',
+      borderClass: 'peer-checked:border-teal-500 peer-checked:shadow-lg peer-checked:shadow-teal-200 peer-checked:bg-teal-50',
     },
   ]
 
@@ -319,8 +322,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess, initialRole = 'studen
                   />
                   <div className={cn(
                     'p-4 border-2 border-slate-200 rounded-xl text-center transition-all hover:border-slate-300',
-                    'peer-checked:border-current peer-checked:bg-current peer-checked:bg-opacity-10',
-                    activeRole === card.key ? card.colorClass : ''
+                    card.borderClass
                   )}>
                     <div className={cn(
                       'w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2',
