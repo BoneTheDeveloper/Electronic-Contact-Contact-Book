@@ -45,9 +45,9 @@ const HomeStackNavigator = () => (
 // Profile Stack (placeholder for now)
 const ProfileStack = createNativeStackNavigator();
 const ProfileScreen = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC' }}>
-    <Text style={{ fontSize: 18, fontWeight: '700', color: '#1F2937' }}>Profile Screen</Text>
-    <Text style={{ fontSize: 14, color: '#6B7280', marginTop: 8 }}>Coming soon...</Text>
+  <View className="flex-1 justify-center items-center bg-slate-50">
+    <Text className="text-lg font-bold text-gray-800">Profile Screen</Text>
+    <Text className="text-sm text-gray-500 mt-2">Coming soon...</Text>
   </View>
 );
 const ProfileStackNavigator = () => (
@@ -58,7 +58,7 @@ const ProfileStackNavigator = () => (
 
 // Custom Tab Bar Icons
 const HomeIcon = ({ focused }: { focused: boolean }) => (
-  <View style={{ alignItems: 'center' }}>
+  <View className="items-center">
     <Svg width={26} height={26} viewBox="0 0 24 24" fill="none">
       <Path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke={focused ? colors.primary : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
       <Polyline points="9 22 9 12 15 12 15 22" stroke={focused ? colors.primary : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
@@ -67,7 +67,7 @@ const HomeIcon = ({ focused }: { focused: boolean }) => (
 );
 
 const ProfileIcon = ({ focused }: { focused: boolean }) => (
-  <View style={{ alignItems: 'center' }}>
+  <View className="items-center">
     <Svg width={26} height={26} viewBox="0 0 24 24" fill="none">
       <Path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke={focused ? colors.primary : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
       <Circle cx="12" cy="7" r="4" stroke={focused ? colors.primary : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>

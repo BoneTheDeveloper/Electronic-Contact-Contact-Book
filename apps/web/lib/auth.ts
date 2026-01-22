@@ -1,182 +1,190 @@
 /**
- * Web Authentication Server Actions
+ * Web Authentication Server Actions using Supabase
  *
- * SECURITY NOTICE: This is MOCK authentication only.
- * Accepts any password for demo purposes.
- * DO NOT use in production without proper backend.
+ * REAL authentication using Supabase Auth + custom code/phone lookup
  *
- * Role is auto-detected from email address:
- * - admin@... → admin
- * - teacher@... → teacher
- * - parent@... → parent
- * - student@... → student
+ * Login identifiers:
+ * - Admin: admin_code (AD001) or email
+ * - Teacher: employee_code (TC001) or email
+ * - Student: student_code (ST2024001) or email
+ * - Parent: phone number or email
  */
 
 'use server';
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import type { User, UserRole, Student, Parent, Teacher, Admin } from '@school-management/shared-types';
-import { mockUserDatabase } from '@school-management/shared-types';
+import type { User, UserRole } from '@school-management/shared-types';
+import { createClient } from '@/lib/supabase/server';
 
 const AUTH_COOKIE_NAME = 'auth';
 const AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 1 week
 
-// Convert mock user to full User type
-const convertMockToUser = (email: string, mockUser: typeof mockUserDatabase[string]): User => {
-  if (mockUser.role === 'student') {
-    const student: Student = {
-      id: mockUser.id,
-      email: mockUser.email,
-      name: mockUser.name,
-      role: 'student',
-      avatar: mockUser.avatar,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      rollNumber: `STU${mockUser.id}`,
-      classId: 'CLASS10A',
-      section: 'A',
-      dateOfBirth: new Date('2009-01-01'),
-      parentIds: ['1'],
-    };
-    return student;
-  } else if (mockUser.role === 'parent') {
-    const parent: Parent = {
-      id: mockUser.id,
-      email: mockUser.email,
-      name: mockUser.name,
-      role: 'parent',
-      avatar: mockUser.avatar,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      phone: '+84 123 456 789',
-      address: '123 Main St',
-      childrenIds: ['2'],
-    };
-    return parent;
-  } else if (mockUser.role === 'teacher') {
-    const teacher: Teacher = {
-      id: mockUser.id,
-      email: mockUser.email,
-      name: mockUser.name,
-      role: 'teacher',
-      avatar: mockUser.avatar,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      employeeId: `EMP${mockUser.id}`,
-      subjects: ['Mathematics', 'Physics'],
-      phone: '+84 123 456 789',
-    };
-    return teacher;
-  } else {
-    const admin: Admin = {
-      id: mockUser.id,
-      email: mockUser.email,
-      name: mockUser.name,
-      role: 'admin',
-      avatar: mockUser.avatar,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      permissions: ['all'],
-    };
-    return admin;
-  }
-};
+/**
+ * Find user by identifier (code/phone/email)
+ * Returns the user's email for Supabase Auth authentication
+ */
+async function findUserEmailByIdentifier(identifier: string): Promise<string | null> {
+  const supabase = await createClient();
+  const normalizedId = identifier.trim().toUpperCase();
 
-// Detect role from email
-const detectRoleFromEmail = (email: string): UserRole => {
-  const lowerEmail = email.toLowerCase();
-  if (lowerEmail.includes('admin')) return 'admin';
-  if (lowerEmail.includes('teacher')) return 'teacher';
-  if (lowerEmail.includes('parent')) return 'parent';
-  return 'student';
-};
+  // 1. Check admin_code
+  if (normalizedId.startsWith('AD')) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('admin_code', normalizedId)
+      .eq('role', 'admin')
+      .eq('status', 'active')
+      .single();
+
+    if (data?.email) return data.email;
+  }
+
+  // 2. Check employee_code (teacher)
+  if (normalizedId.startsWith('TC')) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('employee_code', normalizedId)
+      .eq('role', 'teacher')
+      .eq('status', 'active')
+      .single();
+
+    if (data?.email) return data.email;
+  }
+
+  // 3. Check student_code
+  if (normalizedId.startsWith('ST')) {
+    const { data } = await supabase
+      .from('students')
+      .select('profiles!inner(email)')
+      .eq('student_code', normalizedId)
+      .single();
+
+    if (data?.profiles?.email) return data.profiles.email;
+  }
+
+  // 4. Check phone number (for parents)
+  const cleanPhone = identifier.replace(/\s/g, '');
+  if (/^\d{10,11}$/.test(cleanPhone)) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('phone', cleanPhone)
+      .eq('role', 'parent')
+      .eq('status', 'active')
+      .single();
+
+    if (data?.email) return data.email;
+  }
+
+  // 5. Check email directly
+  if (identifier.includes('@')) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', identifier.toLowerCase())
+      .eq('status', 'active')
+      .single();
+
+    if (data?.email) return data.email;
+  }
+
+  return null;
+}
 
 /**
- * Login with email and password (any password accepted)
- *
- * Role can be:
- * 1. Provided via role field from login form toggle
- * 2. Auto-detected from email address (fallback)
+ * Get full user profile from Supabase
  */
-export async function login(formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-  const roleFromForm = formData.get('role') as 'teacher' | 'admin' | null;
+async function getUserProfile(userId: string): Promise<User | null> {
+  const supabase = await createClient();
 
-  if (!email || !password) {
-    return { error: 'Email and password are required' };
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, email, role, full_name, status, avatar_url')
+    .eq('id', userId)
+    .single();
+
+  if (error || !data) {
+    return null;
   }
 
-  // MOCK authentication - accepts any password
-  const mockUser = mockUserDatabase[email];
+  return {
+    id: data.id,
+    email: data.email,
+    name: data.full_name || data.email.split('@')[0],
+    role: data.role as UserRole,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+}
 
-  let user: User;
+/**
+ * Sanitize user input to prevent XSS
+ * Removes HTML tags and javascript: protocols
+ */
+function sanitizeInput(input: string): string {
+  return input
+    .replace(/<script[^>]*>.*?<\/script>/gi, '')
+    .replace(/<[^>]*>/g, '')
+    .replace(/javascript:/gi, '')
+    .replace(/onerror=/gi, '')
+    .trim();
+}
 
-  if (!mockUser) {
-    // Use role from form toggle, or fall back to email detection
-    const detectedRole = roleFromForm || detectRoleFromEmail(email);
+/**
+ * Validate code format (alphanumeric only, max length 20)
+ */
+function isValidCode(code: string): boolean {
+  return /^[A-Za-z0-9]{1,20}$/.test(code);
+}
 
-    // Create properly typed demo user
-    if (detectedRole === 'student') {
-      const studentUser: Student = {
-        id: `demo-${Date.now()}`,
-        email,
-        name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        role: 'student',
-        avatar: undefined,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        rollNumber: 'DEMO001',
-        classId: 'DEMO',
-        section: 'A',
-        dateOfBirth: new Date(),
-        parentIds: [],
-      };
-      user = studentUser;
-    } else if (detectedRole === 'parent') {
-      const parentUser: Parent = {
-        id: `demo-${Date.now()}`,
-        email,
-        name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        role: 'parent',
-        avatar: undefined,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        phone: '',
-        address: '',
-        childrenIds: [],
-      };
-      user = parentUser;
-    } else if (detectedRole === 'teacher') {
-      const teacherUser: Teacher = {
-        id: `demo-${Date.now()}`,
-        email,
-        name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        role: 'teacher',
-        avatar: undefined,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        employeeId: 'DEMO_EMP',
-        subjects: [],
-        phone: '',
-      };
-      user = teacherUser;
-    } else {
-      const adminUser: Admin = {
-        id: `demo-${Date.now()}`,
-        email,
-        name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        role: 'admin',
-        avatar: undefined,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        permissions: ['all'],
-      };
-      user = adminUser;
-    }
-  } else {
-    user = convertMockToUser(email, mockUser);
+/**
+ * Login with identifier and password
+ */
+export async function login(formData: FormData) {
+  const identifier = formData.get('identifier') as string;
+  const email = formData.get('email') as string; // Legacy support
+  const password = formData.get('password') as string;
+
+  const loginIdentifier = identifier || email;
+
+  if (!loginIdentifier || !password) {
+    throw new Error('Identifier and password are required');
+  }
+
+  // Sanitize input to prevent XSS
+  const sanitizedId = sanitizeInput(loginIdentifier);
+
+  // Validate code format for security
+  if (!isValidCode(sanitizedId) && !sanitizedId.includes('@')) {
+    throw new Error('Invalid identifier format');
+  }
+
+  // Find user email from identifier
+  const userEmail = await findUserEmailByIdentifier(sanitizedId);
+
+  if (!userEmail) {
+    throw new Error('Invalid credentials');
+  }
+
+  // Authenticate with Supabase
+  const supabase = await createClient();
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email: userEmail,
+    password: password,
+  });
+
+  if (authError || !authData.user) {
+    throw new Error('Invalid credentials');
+  }
+
+  // Get user profile
+  const user = await getUserProfile(authData.user.id);
+
+  if (!user) {
+    throw new Error('User profile not found');
   }
 
   // Set auth cookie
@@ -187,13 +195,14 @@ export async function login(formData: FormData) {
     sameSite: 'lax',
     maxAge: AUTH_COOKIE_MAX_AGE,
     path: '/',
+    priority: 'high',
   });
 
   // Role-based redirect
   const redirectMap: Record<UserRole, string> = {
     admin: '/admin/dashboard',
     teacher: '/teacher/dashboard',
-    parent: '/parent/dashboard',
+    parent: '/student/dashboard',
     student: '/student/dashboard',
   };
 
@@ -204,13 +213,21 @@ export async function login(formData: FormData) {
  * Logout and clear session
  */
 export async function logout() {
+  const supabase = await createClient();
+
+  // Sign out from Supabase
+  await supabase.auth.signOut();
+
+  // Clear auth cookie
   const cookieStore = await cookies();
   cookieStore.delete(AUTH_COOKIE_NAME);
+
   redirect('/login');
 }
 
 /**
  * Get current authenticated user from cookie
+ * Validates session with Supabase
  */
 export async function getUser(): Promise<User | null> {
   const cookieStore = await cookies();
@@ -221,20 +238,41 @@ export async function getUser(): Promise<User | null> {
   }
 
   try {
-    return JSON.parse(authCookie.value) as User;
+    const user = JSON.parse(authCookie.value) as User;
+
+    // Verify session is still valid with Supabase
+    const supabase = await createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      // Session expired, clear cookie
+      cookieStore.delete(AUTH_COOKIE_NAME);
+      return null;
+    }
+
+    return user;
   } catch {
+    // Invalid cookie format
+    cookieStore.delete(AUTH_COOKIE_NAME);
     return null;
   }
 }
 
 /**
  * Require authentication - redirect to login if not authenticated
+ * Includes error message in redirect for better UX
  */
-export async function requireAuth(): Promise<User> {
+export async function requireAuth(errorMessage?: string): Promise<User> {
   const user = await getUser();
 
   if (!user) {
-    redirect('/login');
+    const params = new URLSearchParams();
+    if (errorMessage) {
+      params.set('error', errorMessage);
+    } else {
+      params.set('error', 'Please login to continue');
+    }
+    redirect(`/login?${params.toString()}`);
   }
 
   return user;

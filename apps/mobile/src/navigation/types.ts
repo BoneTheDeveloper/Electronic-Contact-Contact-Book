@@ -40,7 +40,7 @@ export type ParentTabParamList = {
   ParentProfile: NavigatorScreenParams<ParentProfileStackParamList>;
 };
 
-// Parent Home Stack
+// Parent Home Stack (includes all screens accessible from Dashboard)
 export type ParentHomeStackParamList = {
   Dashboard: undefined;
   Schedule: undefined;
@@ -50,6 +50,12 @@ export type ParentHomeStackParamList = {
   LeaveRequest: undefined;
   Summary: undefined;
   TeacherDirectory: undefined;
+  // News and Payment screens accessible from Dashboard
+  News: undefined;
+  PaymentOverview: undefined;
+  PaymentDetail: { paymentId?: string };
+  PaymentMethod: undefined;
+  PaymentReceipt: { receiptId?: string };
 };
 
 export type ParentHomeStackNavigationProp = NativeStackNavigationProp<ParentHomeStackParamList>;

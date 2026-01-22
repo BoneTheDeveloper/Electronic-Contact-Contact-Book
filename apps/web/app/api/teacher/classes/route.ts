@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getTeacherClasses } from '@/lib/mock-data'
+import { getTeacherClasses } from '@/lib/supabase/queries'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)

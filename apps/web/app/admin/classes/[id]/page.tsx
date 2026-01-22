@@ -1,4 +1,4 @@
-import { getClassById, getStudentsByClass } from '@/lib/mock-data'
+import { getClassById, getStudentsByClass } from '@/lib/supabase/queries'
 import { notFound } from 'next/navigation'
 import { StudentTable } from '@/components/admin/StudentTable'
 import { Users, MapPin, GraduationCap, Mail } from 'lucide-react'

@@ -4,8 +4,7 @@
  */
 
 import React from 'react';
-import { View, ScrollView, StyleSheet, Share } from 'react-native';
-import { Text, Card, Button, Divider } from 'react-native-paper';
+import { View, ScrollView, Share, TouchableOpacity, Text } from 'react-native';
 import { colors } from '../../theme';
 
 interface ReceiptData {
@@ -60,239 +59,120 @@ export const PaymentReceiptScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Biên lai thanh toán</Text>
-        <Text style={styles.headerSubtitle}>Xác nhận thanh toán thành công</Text>
+    <View className="flex-1 bg-slate-50">
+      {/* Header */}
+      <View className="bg-[#0284C7] pt-16 px-6 pb-6 rounded-b-3xl">
+        <Text className="text-2xl font-bold text-white">Biên lai thanh toán</Text>
+        <Text className="text-sm text-white/80 mt-1">Xác nhận thanh toán thành công</Text>
       </View>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+
+      <ScrollView contentContainerClassName="p-4 pb-24">
         {/* Success Icon */}
-        <View style={styles.successIconContainer}>
-          <View style={styles.successIcon}>
-            <Text style={styles.successIconText}>✓</Text>
+        <View className="items-center py-8">
+          <View className="w-20 h-20 rounded-full bg-green-100 justify-center items-center mb-4">
+            <Text className="text-5xl text-green-600 font-bold">✓</Text>
           </View>
-          <Text style={styles.successTitle}>Thanh toán thành công!</Text>
-          <Text style={styles.successSubtitle}>
+          <Text className="text-xl font-bold text-gray-800 mb-2">Thanh toán thành công!</Text>
+          <Text className="text-2xl font-extrabold text-[#0284C7]">
             {formatCurrency(MOCK_RECEIPT.amount)}
           </Text>
         </View>
 
         {/* Receipt Card */}
-        <Card style={styles.receiptCard}>
-          <Card.Content>
-            <View style={styles.receiptHeader}>
-              <Text style={styles.receiptTitle}>Biên lai</Text>
-              <Text style={styles.receiptId}>#{MOCK_RECEIPT.id}</Text>
+        <View className="mb-4 rounded-2xl bg-white shadow-sm border border-gray-200">
+          <View className="p-4">
+            {/* Header */}
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-lg font-bold text-gray-800">Biên lai</Text>
+              <Text className="text-sm text-gray-500 font-medium">#{MOCK_RECEIPT.id}</Text>
             </View>
 
-            <Divider style={styles.divider} />
+            {/* Divider */}
+            <View className="h-px bg-gray-200 my-4" />
 
-            <View style={styles.receiptSection}>
-              <Text style={styles.sectionTitle}>Thông tin thanh toán</Text>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Loại khoản:</Text>
-                <Text style={styles.detailValue}>{MOCK_RECEIPT.type}</Text>
+            {/* Payment Info */}
+            <View className="mb-2">
+              <Text className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
+                Thông tin thanh toán
+              </Text>
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-sm text-gray-500 font-medium">Loại khoản:</Text>
+                <Text className="text-sm text-gray-800 font-semibold text-right flex-1 ml-4">
+                  {MOCK_RECEIPT.type}
+                </Text>
               </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Số tiền:</Text>
-                <Text style={[styles.detailValue, styles.amountValue]}>
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-sm text-gray-500 font-medium">Số tiền:</Text>
+                <Text className="text-base font-extrabold text-[#0284C7] text-right flex-1 ml-4">
                   {formatCurrency(MOCK_RECEIPT.amount)}
                 </Text>
               </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Ngày thanh toán:</Text>
-                <Text style={styles.detailValue}>{formatDate(MOCK_RECEIPT.paymentDate)}</Text>
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-sm text-gray-500 font-medium">Ngày thanh toán:</Text>
+                <Text className="text-sm text-gray-800 font-semibold text-right flex-1 ml-4">
+                  {formatDate(MOCK_RECEIPT.paymentDate)}
+                </Text>
               </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Phương thức:</Text>
-                <Text style={styles.detailValue}>{MOCK_RECEIPT.paymentMethod}</Text>
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-sm text-gray-500 font-medium">Phương thức:</Text>
+                <Text className="text-sm text-gray-800 font-semibold text-right flex-1 ml-4">
+                  {MOCK_RECEIPT.paymentMethod}
+                </Text>
               </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Mã giao dịch:</Text>
-                <Text style={styles.detailValue}>{MOCK_RECEIPT.transactionId}</Text>
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-sm text-gray-500 font-medium">Mã giao dịch:</Text>
+                <Text className="text-sm text-gray-800 font-semibold text-right flex-1 ml-4">
+                  {MOCK_RECEIPT.transactionId}
+                </Text>
               </View>
             </View>
 
-            <Divider style={styles.divider} />
+            {/* Divider */}
+            <View className="h-px bg-gray-200 my-4" />
 
-            <View style={styles.receiptSection}>
-              <Text style={styles.sectionTitle}>Thông tin học sinh</Text>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Họ và tên:</Text>
-                <Text style={styles.detailValue}>{MOCK_RECEIPT.studentName}</Text>
+            {/* Student Info */}
+            <View className="mb-2">
+              <Text className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
+                Thông tin học sinh
+              </Text>
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-sm text-gray-500 font-medium">Họ và tên:</Text>
+                <Text className="text-sm text-gray-800 font-semibold text-right flex-1 ml-4">
+                  {MOCK_RECEIPT.studentName}
+                </Text>
               </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Lớp:</Text>
-                <Text style={styles.detailValue}>{MOCK_RECEIPT.studentClass}</Text>
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-sm text-gray-500 font-medium">Lớp:</Text>
+                <Text className="text-sm text-gray-800 font-semibold text-right flex-1 ml-4">
+                  {MOCK_RECEIPT.studentClass}
+                </Text>
               </View>
             </View>
-          </Card.Content>
-        </Card>
+          </View>
+        </View>
 
         {/* Action Buttons */}
-        <Button
-          mode="contained"
+        <TouchableOpacity
           onPress={handleShare}
-          style={styles.shareButton}
-          contentStyle={styles.buttonContent}
-          icon="share-variant"
+          className="bg-[#0284C7] rounded-xl py-3 mb-3 items-center"
         >
-          Chia sẻ biên lai
-        </Button>
-        <Button
-          mode="outlined"
+          <Text className="text-white font-semibold">Chia sẻ biên lai</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           onPress={() => {}}
-          style={styles.downloadButton}
-          contentStyle={styles.buttonContent}
-          icon="download"
+          className="border-2 border-[#0284C7] rounded-xl py-3 mb-3 items-center bg-transparent"
         >
-          Tải về PDF
-        </Button>
-        <Button
-          mode="text"
+          <Text className="text-[#0284C7] font-semibold">Tải về PDF</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           onPress={() => {}}
-          style={styles.homeButton}
-          contentStyle={styles.buttonContent}
+          className="rounded-xl py-3 mt-2 items-center"
         >
-          Về trang chủ
-        </Button>
+          <Text className="text-gray-600 font-medium">Về trang chủ</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  successIconContainer: {
-    alignItems: 'center',
-    paddingVertical: 32,
-  },
-  successIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#D1FAE5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  successIconText: {
-    fontSize: 48,
-    color: colors.success,
-    fontWeight: '700',
-  },
-  successTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 8,
-  },
-  successSubtitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  receiptCard: {
-    marginBottom: 16,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  receiptHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  receiptTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  receiptId: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  divider: {
-    backgroundColor: '#E5E7EB',
-    marginVertical: 16,
-  },
-  receiptSection: {
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#374151',
-    marginBottom: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  detailLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  detailValue: {
-    fontSize: 14,
-    color: '#1F2937',
-    fontWeight: '600',
-    textAlign: 'right',
-    flex: 1,
-    marginLeft: 16,
-  },
-  amountValue: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  shareButton: {
-    backgroundColor: colors.primary,
-    marginBottom: 12,
-  },
-  downloadButton: {
-    borderColor: colors.primary,
-    marginBottom: 12,
-  },
-  homeButton: {
-    marginTop: 8,
-  },
-  buttonContent: {
-    paddingVertical: 10,
-  },
-});

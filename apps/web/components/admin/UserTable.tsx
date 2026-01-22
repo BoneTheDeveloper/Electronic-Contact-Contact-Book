@@ -1,6 +1,6 @@
 'use client'
 
-import { User } from '@/lib/mock-data'
+import type { User } from '@/lib/types'
 import { MoreVertical, Mail, Shield } from 'lucide-react'
 import { useState } from 'react'
 

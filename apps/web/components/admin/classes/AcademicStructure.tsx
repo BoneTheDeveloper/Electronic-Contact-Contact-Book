@@ -7,7 +7,7 @@ import { AddYearModal } from './modals/AddYearModal'
 import { AddClassModal } from './modals/AddClassModal'
 import { AddSubjectModal } from './modals/AddSubjectModal'
 import { EditClassModal } from './modals/EditClassModal'
-import { Class as MockClass } from '@/lib/mock-data'
+import type { Class } from '@/lib/types'
 
 interface ApiResponse<T> {
   success: boolean

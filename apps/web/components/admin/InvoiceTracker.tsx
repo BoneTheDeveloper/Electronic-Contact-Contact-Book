@@ -1,4 +1,4 @@
-import { Invoice } from '@/lib/mock-data'
+import type { Invoice } from '@/lib/types'
 
 interface InvoiceTrackerProps {
   invoices: Invoice[]

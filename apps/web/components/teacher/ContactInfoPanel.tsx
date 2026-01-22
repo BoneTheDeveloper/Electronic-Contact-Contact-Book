@@ -1,6 +1,6 @@
 'use client'
 
-import { Conversation } from '@/lib/mock-data'
+import type { Conversation } from '@/lib/types'
 import { FileText, Image, Phone, Mail, User } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 

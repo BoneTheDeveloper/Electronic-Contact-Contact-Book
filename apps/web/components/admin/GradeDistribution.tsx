@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import type { GradeDistribution } from '@/lib/mock-data'
+import type { GradeDistribution } from '@/lib/types'
 
 interface GradeDistributionProps {
   data: GradeDistribution[]

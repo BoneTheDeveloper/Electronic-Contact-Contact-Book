@@ -1,9 +1,15 @@
 /**
  * Login Screen
- * Handles user authentication with email and password (role auto-detected)
+ * Handles user authentication with identifier and password (role auto-detected)
  *
  * SECURITY NOTICE: This is MOCK authentication.
- * Accepts any password. Role is auto-detected from email.
+ * Accepts any password.
+ *
+ * Login identifiers:
+ * - Parent: phone number or email
+ * - Student: student_code (ST2024001) or email
+ * - Teacher: employee_code (TC001) or email
+ * - Admin: admin_code (AD001) or email
  */
 
 import React, { useState } from 'react';
@@ -14,8 +20,11 @@ import {
   Platform,
   ScrollView,
   Alert,
+  TouchableOpacity,
+  Text as RNText,
+  TextInput as RNTextInput,
+  ActivityIndicator,
 } from 'react-native';
-import { TextInput, Button, Text, useTheme } from 'react-native-paper';
 import { useAuthStore } from '../../stores';
 import { colors } from '../../theme';
 import type { AuthStackNavigationProp } from '../../navigation/types';
@@ -25,22 +34,21 @@ interface LoginScreenProps {
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const theme = useTheme();
   const { login, isLoading, error, clearError } = useAuthStore();
 
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password');
+    if (!identifier || !password) {
+      Alert.alert('Error', 'Please enter identifier and password');
       return;
     }
 
     try {
       clearError();
-      await login(email, password);
+      await login(identifier, password);
       // Navigation will be handled automatically by RootNavigator based on role
     } catch (err) {
       Alert.alert('Login Failed', error || 'Invalid credentials');
@@ -57,82 +65,96 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text variant="headlineMedium" style={styles.title}>
+          <RNText style={styles.title}>
             EContact School
-          </Text>
-          <Text variant="bodyMedium" style={styles.subtitle}>
+          </RNText>
+          <RNText style={styles.subtitle}>
             School Management System
-          </Text>
+          </RNText>
         </View>
 
         <View style={styles.warningBanner}>
-          <Text variant="bodySmall" style={styles.warningText}>
-            ⚠️ DEMO MODE - MOCK AUTHENTICATION
-          </Text>
-          <Text variant="bodySmall" style={styles.warningSubtext}>
-            Any password will be accepted
-          </Text>
+          <RNText style={styles.warningText}>
+            REAL AUTHENTICATION - Supabase
+          </RNText>
+          <RNText style={styles.warningSubtext}>
+            Use test accounts below
+          </RNText>
         </View>
 
         <View style={styles.form}>
-          <TextInput
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            mode="outlined"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            style={styles.input}
-            placeholder="parent@school.edu"
-          />
+          <View>
+            <RNText style={styles.inputLabel}>Email / Phone / Code</RNText>
+            <RNTextInput
+              value={identifier}
+              onChangeText={setIdentifier}
+              keyboardType="default"
+              autoCapitalize="none"
+              autoComplete="username"
+              style={styles.input}
+              placeholder="0901234569 or parent@school.edu"
+              placeholderTextColor="#9CA3AF"
+            />
+            <RNText style={styles.inputHint}>
+              Parents: phone number (0901234569){'\n'}
+              Students: student code (ST2024001){'\n'}
+              Teachers: employee code (TC001)
+            </RNText>
+          </View>
 
-          <TextInput
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            mode="outlined"
-            secureTextEntry={!showPassword}
-            right={
-              <TextInput.Icon
-                icon={showPassword ? 'eye-off' : 'eye'}
-                onPress={() => setShowPassword(!showPassword)}
+          <View>
+            <RNText style={styles.inputLabel}>Password</RNText>
+            <View style={styles.passwordWrapper}>
+              <RNTextInput
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                style={styles.inputWithIcon}
+                placeholder="Any password"
+                placeholderTextColor="#9CA3AF"
               />
-            }
-            style={styles.input}
-            placeholder="Any password"
-          />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+              >
+                <RNText style={styles.eyeIconText}>
+                  {showPassword ? '👁️‍🗨️' : '👁️'}
+                </RNText>
+              </TouchableOpacity>
+            </View>
+          </View>
 
-          <Button
-            mode="contained"
+          <TouchableOpacity
             onPress={handleLogin}
-            loading={isLoading}
-            disabled={isLoading || !email || !password}
-            style={styles.loginButton}
-            contentStyle={styles.loginButtonContent}
+            disabled={isLoading || !identifier || !password}
+            style={[
+              styles.loginButton,
+              (isLoading || !identifier || !password) && styles.loginButtonDisabled,
+            ]}
           >
-            Sign In
-          </Button>
+            {isLoading ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <RNText style={styles.loginButtonText}>Sign In</RNText>
+            )}
+          </TouchableOpacity>
 
           <View style={styles.hintSection}>
-            <Text variant="bodySmall" style={styles.hintTitle}>
-              Demo Accounts (any password):
-            </Text>
-            <Text variant="bodySmall" style={styles.hintText}>
-              • parent@school.edu → Parent Portal
-            </Text>
-            <Text variant="bodySmall" style={styles.hintText}>
-              • student@school.edu → Student Portal
-            </Text>
-            <Text variant="bodySmall" style={styles.hintText}>
-              • teacher@school.edu → Teacher Portal
-            </Text>
-            <Text variant="bodySmall" style={styles.hintText}>
-              • admin@school.edu → Admin Portal
-            </Text>
-            <Text variant="bodySmall" style={styles.hintNote}>
-              Role is auto-detected from email address
-            </Text>
+            <RNText style={styles.hintTitle}>
+              Test Accounts (Password: Test123456!):
+            </RNText>
+            <RNText style={styles.hintText}>
+              • Parent: 0901234569 or parent@school.edu
+            </RNText>
+            <RNText style={styles.hintText}>
+              • Student: ST2024001 or student@school.edu
+            </RNText>
+            <RNText style={styles.hintText}>
+              • Teacher: TC001 or teacher@school.edu
+            </RNText>
+            <RNText style={styles.hintText}>
+              • Admin: AD001 or admin@school.edu
+            </RNText>
           </View>
         </View>
       </ScrollView>
@@ -155,11 +177,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   title: {
-    color: colors.primary,
+    fontSize: 28,
     fontWeight: '700',
+    color: colors.primary,
     marginBottom: 8,
   },
   subtitle: {
+    fontSize: 14,
     color: colors.textSecondary,
   },
   warningBanner: {
@@ -171,25 +195,84 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   warningText: {
+    fontSize: 12,
     color: '#856404',
     fontWeight: '600',
     marginBottom: 4,
   },
   warningSubtext: {
+    fontSize: 12,
     color: '#856404',
   },
   form: {
     width: '100%',
   },
+  inputLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
   input: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    borderRadius: 16,
+    marginBottom: 4,
+    height: 56,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  inputHint: {
+    fontSize: 11,
+    color: colors.textHint,
+    marginLeft: 4,
     marginBottom: 16,
+    lineHeight: 14,
+  },
+  passwordWrapper: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  inputWithIcon: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    borderRadius: 16,
+    height: 56,
+    paddingHorizontal: 16,
+    paddingRight: 50,
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    padding: 4,
+  },
+  eyeIconText: {
+    fontSize: 20,
   },
   loginButton: {
     marginTop: 8,
     marginBottom: 24,
-  },
-  loginButtonContent: {
+    backgroundColor: colors.primary,
+    borderRadius: 16,
     height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loginButtonDisabled: {
+    opacity: 0.5,
+  },
+  loginButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 1,
+    color: '#FFFFFF',
   },
   hintSection: {
     padding: 16,
@@ -197,15 +280,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   hintTitle: {
+    fontSize: 12,
     color: colors.textPrimary,
     fontWeight: '600',
     marginBottom: 8,
   },
   hintText: {
+    fontSize: 12,
     color: colors.textSecondary,
     marginBottom: 4,
   },
   hintNote: {
+    fontSize: 11,
     color: colors.textHint,
     marginTop: 8,
     fontStyle: 'italic',

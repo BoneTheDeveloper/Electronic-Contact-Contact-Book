@@ -4,7 +4,13 @@
  * Login Page
  *
  * SECURITY NOTICE: This is MOCK authentication.
- * Any password is accepted. Role is auto-detected from email.
+ * Any password is accepted.
+ *
+ * Login identifiers:
+ * - Admin: admin_code (AD001) or email
+ * - Teacher: employee_code (TC001) or email
+ * - Student: student_code (ST2024001) or email
+ * - Parent: phone number or email
  */
 
 import { useState } from 'react'
@@ -15,17 +21,22 @@ import { login } from '@/lib/auth'
 export default function LoginPage() {
   const [role, setRole] = useState<'teacher' | 'admin'>('teacher')
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async (formData: FormData) => {
-    setIsLoading(true)
-    try {
-      // The login function handles the redirect
-      await login(formData)
-    } finally {
-      setIsLoading(false)
+  // Get placeholder and label based on role
+  const getLoginConfig = () => {
+    if (role === 'teacher') {
+      return {
+        label: 'Mã giáo viên',
+        placeholder: 'TC001'
+      }
+    }
+    return {
+      label: 'Mã quản trị viên',
+      placeholder: 'AD001'
     }
   }
+
+  const loginConfig = getLoginConfig()
 
   return (
     <>
@@ -72,14 +83,14 @@ export default function LoginPage() {
           </div>
 
           {/* Login Form */}
-          <form action={handleSubmit} className="space-y-6">
+          <form action={login} className="space-y-6">
             {/* Hidden role field - sent to backend */}
             <input type="hidden" name="role" value={role} />
 
-            {/* Email/Code Input */}
+            {/* Code/Email Input */}
             <div>
               <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
-                {role === 'teacher' ? 'Mã giáo viên / Email' : 'Mã quản trị viên / Email'}
+                {loginConfig.label}
               </label>
               <div className="relative">
                 {/* User icon */}
@@ -90,15 +101,18 @@ export default function LoginPage() {
                   </svg>
                 </span>
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
+                  id="identifier"
+                  name="identifier"
+                  type="text"
+                  autoComplete="username"
                   required
-                  placeholder={role === 'teacher' ? 'GVXXXX' : 'ADXXXX'}
+                  placeholder={loginConfig.placeholder}
                   className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-semibold text-gray-900 placeholder-gray-400"
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-1 ml-1">
+                Hoặc email đăng ký
+              </p>
             </div>
 
             {/* Password Input */}
@@ -157,36 +171,29 @@ export default function LoginPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full py-5 bg-[#0284C7] hover:bg-[#0369a1] text-white font-black text-lg rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
+              className="w-full py-5 bg-[#0284C7] hover:bg-[#0369a1] text-white font-black text-lg rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3"
             >
-              {isLoading ? (
-                'ĐANG XỬ LÝ...'
-              ) : (
-                <>
-                  ĐĂNG NHẬP HỆ THỐNG
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </>
-              )}
+              ĐĂNG NHẬP HỆ THỐNG
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
             </button>
           </form>
 
           {/* Demo Accounts Info */}
-          <div className="mt-8 rounded-lg bg-yellow-50 border border-yellow-200 p-4">
-            <p className="text-sm font-semibold text-yellow-800">
-              ⚠️ DEMO MODE - MOCK AUTHENTICATION
+          <div className="mt-8 rounded-lg bg-blue-50 border border-blue-200 p-4">
+            <p className="text-sm font-semibold text-blue-800">
+              Test Accounts
             </p>
-            <p className="text-xs text-yellow-700 mt-1">
-              Any password will be accepted. Role is auto-detected from email.
+            <p className="text-xs text-blue-700 mt-1">
+              Password: <code>Test123456!</code>
             </p>
             <div className="mt-3 space-y-1">
               <p className="text-xs text-gray-600">
-                • teacher@school.edu → Teacher Portal
+                • <strong>Teacher:</strong> TC001 or teacher@school.edu
               </p>
               <p className="text-xs text-gray-600">
-                • admin@school.edu → Admin Portal
+                • <strong>Admin:</strong> AD001 or admin@school.edu
               </p>
             </div>
           </div>

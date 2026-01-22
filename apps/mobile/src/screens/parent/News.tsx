@@ -4,9 +4,7 @@
  */
 
 import React from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
-import { Text, Card, Chip, Avatar } from 'react-native-paper';
-import { mockNotifications } from '../../mock-data';
+import { View, ScrollView, Text, Pressable } from 'react-native';
 import { colors } from '../../theme';
 
 interface NewsItem {
@@ -85,137 +83,53 @@ export const NewsScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Tin tức & Sự kiện</Text>
-        <Text style={styles.headerSubtitle}>Cập nhật thông tin từ nhà trường</Text>
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-[#0284C7] pt-[60px] px-6 pb-6 rounded-b-[20px]">
+        <Text className="text-[24px] font-bold text-white">Tin tức & Sự kiện</Text>
+        <Text className="text-[14px] text-white/80 mt-1">Cập nhật thông tin từ nhà trường</Text>
       </View>
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        className="px-4 pb-[100px]"
         showsVerticalScrollIndicator={false}
       >
         {MOCK_NEWS.map((item) => (
-          <Card key={item.id} style={[styles.newsCard, !item.read && styles.unreadCard]}>
-            <Card.Content>
-              <View style={styles.newsHeader}>
-                <Chip
-                  mode="flat"
-                  compact
-                  style={[styles.categoryChip, { backgroundColor: CATEGORY_COLORS[item.category] }]}
-                  textStyle={[styles.categoryChipText, { color: CATEGORY_TEXT_COLORS[item.category] }]}
+          <Pressable
+            key={item.id}
+            className={`mb-4 rounded-[16px] bg-white shadow-md ${
+              !item.read ? 'border-2 border-[#0284C7]' : ''
+            }`}
+          >
+            <View className="p-4">
+              <View className="flex-row justify-between items-center mb-3">
+                <View
+                  className="h-[26px] px-2 rounded-md justify-center items-center"
+                  style={{ backgroundColor: CATEGORY_COLORS[item.category] }}
                 >
-                  {item.category}
-                </Chip>
-                <Text style={styles.newsDate}>{formatDate(item.date)}</Text>
+                  <Text
+                    className="text-[10px] font-bold uppercase"
+                    style={{ color: CATEGORY_TEXT_COLORS[item.category] }}
+                  >
+                    {item.category}
+                  </Text>
+                </View>
+                <Text className="text-[11px] text-gray-400 font-medium">{formatDate(item.date)}</Text>
               </View>
-              <Text style={styles.newsTitle} numberOfLines={2}>
+              <Text className="text-[16px] font-bold text-gray-800 mb-2 leading-[22px]" numberOfLines={2}>
                 {item.title}
               </Text>
-              <Text style={styles.newsContent} numberOfLines={3}>
+              <Text className="text-[14px] text-gray-600 leading-[20px] mb-2" numberOfLines={3}>
                 {item.content}
               </Text>
               {!item.read && (
-                <View style={styles.unreadIndicator}>
-                  <View style={styles.unreadDot} />
-                  <Text style={styles.unreadText}>Chưa đọc</Text>
+                <View className="flex-row items-center mt-2">
+                  <View className="w-[6px] h-[6px] rounded-full bg-[#0284C7] mr-2" />
+                  <Text className="text-[11px] font-semibold text-[#0284C7]">Chưa đọc</Text>
                 </View>
               )}
-            </Card.Content>
-          </Card>
+            </View>
+          </Pressable>
         ))}
       </ScrollView>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  newsCard: {
-    marginBottom: 16,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    backgroundColor: '#FFFFFF',
-  },
-  unreadCard: {
-    borderWidth: 2,
-    borderColor: colors.primary,
-  },
-  newsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  categoryChip: {
-    height: 26,
-  },
-  categoryChipText: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  newsDate: {
-    fontSize: 11,
-    color: '#9CA3AF',
-    fontWeight: '500',
-  },
-  newsTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 8,
-    lineHeight: 22,
-  },
-  newsContent: {
-    fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 20,
-    marginBottom: 8,
-  },
-  unreadIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  unreadDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.primary,
-    marginRight: 8,
-  },
-  unreadText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-});

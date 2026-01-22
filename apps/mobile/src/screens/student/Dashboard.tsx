@@ -5,8 +5,7 @@
  */
 
 import React from 'react';
-import { View, ScrollView, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { Text, Avatar } from 'react-native-paper';
+import { View, ScrollView, TouchableOpacity, Dimensions, Text } from 'react-native';
 import { useAuthStore } from '../../stores';
 import { useStudentStore } from '../../stores';
 import { colors } from '../../theme';
@@ -83,14 +82,31 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
     return (
       <TouchableOpacity
         key={item.id}
-        style={[styles.iconContainer, { width: containerWidth }]}
+        className="items-center mb-6"
+        style={{ width: containerWidth }}
         onPress={() => navigation.navigate(item.route as never)}
         activeOpacity={0.7}
       >
-        <View style={[styles.iconWrapper, { borderColor: item.color }]}>
-          <Avatar.Icon size={32} icon={item.icon} style={{ backgroundColor: `${item.color}20` }} />
+        <View
+          className="w-20 h-20 rounded-[28px] bg-white justify-center items-center border border-gray-200 shadow-sm"
+          style={{ borderColor: item.color, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }}
+        >
+          <View className="w-8 h-8 rounded-full justify-center items-center" style={{ backgroundColor: `${item.color}20` }}>
+            <Text className="text-xs" style={{ color: item.color, fontWeight: '800' }}>
+              {item.icon === 'calendar' ? '📅' :
+               item.icon === 'check-circle' ? '✓' :
+               item.icon === 'account-check' ? '✓' :
+               item.icon === 'book-open-variant' ? '📖' :
+               item.icon === 'file-document' ? '📄' :
+               item.icon === 'message-reply' ? '💬' :
+               item.icon === 'newspaper' ? '📰' :
+               item.icon === 'chart-pie' ? '📊' : '💰'}
+            </Text>
+          </View>
         </View>
-        <Text style={styles.iconLabel}>{item.label}</Text>
+        <Text className="text-[10px] font-extrabold text-gray-600 text-center uppercase mt-3 leading-[14px] tracking-wider">
+          {item.label}
+        </Text>
       </TouchableOpacity>
     );
   };
@@ -123,31 +139,44 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-slate-50">
       {/* Header with gradient background */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <View style={styles.userInfo}>
-            <Avatar.Text
-              size={56}
-              label={getInitials(studentData?.name || user?.name)}
+      <View
+        className="pt-15 px-6 pb-6"
+        style={{ backgroundColor: colors.primary, borderBottomLeftRadius: 30, borderBottomRightRadius: 30 }}
+      >
+        <View className="flex-row justify-between items-center">
+          <View className="flex-row items-center">
+            <View
+              className="w-14 h-14 rounded-full justify-center items-center"
               style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-              labelStyle={{ color: '#FFFFFF', fontSize: 20 }}
-            />
-            <View style={styles.userDetails}>
-              <Text style={styles.greeting}>Xin chào,</Text>
-              <Text style={styles.userName}>{studentData?.name || user?.name}</Text>
+            >
+              <Text className="text-white text-xl font-bold">
+                {getInitials(studentData?.name || user?.name)}
+              </Text>
+            </View>
+            <View className="ml-4">
+              <Text className="text-xs text-white/80 font-semibold">Xin chào,</Text>
+              <Text className="text-xl text-white font-extrabold mt-1">{studentData?.name || user?.name}</Text>
               {studentData && (
-                <Text style={styles.userClass}>
+                <Text className="text-xs text-white/70 mt-0.5">
                   Lớp {studentData.grade}{studentData.section}
                 </Text>
               )}
             </View>
           </View>
-          <TouchableOpacity style={styles.notificationBell}>
-            <Avatar.Icon size={40} icon="bell" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }} color="#FFF" />
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationBadgeText}>3</Text>
+          <TouchableOpacity className="relative">
+            <View
+              className="w-10 h-10 rounded-full justify-center items-center"
+              style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+            >
+              <Text className="text-white text-lg">🔔</Text>
+            </View>
+            <View
+              className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full justify-center items-center border-2 border-white"
+              style={{ backgroundColor: '#EF4444' }}
+            >
+              <Text className="text-[9px] font-extrabold text-white">3</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -155,56 +184,79 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
 
       {/* Service Icons Grid */}
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        className="flex-1"
+        contentContainerClassName="pt-10 pb-25 px-6"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.iconsGrid}>
+        <View className="flex-row flex-wrap justify-between mb-8">
           {STUDENT_SERVICE_ICONS.map(renderServiceIcon)}
         </View>
 
         {/* Quick Stats Section */}
-        <View style={styles.statsSection}>
-          <Text style={styles.sectionTitle}>Tổng quan</Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>
+        <View className="mb-6">
+          <Text className="text-base font-bold text-gray-800 mb-4">Tổng quan</Text>
+          <View className="flex-row justify-between">
+            <View
+              className="flex-1 bg-white rounded-2xl p-4 items-center mx-1 shadow-sm"
+              style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }}
+            >
+              <Text className="text-2xl font-extrabold text-gray-800">
                 {grades.length > 0
                   ? (grades.reduce((sum, g) => sum + (g.score / g.maxScore) * 100, 0) / grades.length).toFixed(1)
                   : '-'}
               </Text>
-              <Text style={styles.statLabel}>Điểm TB</Text>
+              <Text className="text-xs font-semibold text-gray-600 mt-1">Điểm TB</Text>
             </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{attendancePercentage}%</Text>
-              <Text style={styles.statLabel}>Đi học</Text>
+            <View
+              className="flex-1 bg-white rounded-2xl p-4 items-center mx-1 shadow-sm"
+              style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }}
+            >
+              <Text className="text-2xl font-extrabold text-gray-800">{attendancePercentage}%</Text>
+              <Text className="text-xs font-semibold text-gray-600 mt-1">Đi học</Text>
             </View>
           </View>
         </View>
 
         {/* Upcoming Assignments Section */}
-        <View style={styles.assignmentsSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Bài tập sắp tới</Text>
+        <View className="mb-4">
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-base font-bold text-gray-800">Bài tập sắp tới</Text>
             <TouchableOpacity onPress={() => navigation.navigate('StudentGrades' as never)}>
-              <Text style={styles.seeAllText}>Xem tất cả</Text>
+              <Text className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.primary }}>
+                Xem tất cả
+              </Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.assignmentsContainer}>
-            {MOCK_ASSIGNMENTS.map((assignment) => (
-              <View key={assignment.id} style={styles.assignmentItem}>
-                <View style={styles.assignmentHeader}>
-                  <View style={styles.assignmentSubject}>
-                    <Text style={styles.assignmentSubjectText}>{assignment.subject}</Text>
+          <View
+            className="bg-white rounded-2xl p-4 shadow-sm"
+            style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }}
+          >
+            {MOCK_ASSIGNMENTS.map((assignment, index) => (
+              <View
+                key={assignment.id}
+                className="border-b border-gray-100 py-3"
+                style={index === MOCK_ASSIGNMENTS.length - 1 ? { borderBottomWidth: 0 } : {}}
+              >
+                <View className="flex-row justify-between items-center mb-2">
+                  <View className="bg-blue-100 px-2.5 py-1 rounded-lg">
+                    <Text className="text-[11px] font-bold uppercase" style={{ color: colors.primary }}>
+                      {assignment.subject}
+                    </Text>
                   </View>
-                  <View style={[styles.priorityBadge, { backgroundColor: `${getPriorityColor(assignment.priority)}20` }]}>
-                    <Text style={[styles.priorityText, { color: getPriorityColor(assignment.priority) }]}>
+                  <View
+                    className="px-2.5 py-1 rounded-lg"
+                    style={{ backgroundColor: `${getPriorityColor(assignment.priority)}20` }}
+                  >
+                    <Text
+                      className="text-[10px] font-bold uppercase"
+                      style={{ color: getPriorityColor(assignment.priority) }}
+                    >
                       {getPriorityLabel(assignment.priority)}
                     </Text>
                   </View>
                 </View>
-                <Text style={styles.assignmentTitle}>{assignment.title}</Text>
-                <Text style={styles.assignmentDue}>Hạn: {formatDate(assignment.dueDate)}</Text>
+                <Text className="text-sm font-semibold text-gray-800 mb-1">{assignment.title}</Text>
+                <Text className="text-xs text-gray-600">Hạn: {formatDate(assignment.dueDate)}</Text>
               </View>
             ))}
           </View>
@@ -213,215 +265,3 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  userDetails: {
-    marginLeft: 16,
-  },
-  greeting: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
-    fontWeight: '600',
-  },
-  userName: {
-    fontSize: 20,
-    color: '#FFFFFF',
-    fontWeight: '800',
-    marginTop: 4,
-  },
-  userClass: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: 2,
-  },
-  notificationBell: {
-    position: 'relative',
-  },
-  notificationBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: '#EF4444',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  notificationBadgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingTop: 40,
-    paddingBottom: 100,
-    paddingHorizontal: 24,
-  },
-  iconsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 32,
-  },
-  iconContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  iconWrapper: {
-    width: ICON_SIZE,
-    height: ICON_SIZE,
-    borderRadius: 28,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  iconLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#6B7280',
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    marginTop: 12,
-    lineHeight: 14,
-    letterSpacing: 0.3,
-  },
-  statsSection: {
-    marginBottom: 24,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    marginHorizontal: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#1F2937',
-  },
-  statLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6B7280',
-    marginTop: 4,
-  },
-  assignmentsSection: {
-    marginBottom: 16,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  seeAllText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: colors.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  assignmentsContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  assignmentItem: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-    paddingVertical: 12,
-  },
-  assignmentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  assignmentSubject: {
-    backgroundColor: '#DBEAFE',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  assignmentSubjectText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.primary,
-    textTransform: 'uppercase',
-  },
-  priorityBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  priorityText: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  assignmentTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  assignmentDue: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-});

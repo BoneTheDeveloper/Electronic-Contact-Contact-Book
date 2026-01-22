@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Users, Shield, UserCheck, Users2, MoreVertical } from 'lucide-react'
 import { StatCard, DataTable, StatusBadge } from '@/components/admin/shared'
 import type { Column } from '@/components/admin/shared'
-import type { User } from '@/lib/mock-data'
+import type { User } from '@/lib/types'
 import { AddUserModal, UserActionsModal, LinkParentModal, ImportExcelModal } from './modals'
 
 interface UserStats {

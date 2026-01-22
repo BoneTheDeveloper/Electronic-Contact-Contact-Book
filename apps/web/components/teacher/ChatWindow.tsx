@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Message, Conversation } from '@/lib/mock-data'
+import type { Message, Conversation } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Send, Paperclip, Phone, Video, Info, MoreVertical } from 'lucide-react'

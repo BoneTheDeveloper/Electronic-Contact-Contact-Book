@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import type { Activity } from '@/lib/mock-data'
+import type { Activity } from '@/lib/types'
 import { Activity as ActivityIcon } from 'lucide-react'
 
 interface ActivityLogTableProps {

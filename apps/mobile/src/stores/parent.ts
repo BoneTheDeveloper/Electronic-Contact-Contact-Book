@@ -65,7 +65,7 @@ export const useParentStore = create<ParentState>((set) => ({
 
     try {
       // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise<void>((resolve) => setTimeout(resolve, 500));
 
       // Mock children data
       const mockChildren: ChildData[] = [
@@ -107,7 +107,7 @@ export const useParentStore = create<ParentState>((set) => ({
 
     try {
       // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise<void>((resolve) => setTimeout(resolve, 500));
 
       // Mock fees data
       const mockFees: Fee[] = [
@@ -150,7 +150,7 @@ export const useParentStore = create<ParentState>((set) => ({
 
     try {
       // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise<void>((resolve) => setTimeout(resolve, 500));
 
       // Mock messages
       const mockMessages: Message[] = [

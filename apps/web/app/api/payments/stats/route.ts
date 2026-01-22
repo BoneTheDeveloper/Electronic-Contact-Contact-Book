@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPaymentStats } from '@/lib/mock-data'
+import { getPaymentStats } from '@/lib/supabase/queries'
 
 // GET /api/payments/stats - Get payment statistics
 export async function GET(request: NextRequest) {

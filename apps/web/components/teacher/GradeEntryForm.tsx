@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { GradeEntry } from '@/lib/mock-data'
+import type { GradeEntry } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Save, Download, Upload, Lock, Unlock, AlertCircle } from 'lucide-react'

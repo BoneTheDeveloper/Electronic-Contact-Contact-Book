@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle2, XCircle, Clock } from 'lucide-react'
-import type { AttendanceStats } from '@/lib/mock-data'
+import type { AttendanceStats } from '@/lib/types'
 import { useState, useEffect } from 'react'
 
 interface AttendanceChartProps {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { type Notification } from '@/lib/mock-data'
+import type { Notification } from '@/lib/types'
 
 // Mock data
 const mockNotifications: Notification[] = [

@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Users, GraduationCap, AlertTriangle } from 'lucide-react'
 import { BaseModal, BaseModalProps } from '@/components/admin/shared/modals/BaseModal'
-import { SUPPORTED_GRADES, Class as MockClass } from '@/lib/mock-data'
+import { SUPPORTED_GRADES } from '@/lib/constants'
+import type { Class } from '@/lib/types'
 
 export interface EditClassModalProps extends Omit<BaseModalProps, 'title' | 'children'> {
   classData: MockClass | null

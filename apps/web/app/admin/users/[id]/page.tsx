@@ -1,4 +1,4 @@
-import { getUserById } from '@/lib/mock-data'
+import { getUserById } from '@/lib/supabase/queries'
 import { notFound } from 'next/navigation'
 import { Mail, Shield, Calendar, User } from 'lucide-react'
 

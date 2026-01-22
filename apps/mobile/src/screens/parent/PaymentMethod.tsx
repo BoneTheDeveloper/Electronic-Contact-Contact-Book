@@ -4,9 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
-import { Text, Card, RadioButton, Button } from 'react-native-paper';
-import { colors } from '../../theme';
+import { View, ScrollView, Pressable, TouchableOpacity, Text } from 'react-native';
 
 interface PaymentMethod {
   id: string;
@@ -60,192 +58,68 @@ export const PaymentMethodScreen: React.FC = () => {
   const selectedMethodData = PAYMENT_METHODS.find(m => m.id === selectedMethod);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Phương thức thanh toán</Text>
-        <Text style={styles.headerSubtitle}>Chọn cách thức thanh toán phù hợp</Text>
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-primary pt-16 px-6 pb-6 rounded-b-3xl">
+        <Text className="text-2xl font-bold text-white">Phương thức thanh toán</Text>
+        <Text className="text-sm text-white/80 mt-1">Chọn cách thức thanh toán phù hợp</Text>
       </View>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.sectionTitle}>Chọn phương thức</Text>
+      <ScrollView contentContainerClassName="p-4 pb-24">
+        <Text className="text-base font-bold text-gray-800 mb-3 mt-2">Chọn phương thức</Text>
 
         {PAYMENT_METHODS.map((method) => (
-          <Card
+          <Pressable
             key={method.id}
-            style={[styles.methodCard, selectedMethod === method.id && styles.selectedCard]}
             onPress={() => setSelectedMethod(method.id)}
+            className={`mb-3 rounded-xl bg-white border-2 ${
+              selectedMethod === method.id ? 'border-primary bg-sky-50' : 'border-transparent'
+            }`}
           >
-            <Card.Content style={styles.methodContent}>
-              <View style={styles.methodInfo}>
-                <Text style={styles.methodName}>{method.name}</Text>
-                <Text style={styles.methodDescription}>{method.description}</Text>
+            <View className="flex-row justify-between items-center p-4">
+              <View className="flex-1 mr-3">
+                <Text className="text-base font-bold text-gray-800 mb-1">{method.name}</Text>
+                <Text className="text-xs text-gray-500 leading-4 mb-1">{method.description}</Text>
                 {method.fee > 0 && (
-                  <Text style={styles.methodFee}>Phí dịch vụ: {formatCurrency(method.fee)}</Text>
+                  <Text className="text-xs text-warning font-semibold">Phí dịch vụ: {formatCurrency(method.fee)}</Text>
                 )}
               </View>
-              <RadioButton
-                value={method.id}
-                status={selectedMethod === method.id ? 'checked' : 'unchecked'}
-                onPress={() => setSelectedMethod(method.id)}
-                color={colors.primary}
-              />
-            </Card.Content>
-          </Card>
+              <View className={`w-6 h-6 rounded-full border-2 ${
+                selectedMethod === method.id ? 'border-primary bg-primary' : 'border-gray-300'
+              } items-center justify-center`}>
+                {selectedMethod === method.id && (
+                  <View className="w-3 h-3 rounded-full bg-white" />
+                )}
+              </View>
+            </View>
+          </Pressable>
         ))}
 
         {/* Fee Summary */}
         {selectedMethodData && selectedMethodData.fee > 0 && (
-          <Card style={styles.feeCard}>
-            <Card.Content>
-              <View style={styles.feeRow}>
-                <Text style={styles.feeLabel}>Số tiền thanh toán:</Text>
-                <Text style={styles.feeValue}>5,000,000 VND</Text>
-              </View>
-              <View style={styles.feeRow}>
-                <Text style={styles.feeLabel}>Phí dịch vụ:</Text>
-                <Text style={styles.feeValue}>{formatCurrency(selectedMethodData.fee)}</Text>
-              </View>
-              <View style={[styles.feeRow, styles.totalRow]}>
-                <Text style={styles.totalLabel}>Tổng cộng:</Text>
-                <Text style={styles.totalValue}>
-                  {formatCurrency(5000000 + selectedMethodData.fee)}
-                </Text>
-              </View>
-            </Card.Content>
-          </Card>
+          <View className="mt-4 mb-4 rounded-xl bg-white p-4">
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-sm text-gray-500">Số tiền thanh toán:</Text>
+              <Text className="text-sm font-semibold text-gray-800">5,000,000 VND</Text>
+            </View>
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-sm text-gray-500">Phí dịch vụ:</Text>
+              <Text className="text-sm font-semibold text-gray-800">{formatCurrency(selectedMethodData.fee)}</Text>
+            </View>
+            <View className="flex-row justify-between items-center pt-2 border-t border-gray-200">
+              <Text className="text-base font-bold text-gray-800">Tổng cộng:</Text>
+              <Text className="text-lg font-extrabold text-primary">
+                {formatCurrency(5000000 + selectedMethodData.fee)}
+              </Text>
+            </View>
+          </View>
         )}
 
-        <Button
-          mode="contained"
+        <TouchableOpacity
           onPress={() => {}}
-          style={styles.continueButton}
-          contentStyle={styles.continueButtonContent}
-          labelStyle={styles.continueButtonLabel}
+          className="mt-2 bg-primary py-2.5 rounded-lg items-center"
         >
-          Tiếp tục
-        </Button>
+          <Text className="text-base font-bold text-white">Tiếp tục</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 12,
-    marginTop: 8,
-  },
-  methodCard: {
-    marginBottom: 12,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  selectedCard: {
-    borderColor: colors.primary,
-    backgroundColor: '#F0F9FF',
-  },
-  methodContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  methodInfo: {
-    flex: 1,
-    marginRight: 12,
-  },
-  methodName: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  methodDescription: {
-    fontSize: 12,
-    color: '#6B7280',
-    lineHeight: 16,
-    marginBottom: 4,
-  },
-  methodFee: {
-    fontSize: 11,
-    color: colors.warning,
-    fontWeight: '600',
-  },
-  feeCard: {
-    marginTop: 16,
-    marginBottom: 16,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  feeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  feeLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  feeValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  totalRow: {
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-    marginTop: 8,
-    marginBottom: 0,
-  },
-  totalLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  totalValue: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  continueButton: {
-    marginTop: 8,
-    backgroundColor: colors.primary,
-  },
-  continueButtonContent: {
-    paddingVertical: 10,
-  },
-  continueButtonLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-});

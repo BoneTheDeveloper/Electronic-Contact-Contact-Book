@@ -20,15 +20,15 @@ import {
   getFeeStats,
   getActivities,
   getGradeDistribution,
-} from '@/lib/mock-data'
+} from '@/lib/supabase/queries'
 
 export default async function AdminDashboard() {
   const [stats, attendance, fees, activities, gradeDist] = await Promise.all([
-    getDashboardStats(),
-    getAttendanceStats('week'),
-    getFeeStats('1'),
-    getActivities(),
-    getGradeDistribution(),
+    getDashboardStats().catch(() => ({ students: 0, parents: 0, teachers: 0, attendance: '0%', feesCollected: '0₫', revenue: 0, pendingPayments: 0 })),
+    getAttendanceStats('week').catch(() => ({ excused: 0, unexcused: 0, tardy: 0 })),
+    getFeeStats('1').catch(() => ({ percentage: 0, paidAmount: '0₫', remainingAmount: '0₫', totalAmount: '0₫', paidStudents: 0, totalStudents: 0 })),
+    getActivities().catch(() => []),
+    getGradeDistribution().catch(() => []),
   ])
 
   const statCards = [

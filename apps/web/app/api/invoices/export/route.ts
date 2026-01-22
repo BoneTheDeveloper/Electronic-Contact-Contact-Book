@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getInvoices } from '@/lib/mock-data'
+import { getInvoices } from '@/lib/supabase/queries'
 
 // Export format options
 type ExportFormat = 'csv' | 'json' | 'pdf'

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getTeacherStats, getGradeReviewRequests, getLeaveRequests, getTeacherSchedule, getRegularAssessments, getTeacherClasses } from '@/lib/mock-data'
+import { getTeacherStats, getLeaveRequests, getTeacherSchedule, getRegularAssessments, getTeacherClasses } from '@/lib/supabase/queries'
 
 export async function GET(request: Request) {
   try {

@@ -133,7 +133,7 @@ async function testPerformanceTests() {
   const metric1 = await measurePerformance(
     'Test Operation',
     async () => {
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise<void>((resolve) => setTimeout(resolve, 10));
     },
     50, // Target: 50ms
     100 // Max: 100ms
@@ -164,7 +164,7 @@ async function testPerformanceTests() {
   // Test 4: measureAppStartup
   console.log('Test 4: measureAppStartup()');
   initStartupMeasurement();
-  await new Promise((resolve) => setTimeout(resolve, 10));
+  await new Promise<void>((resolve) => setTimeout(resolve, 10));
   const metric4 = measureAppStartup();
   console.log(`  Startup time: ${metric4.duration.toFixed(2)}ms`);
   console.log(`  Passed: ${metric4.passed}`);

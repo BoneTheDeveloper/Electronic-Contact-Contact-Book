@@ -1,4 +1,4 @@
-import { Student } from '@/lib/mock-data'
+import type { Student } from '@/lib/types'
 
 interface StudentTableProps {
   students: Student[]

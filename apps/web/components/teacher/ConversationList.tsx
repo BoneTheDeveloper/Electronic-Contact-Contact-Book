@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Conversation } from '@/lib/mock-data'
+import type { Conversation } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Search, MessageCircle } from 'lucide-react'

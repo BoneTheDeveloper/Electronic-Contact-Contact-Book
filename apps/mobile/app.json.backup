@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "EContact School",
+    "slug": "econtact-school",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.schoolmanagement.econtact"
+    },
+    "android": {
+      "package": "com.schoolmanagement.econtact"
+    },
+    "jsEngine": "hermes",
+    "experiments": {
+      "typedRoutes": false
+    },
+    "newArchEnabled": false,
+    "plugins": [
+      [
+        "expo-dev-client",
+        {
+          "newArchEnabled": false
+        }
+      ]
+    ]
+  }
+}

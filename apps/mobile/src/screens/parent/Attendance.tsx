@@ -4,8 +4,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
-import { Text, Card, Chip } from 'react-native-paper';
+import { View, ScrollView, Text } from 'react-native';
 import { useParentStore } from '../../stores';
 import { getAttendanceByStudentId, calculateAttendancePercentage } from '../../mock-data';
 import { colors } from '../../theme';
@@ -45,222 +44,101 @@ export const AttendanceScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Lịch sử điểm danh</Text>
+    <View className="flex-1 bg-slate-50">
+      {/* Header */}
+      <View className="bg-[#0284C7] pt-[60px] px-6 pb-6 rounded-b-[20px]">
+        <Text className="text-[24px] font-bold text-white">Lịch sử điểm danh</Text>
         {selectedChild && (
-          <Text style={styles.headerSubtitle}>
+          <Text className="text-[14px] text-white/80 mt-1">
             {selectedChild.name} • Lớp {selectedChild.grade}{selectedChild.section}
           </Text>
         )}
       </View>
+
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        className="px-4 pb-[100px]"
+        contentContainerStyle={{ paddingTop: 16 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Stats Card */}
-        <Card style={styles.statsCard}>
-          <Card.Content>
-            <Text style={styles.statsTitle}>Thống kê điểm danh</Text>
-            <View style={styles.statsGrid}>
-              <View style={styles.statItem}>
-                <View style={[styles.statBadge, { backgroundColor: '#DCFCE7' }]}>
-                  <Text style={[styles.statValue, { color: colors.attendancePresent }]}>
-                    {stats.present}
-                  </Text>
-                </View>
-                <Text style={styles.statLabel}>Có mặt</Text>
+        <View className="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+          <Text className="text-[18px] font-bold text-gray-800 mb-4">Thống kê điểm danh</Text>
+          <View className="flex-row flex-wrap justify-between mb-5">
+            {/* Present */}
+            <View className="w-[23%] items-center">
+              <View className="w-[60px] h-[60px] rounded-full bg-green-100 justify-center items-center mb-2">
+                <Text className="text-[20px] font-extrabold text-green-600">
+                  {stats.present}
+                </Text>
               </View>
-              <View style={styles.statItem}>
-                <View style={[styles.statBadge, { backgroundColor: '#FEE2E2' }]}>
-                  <Text style={[styles.statValue, { color: colors.attendanceAbsent }]}>
-                    {stats.absent}
-                  </Text>
-                </View>
-                <Text style={styles.statLabel}>Vắng</Text>
-              </View>
-              <View style={styles.statItem}>
-                <View style={[styles.statBadge, { backgroundColor: '#FEF3C7' }]}>
-                  <Text style={[styles.statValue, { color: colors.attendanceLate }]}>
-                    {stats.late}
-                  </Text>
-                </View>
-                <Text style={styles.statLabel}>Muộn</Text>
-              </View>
-              <View style={styles.statItem}>
-                <View style={[styles.statBadge, { backgroundColor: '#DBEAFE' }]}>
-                  <Text style={[styles.statValue, { color: colors.attendanceExcused }]}>
-                    {stats.excused}
-                  </Text>
-                </View>
-                <Text style={styles.statLabel}>Có phép</Text>
-              </View>
+              <Text className="text-[11px] font-semibold text-gray-500 text-center">Có mặt</Text>
             </View>
-            <View style={styles.percentageContainer}>
-              <Text style={styles.percentageLabel}>Tỷ lệ đi học</Text>
-              <Text style={styles.percentageValue}>{stats.percentage}%</Text>
+            {/* Absent */}
+            <View className="w-[23%] items-center">
+              <View className="w-[60px] h-[60px] rounded-full bg-red-100 justify-center items-center mb-2">
+                <Text className="text-[20px] font-extrabold text-red-600">
+                  {stats.absent}
+                </Text>
+              </View>
+              <Text className="text-[11px] font-semibold text-gray-500 text-center">Vắng</Text>
             </View>
-          </Card.Content>
-        </Card>
+            {/* Late */}
+            <View className="w-[23%] items-center">
+              <View className="w-[60px] h-[60px] rounded-full bg-amber-100 justify-center items-center mb-2">
+                <Text className="text-[20px] font-extrabold text-amber-600">
+                  {stats.late}
+                </Text>
+              </View>
+              <Text className="text-[11px] font-semibold text-gray-500 text-center">Muộn</Text>
+            </View>
+            {/* Excused */}
+            <View className="w-[23%] items-center">
+              <View className="w-[60px] h-[60px] rounded-full bg-blue-100 justify-center items-center mb-2">
+                <Text className="text-[20px] font-extrabold text-blue-600">
+                  {stats.excused}
+                </Text>
+              </View>
+              <Text className="text-[11px] font-semibold text-gray-500 text-center">Có phép</Text>
+            </View>
+          </View>
+          <View className="flex-row justify-between items-center pt-4 border-t border-gray-200">
+            <Text className="text-[16px] font-semibold text-gray-800">Tỷ lệ đi học</Text>
+            <Text className="text-[28px] font-extrabold text-[#0284C7]">{stats.percentage}%</Text>
+          </View>
+        </View>
 
         {/* Attendance History */}
-        <Text style={styles.historyTitle}>Lịch sử chi tiết</Text>
+        <Text className="text-[18px] font-bold text-gray-800 mb-3 mt-2">Lịch sử chi tiết</Text>
         {attendance.map((record) => {
           const config = STATUS_CONFIG[record.status];
           return (
-            <Card key={record.date} style={styles.recordCard}>
-              <Card.Content>
-                <View style={styles.recordHeader}>
-                  <View style={styles.recordDateContainer}>
-                    <Text style={styles.recordDate}>{formatDate(record.date)}</Text>
-                    {record.remarks && (
-                      <Text style={styles.recordRemarks}>{record.remarks}</Text>
-                    )}
-                  </View>
-                  <Chip
-                    mode="flat"
-                    compact
-                    style={[styles.statusChip, { backgroundColor: config.bgColor }]}
-                    textStyle={[styles.statusChipText, { color: config.color }]}
+            <View
+              key={record.date}
+              className="mb-3 bg-white rounded-xl border border-gray-100 p-4"
+            >
+              <View className="flex-row justify-between items-center">
+                <View className="flex-1">
+                  <Text className="text-[15px] font-semibold text-gray-800">{formatDate(record.date)}</Text>
+                  {record.remarks && (
+                    <Text className="text-[12px] text-gray-500 mt-0.5">{record.remarks}</Text>
+                  )}
+                </View>
+                <View
+                  className="h-7 px-3 rounded-full justify-center items-center"
+                  style={{ backgroundColor: config.bgColor }}
+                >
+                  <Text
+                    className="text-[11px] font-bold uppercase"
+                    style={{ color: config.color }}
                   >
                     {config.label}
-                  </Chip>
+                  </Text>
                 </View>
-              </Card.Content>
-            </Card>
+              </View>
+            </View>
           );
         })}
       </ScrollView>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  statsCard: {
-    marginBottom: 24,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  statsTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 16,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  statItem: {
-    width: '23%',
-    alignItems: 'center',
-  },
-  statBadge: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  statLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#6B7280',
-    textAlign: 'center',
-  },
-  percentageContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-  percentageLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  percentageValue: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  historyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 12,
-    marginTop: 8,
-  },
-  recordCard: {
-    marginBottom: 12,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-  recordHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  recordDateContainer: {
-    flex: 1,
-  },
-  recordDate: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  recordRemarks: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  statusChip: {
-    height: 28,
-  },
-  statusChipText: {
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-});

@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getFeeItemById, type FeeItem } from '@/lib/mock-data'
+import { getFeeItems } from '@/lib/supabase/queries'
+import { createClient } from '@/lib/supabase/server'
+import type { FeeItem } from '@/lib/types'
+
+// Helper function to get fee item by ID
+async function getFeeItemById(id: string): Promise<FeeItem | undefined> {
+  const items = await getFeeItems()
+  return items.find(item => item.id === id)
+}
 
 // GET /api/fee-items/[id] - Get a specific fee item
 export async function GET(

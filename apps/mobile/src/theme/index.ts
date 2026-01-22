@@ -1,10 +1,8 @@
 /**
  * Theme exports for EContact School App
+ * Note: React Native Paper themes removed during Gluestack UI migration
+ * Use Tailwind CSS classes with NativeWind v4 instead
  */
-
-import { lightTheme, darkTheme } from './theme';
 
 export { colors } from './colors';
 export { typography } from './typography';
-export { lightTheme, darkTheme } from './theme';
-export default lightTheme;

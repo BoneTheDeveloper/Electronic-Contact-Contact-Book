@@ -21,7 +21,7 @@ export const verifyNewArchitecture = (): NewArchitectureInfo => {
   const constants = NativeModules.PlatformConstants as any;
 
   // Check for Hermes
-  const hermesEnabled = !!(global as any).HermesInternal;
+  const hermesEnabled = !!(globalThis as any).HermesInternal;
 
   // Check for TurboModules (isTurboModuleEnabled indicates New Architecture)
   const turboModulesEnabled = constants?.isTurboModuleEnabled ?? false;

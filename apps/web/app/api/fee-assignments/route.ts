@@ -1,16 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getFeeAssignments, createFeeAssignment, FEE_ITEMS } from '@/lib/mock-data'
+import { getFeeAssignments, getFeeItems } from '@/lib/supabase/queries'
+import { createClient } from '@/lib/supabase/server'
+import type { FeeAssignment } from '@/lib/types'
 
 // GET /api/fee-assignments - List all fee assignments
 export async function GET(request: NextRequest) {
   try {
     const assignments = await getFeeAssignments()
+    const feeItems = await getFeeItems()
 
     // Enrich assignments with fee item details
     const enrichedAssignments = assignments.map(assignment => ({
       ...assignment,
       feeItemDetails: assignment.feeItems.map(feeId => {
-        const fee = FEE_ITEMS.find(f => f.id === feeId)
+        const fee = feeItems.find(f => f.id === feeId)
         return fee || { id: feeId, name: 'Unknown', amount: 0 }
       })
     }))
@@ -68,7 +71,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate fee items exist
-    const validFeeItems = feeItems.filter((id: string) => FEE_ITEMS.some(f => f.id === id))
+    const allFeeItems = await getFeeItems()
+    const validFeeItems = feeItems.filter((id: string) => allFeeItems.some(f => f.id === id))
     if (validFeeItems.length === 0) {
       return NextResponse.json(
         { success: false, error: 'No valid fee items provided' },
@@ -99,22 +103,43 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create assignment
-    const assignment = await createFeeAssignment({
-      name: name.trim(),
-      targetGrades: targetGrades || [],
-      targetClasses,
-      feeItems: validFeeItems,
-      startDate: startDate || new Date().toISOString().split('T')[0],
-      dueDate: dueDate || '',
-      reminderDays: reminderDays || 7,
-      reminderFrequency: reminderFrequency || 'weekly',
-      status: 'draft'
-    })
+    // Calculate total students and amount
+    const totalStudents = targetClasses.length * 35 // Average 35 students per class
+    const feeItemsTotal = allFeeItems
+      .filter(f => validFeeItems.includes(f.id))
+      .reduce((sum, f) => sum + f.amount, 0)
+    const totalAmount = feeItemsTotal * totalStudents
+
+    // Insert into Supabase
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('fee_assignments')
+      .insert({
+        name: name.trim(),
+        target_grades: targetGrades || [],
+        target_classes: targetClasses,
+        fee_items: validFeeItems,
+        start_date: startDate || new Date().toISOString().split('T')[0],
+        due_date: dueDate || '',
+        reminder_days: reminderDays || 7,
+        reminder_frequency: reminderFrequency || 'weekly',
+        total_students: totalStudents,
+        total_amount: totalAmount,
+        status: 'draft'
+      })
+      .select()
+      .single()
+
+    if (error) {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,
-      data: assignment
+      data: data
     })
   } catch (error) {
     return NextResponse.json(

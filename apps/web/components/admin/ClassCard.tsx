@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Class } from '@/lib/mock-data'
+import type { Class } from '@/lib/types'
 import { Users, MapPin, GraduationCap } from 'lucide-react'
 
 interface ClassCardProps {

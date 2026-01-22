@@ -1,10 +1,11 @@
-import { getTeacherClasses } from '@/lib/mock-data'
+import { getTeacherClasses } from '@/lib/supabase/queries'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileText, Users, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function GradesListPage() {
-  const classes = await getTeacherClasses()
+  // TODO: Get real teacher ID from auth
+  const classes = await getTeacherClasses('current-teacher-id')
 
   return (
     <div className="space-y-6 p-8">

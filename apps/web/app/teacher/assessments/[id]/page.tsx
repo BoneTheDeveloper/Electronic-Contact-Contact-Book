@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getAssessments } from '@/lib/mock-data'
+import { getAssessments } from '@/lib/supabase/queries'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,7 +12,8 @@ interface PageProps {
 
 export default async function AssessmentDetailPage({ params }: PageProps) {
   const { id } = await params
-  const assessments = await getAssessments()
+  // TODO: Get real teacher ID from auth
+  const assessments = await getAssessments('current-teacher-id')
   const assessment = assessments.find(a => a.id === id)
 
   if (!assessment) {

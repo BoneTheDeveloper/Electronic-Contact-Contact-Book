@@ -4,8 +4,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
-import { Text, Card, ProgressBar, Chip } from 'react-native-paper';
+import { View, ScrollView, Text } from 'react-native';
 import { useParentStore } from '../../stores';
 import {
   getGradesByStudentId,
@@ -70,7 +69,7 @@ export const SummaryScreen: React.FC = () => {
     };
   }, [grades, attendance]);
 
-  const getPerformanceColor = (average: number) => {
+  const getPerformanceColor = (average: number): string => {
     if (average >= 90) return colors.gradeA;
     if (average >= 80) return colors.gradeB;
     if (average >= 70) return colors.gradeC;
@@ -78,7 +77,7 @@ export const SummaryScreen: React.FC = () => {
     return colors.gradeF;
   };
 
-  const getPerformanceLabel = (average: number) => {
+  const getPerformanceLabel = (average: number): string => {
     if (average >= 90) return 'Xuất sắc';
     if (average >= 80) return 'Khá giỏi';
     if (average >= 70) return 'Khá';
@@ -88,328 +87,136 @@ export const SummaryScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Kết quả tổng hợp</Text>
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-sky-600 pt-[60px] px-6 pb-6 rounded-b-[20px]">
+        <Text className="text-[24px] font-bold text-white">Kết quả tổng hợp</Text>
         {selectedChild && (
-          <Text style={styles.headerSubtitle}>
+          <Text className="text-[14px] text-white/80 mt-1">
             {selectedChild.name} • Lớp {selectedChild.grade}{selectedChild.section}
           </Text>
         )}
       </View>
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        className="px-4 pb-[100px]"
         showsVerticalScrollIndicator={false}
+        contentContainerClassName="gap-4"
       >
         {/* Overall Performance Card */}
-        <Card style={styles.overallCard}>
-          <Card.Content style={styles.overCardContent}>
-            <View style={styles.overallInfo}>
-              <View>
-                <Text style={styles.overallLabel}>Điểm trung bình</Text>
-                <Text style={[styles.overallScore, { color: getPerformanceColor(academicSummary.overallAverage) }]}>
-                  {academicSummary.overallAverage.toFixed(1)}
-                </Text>
-                <Text style={styles.overallPerformance}>
-                  {getPerformanceLabel(academicSummary.overallAverage)}
-                </Text>
-              </View>
-              <View style={styles.gradeBadge}>
-                <Text style={[styles.gradeText, { color: getPerformanceColor(academicSummary.overallAverage) }]}>
-                  {getGradeLetter(academicSummary.overallAverage, 100)}
-                </Text>
-              </View>
+        <View className="bg-white rounded-2xl shadow-sm p-6">
+          <View className="flex-row justify-between items-center">
+            <View>
+              <Text className="text-[14px] text-gray-500 font-semibold">Điểm trung bình</Text>
+              <Text
+                className="text-[48px] font-extrabold mt-2"
+                style={{ color: getPerformanceColor(academicSummary.overallAverage) }}
+              >
+                {academicSummary.overallAverage.toFixed(1)}
+              </Text>
+              <Text className="text-[16px] text-gray-800 font-semibold mt-1">
+                {getPerformanceLabel(academicSummary.overallAverage)}
+              </Text>
             </View>
-          </Card.Content>
-        </Card>
+            <View className="w-20 h-20 rounded-full bg-gray-100 justify-center items-center">
+              <Text
+                className="text-[36px] font-extrabold"
+                style={{ color: getPerformanceColor(academicSummary.overallAverage) }}
+              >
+                {getGradeLetter(academicSummary.overallAverage, 100)}
+              </Text>
+            </View>
+          </View>
+        </View>
 
         {/* Subject Performance */}
-        <Card style={styles.subjectsCard}>
-          <Card.Content>
-            <Text style={styles.cardTitle}>Điểm môn học</Text>
-            {academicSummary.subjectSummaries.map((subject) => (
-              <View key={subject.subject} style={styles.subjectItem}>
-                <View style={styles.subjectHeader}>
-                  <Text style={styles.subjectName}>{subject.subject}</Text>
-                  <View style={[
-                    styles.gradeBadgeSmall,
-                    { backgroundColor: `${getPerformanceColor(subject.average)}20` }
-                  ]}>
-                    <Text style={[
-                      styles.gradeTextSmall,
-                      { color: getPerformanceColor(subject.average) }
-                    ]}>
-                      {subject.grade}
-                    </Text>
-                  </View>
+        <View className="bg-white rounded-xl p-4">
+          <Text className="text-[18px] font-bold text-gray-800 mb-4">Điểm môn học</Text>
+          {academicSummary.subjectSummaries.map((subject) => (
+            <View key={subject.subject} className="mb-5">
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-[15px] font-semibold text-gray-800">{subject.subject}</Text>
+                <View
+                  className="px-2.5 py-1 rounded-lg"
+                  style={{ backgroundColor: `${getPerformanceColor(subject.average)}20` }}
+                >
+                  <Text
+                    className="text-[14px] font-bold"
+                    style={{ color: getPerformanceColor(subject.average) }}
+                  >
+                    {subject.grade}
+                  </Text>
                 </View>
-                <View style={styles.progressContainer}>
-                  <View style={styles.progressInfo}>
-                    <Text style={styles.progressLabel}>Trung bình</Text>
-                    <Text style={styles.progressValue}>{subject.average.toFixed(1)}</Text>
-                  </View>
-                  <ProgressBar
-                    progress={subject.average / 100}
-                    color={getPerformanceColor(subject.average)}
-                    style={styles.progressBar}
+              </View>
+              <View className="gap-2">
+                <View className="flex-row justify-between items-center">
+                  <Text className="text-[12px] text-gray-500">Trung bình</Text>
+                  <Text className="text-[14px] font-bold text-gray-800">{subject.average.toFixed(1)}</Text>
+                </View>
+                <View className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                  <View
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${subject.average}%`,
+                      backgroundColor: getPerformanceColor(subject.average),
+                    }}
                   />
                 </View>
               </View>
-            ))}
-          </Card.Content>
-        </Card>
+            </View>
+          ))}
+        </View>
 
         {/* Attendance Summary */}
-        <Card style={styles.attendanceCard}>
-          <Card.Content>
-            <Text style={styles.cardTitle}>Điểm danh</Text>
-            <View style={styles.attendanceStats}>
-              <View style={styles.attendanceMain}>
-                <Text style={styles.attendancePercentage}>
-                  {academicSummary.attendanceStats.percentage}%
+        <View className="bg-white rounded-xl p-4">
+          <Text className="text-[18px] font-bold text-gray-800 mb-4">Điểm danh</Text>
+          <View className="flex-row items-center gap-5">
+            <View className="items-center min-w-[80px]">
+              <Text className="text-[36px] font-extrabold text-sky-600">
+                {academicSummary.attendanceStats.percentage}%
+              </Text>
+              <Text className="text-[12px] text-gray-500 mt-1">Đi học</Text>
+            </View>
+            <View className="flex-1 gap-3">
+              <View className="flex-row items-center gap-2">
+                <View className="w-2 h-2 rounded-full bg-green-500" />
+                <Text className="text-[13px] text-gray-700">
+                  Có mặt: {academicSummary.attendanceStats.present}
                 </Text>
-                <Text style={styles.attendanceLabel}>Đi học</Text>
               </View>
-              <View style={styles.attendanceDetails}>
-                <View style={styles.attendanceItem}>
-                  <View style={[styles.attendanceDot, { backgroundColor: colors.attendancePresent }]} />
-                  <Text style={styles.attendanceItemText}>
-                    Có mặt: {academicSummary.attendanceStats.present}
-                  </Text>
-                </View>
-                <View style={styles.attendanceItem}>
-                  <View style={[styles.attendanceDot, { backgroundColor: colors.attendanceLate }]} />
-                  <Text style={styles.attendanceItemText}>
-                    Muộn: {academicSummary.attendanceStats.late}
-                  </Text>
-                </View>
-                <View style={styles.attendanceItem}>
-                  <View style={[styles.attendanceDot, { backgroundColor: colors.attendanceAbsent }]} />
-                  <Text style={styles.attendanceItemText}>
-                    Vắng: {academicSummary.attendanceStats.absent}
-                  </Text>
-                </View>
+              <View className="flex-row items-center gap-2">
+                <View className="w-2 h-2 rounded-full bg-orange-500" />
+                <Text className="text-[13px] text-gray-700">
+                  Muộn: {academicSummary.attendanceStats.late}
+                </Text>
+              </View>
+              <View className="flex-row items-center gap-2">
+                <View className="w-2 h-2 rounded-full bg-red-500" />
+                <Text className="text-[13px] text-gray-700">
+                  Vắng: {academicSummary.attendanceStats.absent}
+                </Text>
               </View>
             </View>
-          </Card.Content>
-        </Card>
+          </View>
+        </View>
 
         {/* Additional Stats */}
-        <Card style={styles.statsCard}>
-          <Card.Content>
-            <Text style={styles.cardTitle}>Thống kê</Text>
-            <View style={styles.statsGrid}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{academicSummary.totalGrades}</Text>
-                <Text style={styles.statLabel}>Bài kiểm tra</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{academicSummary.subjectSummaries.length}</Text>
-                <Text style={styles.statLabel}>Môn học</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{attendance.length}</Text>
-                <Text style={styles.statLabel}>Ngày điểm danh</Text>
-              </View>
+        <View className="bg-white rounded-xl p-4">
+          <Text className="text-[18px] font-bold text-gray-800 mb-4">Thống kê</Text>
+          <View className="flex-row justify-around pt-2">
+            <View className="items-center">
+              <Text className="text-[28px] font-extrabold text-sky-600">{academicSummary.totalGrades}</Text>
+              <Text className="text-[12px] text-gray-500 mt-1">Bài kiểm tra</Text>
             </View>
-          </Card.Content>
-        </Card>
+            <View className="items-center">
+              <Text className="text-[28px] font-extrabold text-sky-600">{academicSummary.subjectSummaries.length}</Text>
+              <Text className="text-[12px] text-gray-500 mt-1">Môn học</Text>
+            </View>
+            <View className="items-center">
+              <Text className="text-[28px] font-extrabold text-sky-600">{attendance.length}</Text>
+              <Text className="text-[12px] text-gray-500 mt-1">Ngày điểm danh</Text>
+            </View>
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  overallCard: {
-    marginBottom: 16,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  overCardContent: {
-    padding: 24,
-  },
-  overallInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  overallLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '600',
-  },
-  overallScore: {
-    fontSize: 48,
-    fontWeight: '800',
-    marginTop: 8,
-  },
-  overallPerformance: {
-    fontSize: 16,
-    color: '#1F2937',
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  gradeBadge: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  gradeText: {
-    fontSize: 36,
-    fontWeight: '800',
-  },
-  subjectsCard: {
-    marginBottom: 16,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 16,
-  },
-  subjectItem: {
-    marginBottom: 20,
-  },
-  subjectHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  subjectName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  gradeBadgeSmall: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  gradeTextSmall: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  progressContainer: {
-    gap: 8,
-  },
-  progressInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  progressLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  progressValue: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  progressBar: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#E5E7EB',
-  },
-  attendanceCard: {
-    marginBottom: 16,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  attendanceStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 20,
-  },
-  attendanceMain: {
-    alignItems: 'center',
-    minWidth: 80,
-  },
-  attendancePercentage: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  attendanceLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 4,
-  },
-  attendanceDetails: {
-    flex: 1,
-    gap: 12,
-  },
-  attendanceItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  attendanceDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  attendanceItemText: {
-    fontSize: 13,
-    color: '#374151',
-  },
-  statsCard: {
-    marginBottom: 16,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: 8,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 4,
-  },
-});

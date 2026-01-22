@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(sequential-thinking)",
+      "Bash(npx expo install:*)",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__execute_sql"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
+}

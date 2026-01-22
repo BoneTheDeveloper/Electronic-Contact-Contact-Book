@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Clock, MapPin } from 'lucide-react'
-import { getTeacherSchedule } from '@/lib/mock-data'
+import { getTeacherSchedule } from '@/lib/supabase/queries'
 
 interface ScheduleItem {
   period: number
@@ -12,7 +12,7 @@ interface ScheduleItem {
 }
 
 async function fetchSchedule(): Promise<ScheduleItem[]> {
-  return await getTeacherSchedule().catch(() => [])
+  return await getTeacherSchedule('current-teacher-id').catch(() => [])
 }
 
 export default async function TeachingSchedulePage() {

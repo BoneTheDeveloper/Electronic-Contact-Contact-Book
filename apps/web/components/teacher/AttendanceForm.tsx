@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { AttendanceRecord } from '@/lib/mock-data'
+import type { AttendanceRecord } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'

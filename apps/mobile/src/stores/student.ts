@@ -61,7 +61,7 @@ export const useStudentStore = create<StudentState>((set) => ({
 
     try {
       // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise<void>((resolve) => setTimeout(resolve, 500));
 
       // Mock data
       const mockStudent: StudentData = {
@@ -88,7 +88,7 @@ export const useStudentStore = create<StudentState>((set) => ({
 
     try {
       // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise<void>((resolve) => setTimeout(resolve, 500));
 
       // Mock grades data
       const mockGrades: Grade[] = [
@@ -143,7 +143,7 @@ export const useStudentStore = create<StudentState>((set) => ({
 
     try {
       // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise<void>((resolve) => setTimeout(resolve, 500));
 
       // Mock attendance data
       const mockAttendance: AttendanceRecord[] = [

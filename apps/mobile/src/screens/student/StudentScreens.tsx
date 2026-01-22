@@ -5,11 +5,9 @@
  */
 
 import React from 'react';
-import { View, ScrollView, StyleSheet, FlatList, Dimensions, TouchableOpacity } from 'react-native';
-import { Text, Card, Chip, Button, Avatar, Divider } from 'react-native-paper';
+import { View, ScrollView, FlatList, Dimensions, Pressable, Text } from 'react-native';
 import { useStudentStore } from '../../stores';
 import { colors } from '../../theme';
-import Svg, { Path, Rect, Line, Circle, Polyline } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
 
@@ -57,40 +55,38 @@ export const StudentScheduleScreen: React.FC = () => {
   const { studentData } = useStudentStore();
 
   const renderPeriod = (period: Period, index: number) => (
-    <View key={index} style={styles.periodRow}>
-      <View style={styles.periodTime}>
-        <Text style={styles.periodTimeText}>{period.time}</Text>
+    <View key={index} className="flex-row items-start gap-3">
+      <View className="w-24">
+        <Text className="text-xs text-gray-500 font-medium">{period.time}</Text>
       </View>
-      <View style={styles.periodInfo}>
-        <Text style={styles.periodSubject}>{period.subject}</Text>
-        <Text style={styles.periodTeacher}>{period.teacher}</Text>
-        <Chip mode="flat" compact style={styles.roomChip} textStyle={styles.roomChipText}>
-          {period.room}
-        </Chip>
+      <View className="flex-1 gap-1">
+        <Text className="text-base font-semibold text-gray-900">{period.subject}</Text>
+        <Text className="text-xs text-gray-500">{period.teacher}</Text>
+        <View className="self-start bg-sky-100 px-2 py-0.5 rounded-full h-6 items-center justify-center">
+          <Text className="text-[10px] text-sky-600 font-semibold">{period.room}</Text>
+        </View>
       </View>
     </View>
   );
 
   const renderDay = ({ item }: { item: ScheduleDay }) => (
-    <Card style={styles.dayCard}>
-      <Card.Content>
-        <View style={styles.dayHeader}>
-          <Text style={styles.dayName}>{item.dayName}</Text>
-          <Text style={styles.dayDate}>{item.date}</Text>
-        </View>
-        <View style={styles.periodsContainer}>
-          {item.periods.map((period, index) => renderPeriod(period, index))}
-        </View>
-      </Card.Content>
-    </Card>
+    <View className="mb-4 rounded-2xl bg-white shadow-sm px-4 py-4">
+      <View className="flex-row justify-between items-center mb-4 pb-3 border-b border-gray-200">
+        <Text className="text-lg font-bold text-gray-900">{item.dayName}</Text>
+        <Text className="text-xs text-gray-500">{item.date}</Text>
+      </View>
+      <View className="gap-3">
+        {item.periods.map((period, index) => renderPeriod(period, index))}
+      </View>
+    </View>
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Thời khóa biểu</Text>
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
+        <Text className="text-2xl font-bold text-white">Thời khóa biểu</Text>
         {studentData && (
-          <Text style={styles.headerSubtitle}>
+          <Text className="text-sm text-white/80 mt-1">
             Lớp {studentData.grade}{studentData.section}
           </Text>
         )}
@@ -99,7 +95,7 @@ export const StudentScheduleScreen: React.FC = () => {
         data={MOCK_SCHEDULE}
         renderItem={renderDay}
         keyExtractor={(item) => item.date}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="p-4 pb-24"
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -139,38 +135,39 @@ const MOCK_GRADES: GradeItem[] = [
 ];
 
 export const StudentGradesScreen: React.FC = () => {
-  const renderGradeItem = ({ item }: { item: GradeItem }) => (
-    <Card style={styles.gradeCard}>
-      <Card.Content>
-        <View style={styles.gradeHeader}>
-          <Text style={styles.gradeSubject}>{item.subject}</Text>
-          <View style={[styles.averageBadge, { backgroundColor: item.average >= 8 ? '#D1FAE5' : item.average >= 6.5 ? '#FEF3C7' : '#FEE2E2' }]}>
-            <Text style={[styles.averageText, { color: item.average >= 8 ? '#065F46' : item.average >= 6.5 ? '#92400E' : '#991B1B' }]}>
-              {item.average.toFixed(1)}
-            </Text>
+  const renderGradeItem = ({ item }: { item: GradeItem }) => {
+    const bgColor = item.average >= 8 ? 'bg-green-100' : item.average >= 6.5 ? 'bg-amber-100' : 'bg-red-100';
+    const textColor = item.average >= 8 ? 'text-green-800' : item.average >= 6.5 ? 'text-amber-800' : 'text-red-800';
+
+    return (
+      <View className="mb-4 rounded-2xl bg-white shadow-sm px-4 py-4">
+        <View className="flex-row justify-between items-center mb-3">
+          <Text className="text-base font-bold text-gray-900">{item.subject}</Text>
+          <View className={`px-3 py-1 rounded-full ${bgColor}`}>
+            <Text className={`text-base font-bold ${textColor}`}>{item.average.toFixed(1)}</Text>
           </View>
         </View>
-        <Divider style={styles.divider} />
+        <View className="h-px bg-gray-200 mb-3" />
         {item.grades.map((grade, index) => (
-          <View key={index} style={styles.gradeRow}>
-            <Text style={styles.gradeType}>{grade.type}</Text>
-            <Text style={styles.gradeScore}>{grade.score}/{grade.maxScore}</Text>
+          <View key={index} className="flex-row justify-between items-center mb-2">
+            <Text className="text-sm text-gray-500">{grade.type}</Text>
+            <Text className="text-sm font-semibold text-gray-900">{grade.score}/{grade.maxScore}</Text>
           </View>
         ))}
-      </Card.Content>
-    </Card>
-  );
+      </View>
+    );
+  };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Bảng điểm môn học</Text>
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
+        <Text className="text-2xl font-bold text-white">Bảng điểm môn học</Text>
       </View>
       <FlatList
         data={MOCK_GRADES}
         renderItem={renderGradeItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="p-4 pb-24"
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -197,11 +194,11 @@ const MOCK_ATTENDANCE: AttendanceRecord[] = [
 
 const getStatusConfig = (status: AttendanceRecord['status']) => {
   switch (status) {
-    case 'present': return { label: 'Có mặt', color: '#D1FAE5', textColor: '#065F46' };
-    case 'absent': return { label: 'Vắng mặt', color: '#FEE2E2', textColor: '#991B1B' };
-    case 'late': return { label: 'Đi muộn', color: '#FEF3C7', textColor: '#92400E' };
-    case 'excused': return { label: 'Có phép', color: '#E0F2FE', textColor: '#075985' };
-    default: return { label: status, color: '#F3F4F6', textColor: '#6B7280' };
+    case 'present': return { label: 'Có mặt', bgClass: 'bg-green-100', textClass: 'text-green-800' };
+    case 'absent': return { label: 'Vắng mặt', bgClass: 'bg-red-100', textClass: 'text-red-800' };
+    case 'late': return { label: 'Đi muộn', bgClass: 'bg-amber-100', textClass: 'text-amber-800' };
+    case 'excused': return { label: 'Có phép', bgClass: 'bg-sky-100', textClass: 'text-sky-800' };
+    default: return { label: status, bgClass: 'bg-gray-100', textClass: 'text-gray-700' };
   }
 };
 
@@ -210,30 +207,30 @@ export const StudentAttendanceScreen: React.FC = () => {
     const config = getStatusConfig(item.status);
 
     return (
-      <Card style={styles.attendanceCard}>
-        <Card.Content style={styles.attendanceContent}>
+      <View className="mb-3 rounded-xl bg-white shadow-sm px-4 py-3">
+        <View className="flex-row justify-between items-center">
           <View>
-            <Text style={styles.attendanceDate}>{item.date}</Text>
-            {item.reason && <Text style={styles.attendanceReason}>{item.reason}</Text>}
+            <Text className="text-sm font-semibold text-gray-900">{item.date}</Text>
+            {item.reason && <Text className="text-xs text-gray-500 mt-0.5">{item.reason}</Text>}
           </View>
-          <Chip mode="flat" style={[styles.attendanceChip, { backgroundColor: config.color }]}>
-            <Text style={[styles.attendanceChipText, { color: config.textColor }]}>{config.label}</Text>
-          </Chip>
-        </Card.Content>
-      </Card>
+          <View className={`h-7 px-2 rounded-full items-center justify-center ${config.bgClass}`}>
+            <Text className={`text-[11px] font-bold uppercase ${config.textClass}`}>{config.label}</Text>
+          </View>
+        </View>
+      </View>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Lịch sử điểm danh</Text>
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
+        <Text className="text-2xl font-bold text-white">Lịch sử điểm danh</Text>
       </View>
       <FlatList
         data={MOCK_ATTENDANCE}
         renderItem={renderAttendanceItem}
         keyExtractor={(item) => item.date}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="p-4 pb-24"
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -273,43 +270,47 @@ const MOCK_FEEDBACK: FeedbackItem[] = [
 export const StudentTeacherFeedbackScreen: React.FC = () => {
   const getFeedbackColor = (type: FeedbackItem['type']) => {
     switch (type) {
-      case 'positive': return '#D1FAE5';
-      case 'neutral': return '#FEF3C7';
-      case 'concern': return '#FEE2E2';
-      default: return '#F3F4F6';
+      case 'positive': return 'bg-green-100';
+      case 'neutral': return 'bg-amber-100';
+      case 'concern': return 'bg-red-100';
+      default: return 'bg-gray-100';
     }
   };
 
-  const renderFeedbackItem = ({ item }: { item: FeedbackItem }) => (
-    <Card style={styles.feedbackCard}>
-      <Card.Content>
-        <View style={styles.feedbackHeader}>
-          <View style={styles.feedbackTeacher}>
-            <Avatar.Text size={40} label={item.teacher.split(' ').slice(-1)[0][0]} style={{ backgroundColor: '#E0F2FE' }} labelStyle={{ color: colors.primary }} />
-            <View style={styles.feedbackTeacherInfo}>
-              <Text style={styles.feedbackTeacherName}>{item.teacher}</Text>
-              <Text style={styles.feedbackSubject}>{item.subject}</Text>
+  const renderFeedbackItem = ({ item }: { item: FeedbackItem }) => {
+    const initial = item.teacher.split(' ').slice(-1)[0][0];
+
+    return (
+      <View className="mb-4 rounded-2xl bg-white shadow-sm px-4 py-4">
+        <View className="flex-row justify-between items-start mb-3">
+          <View className="flex-row items-center flex-1">
+            <View className="w-10 h-10 rounded-full bg-sky-100 items-center justify-center">
+              <Text className="text-sky-600 font-semibold">{initial}</Text>
+            </View>
+            <View className="ml-3 flex-1">
+              <Text className="text-sm font-bold text-gray-900">{item.teacher}</Text>
+              <Text className="text-xs text-gray-500">{item.subject}</Text>
             </View>
           </View>
-          <Text style={styles.feedbackDate}>{item.date}</Text>
+          <Text className="text-[11px] text-gray-400">{item.date}</Text>
         </View>
-        <View style={[styles.feedbackContent, { backgroundColor: getFeedbackColor(item.type) }]}>
-          <Text style={styles.feedbackContentText}>{item.content}</Text>
+        <View className={`p-3 rounded-xl ${getFeedbackColor(item.type)}`}>
+          <Text className="text-sm text-gray-700 leading-snug">{item.content}</Text>
         </View>
-      </Card.Content>
-    </Card>
-  );
+      </View>
+    );
+  };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Nhận xét giáo viên</Text>
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
+        <Text className="text-2xl font-bold text-white">Nhận xét giáo viên</Text>
       </View>
       <FlatList
         data={MOCK_FEEDBACK}
         renderItem={renderFeedbackItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="p-4 pb-24"
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -343,9 +344,9 @@ const MOCK_LEAVE_REQUESTS: LeaveRequest[] = [
 export const StudentLeaveRequestScreen: React.FC = () => {
   const getStatusConfig = (status: LeaveRequest['status']) => {
     switch (status) {
-      case 'approved': return { label: 'Đã duyệt', color: '#D1FAE5', textColor: '#065F46' };
-      case 'rejected': return { label: 'Từ chối', color: '#FEE2E2', textColor: '#991B1B' };
-      case 'pending': return { label: 'Chờ duyệt', color: '#FEF3C7', textColor: '#92400E' };
+      case 'approved': return { label: 'Đã duyệt', bgClass: 'bg-green-100', textClass: 'text-green-800' };
+      case 'rejected': return { label: 'Từ chối', bgClass: 'bg-red-100', textClass: 'text-red-800' };
+      case 'pending': return { label: 'Chờ duyệt', bgClass: 'bg-amber-100', textClass: 'text-amber-800' };
     }
   };
 
@@ -353,37 +354,35 @@ export const StudentLeaveRequestScreen: React.FC = () => {
     const config = getStatusConfig(item.status);
 
     return (
-      <Card style={styles.leaveCard}>
-        <Card.Content>
-          <View style={styles.leaveHeader}>
-            <View>
-              <Text style={styles.leaveDate}>{item.date}</Text>
-              <Text style={styles.leaveReason}>{item.reason}</Text>
-            </View>
-            <Chip mode="flat" style={[styles.leaveChip, { backgroundColor: config.color }]}>
-              <Text style={[styles.leaveChipText, { color: config.textColor }]}>{config.label}</Text>
-            </Chip>
+      <View className="mb-3 rounded-xl bg-white shadow-sm px-4 py-3">
+        <View className="flex-row justify-between items-center">
+          <View>
+            <Text className="text-sm font-semibold text-gray-900">{item.date}</Text>
+            <Text className="text-xs text-gray-500 mt-0.5">{item.reason}</Text>
           </View>
-        </Card.Content>
-      </Card>
+          <View className={`h-7 px-2 rounded-full items-center justify-center ${config.bgClass}`}>
+            <Text className={`text-[11px] font-bold uppercase ${config.textClass}`}>{config.label}</Text>
+          </View>
+        </View>
+      </View>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Đơn xin nghỉ phép</Text>
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
+        <Text className="text-2xl font-bold text-white">Đơn xin nghỉ phép</Text>
       </View>
       <FlatList
         data={MOCK_LEAVE_REQUESTS}
         renderItem={renderLeaveRequest}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="p-4 pb-24"
         showsVerticalScrollIndicator={false}
         ListFooterComponent={
-          <Button mode="contained" style={styles.newRequestButton} buttonColor={colors.primary}>
-            + Tạo đơn mới
-          </Button>
+          <Pressable className="mt-4 bg-sky-600 rounded-xl py-3 items-center">
+            <Text className="text-white font-semibold text-base">+ Tạo đơn mới</Text>
+          </Pressable>
         }
       />
     </View>
@@ -419,9 +418,9 @@ const MOCK_NEWS: NewsItem[] = [
 
 const getCategoryConfig = (category: NewsItem['category']) => {
   switch (category) {
-    case 'school': return { label: 'Nhà trường', color: '#DBEAFE' };
-    case 'class': return { label: 'Lớp học', color: '#E0F2FE' };
-    case 'activity': return { label: 'Hoạt động', color: '#F3E8FF' };
+    case 'school': return { label: 'Nhà trường', bgClass: 'bg-blue-100' };
+    case 'class': return { label: 'Lớp học', bgClass: 'bg-sky-100' };
+    case 'activity': return { label: 'Hoạt động', bgClass: 'bg-purple-100' };
   }
 };
 
@@ -430,31 +429,29 @@ export const StudentNewsScreen: React.FC = () => {
     const config = getCategoryConfig(item.category);
 
     return (
-      <Card style={styles.newsCard}>
-        <Card.Content>
-          <View style={styles.newsMeta}>
-            <Chip mode="flat" style={[styles.newsCategoryChip, { backgroundColor: config.color }]}>
-              <Text style={styles.newsCategoryText}>{config.label}</Text>
-            </Chip>
-            <Text style={styles.newsDate}>{item.date}</Text>
+      <View className="mb-4 rounded-2xl bg-white shadow-sm px-4 py-4">
+        <View className="flex-row justify-between items-center mb-3">
+          <View className={`h-6 px-2 rounded-full items-center justify-center ${config.bgClass}`}>
+            <Text className="text-[10px] font-bold uppercase text-sky-600">{config.label}</Text>
           </View>
-          <Text style={styles.newsTitle}>{item.title}</Text>
-          <Text style={styles.newsContent} numberOfLines={2}>{item.content}</Text>
-        </Card.Content>
-      </Card>
+          <Text className="text-[11px] text-gray-400">{item.date}</Text>
+        </View>
+        <Text className="text-base font-bold text-gray-900 mb-2">{item.title}</Text>
+        <Text className="text-sm text-gray-500 leading-snug" numberOfLines={2}>{item.content}</Text>
+      </View>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Tin tức & sự kiện</Text>
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
+        <Text className="text-2xl font-bold text-white">Tin tức & sự kiện</Text>
       </View>
       <FlatList
         data={MOCK_NEWS}
         renderItem={renderNewsItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="p-4 pb-24"
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -480,45 +477,51 @@ export const StudentSummaryScreen: React.FC = () => {
     { label: 'Xếp loại', value: 'Giỏi', icon: '⭐', color: '#8B5CF6' },
   ];
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Kết quả tổng hợp</Text>
-      </View>
-      <ScrollView contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
-        <Card style={styles.summaryCard}>
-          <Card.Content>
-            <View style={styles.summaryGrid}>
-              {summaryData.map((item, index) => (
-                <View key={index} style={styles.summaryItem}>
-                  <View style={[styles.summaryIcon, { backgroundColor: `${item.color}20` }]}>
-                    <Text style={styles.summaryIconText}>{item.icon}</Text>
-                  </View>
-                  <Text style={styles.summaryValue}>{item.value}</Text>
-                  <Text style={styles.summaryLabel}>{item.label}</Text>
-                </View>
-              ))}
-            </View>
-          </Card.Content>
-        </Card>
+  const getColorClass = (color: string) => {
+    switch (color) {
+      case '#0284C7': return 'bg-sky-600/20';
+      case '#059669': return 'bg-emerald-600/20';
+      case '#F59E0B': return 'bg-amber-500/20';
+      case '#8B5CF6': return 'bg-violet-500/20';
+      default: return 'bg-gray-200';
+    }
+  };
 
-        <Card style={styles.detailedSummaryCard}>
-          <Card.Content>
-            <Text style={styles.detailSectionTitle}>Chi tiết học tập</Text>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Tổng số bài kiểm tra:</Text>
-              <Text style={styles.detailValue}>24</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Số bài đạt:</Text>
-              <Text style={[styles.detailValue, { color: '#059669' }]}>22</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Số bài cần cải thiện:</Text>
-              <Text style={[styles.detailValue, { color: '#F59E0B' }]}>2</Text>
-            </View>
-          </Card.Content>
-        </Card>
+  return (
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
+        <Text className="text-2xl font-bold text-white">Kết quả tổng hợp</Text>
+      </View>
+      <ScrollView contentContainerClassName="p-4 pb-24" showsVerticalScrollIndicator={false}>
+        <View className="mb-4 rounded-2xl bg-white shadow-sm px-4 py-4">
+          <View className="flex-row flex-wrap justify-between">
+            {summaryData.map((item, index) => (
+              <View key={index} className="w-[47%] items-center mb-4">
+                <View className={`w-14 h-14 rounded-full justify-center items-center mb-2 ${getColorClass(item.color)}`}>
+                  <Text className="text-2xl">{item.icon}</Text>
+                </View>
+                <Text className="text-xl font-extrabold text-gray-900 mb-1">{item.value}</Text>
+                <Text className="text-xs text-gray-500 text-center">{item.label}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View className="rounded-2xl bg-white shadow-sm px-4 py-4">
+          <Text className="text-base font-bold text-gray-900 mb-4">Chi tiết học tập</Text>
+          <View className="flex-row justify-between items-center mb-3">
+            <Text className="text-sm text-gray-500">Tổng số bài kiểm tra:</Text>
+            <Text className="text-sm font-semibold text-gray-900">24</Text>
+          </View>
+          <View className="flex-row justify-between items-center mb-3">
+            <Text className="text-sm text-gray-500">Số bài đạt:</Text>
+            <Text className="text-sm font-semibold text-emerald-600">22</Text>
+          </View>
+          <View className="flex-row justify-between items-center mb-3">
+            <Text className="text-sm text-gray-500">Số bài cần cải thiện:</Text>
+            <Text className="text-sm font-semibold text-amber-500">2</Text>
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -541,9 +544,9 @@ const MOCK_PAYMENTS: PaymentItem[] = [
 
 const getPaymentStatusConfig = (status: PaymentItem['status']) => {
   switch (status) {
-    case 'paid': return { label: 'Đã thanh toán', color: '#D1FAE5', textColor: '#065F46' };
-    case 'pending': return { label: 'Chờ thanh toán', color: '#FEF3C7', textColor: '#92400E' };
-    case 'overdue': return { label: 'Quá hạn', color: '#FEE2E2', textColor: '#991B1B' };
+    case 'paid': return { label: 'Đã thanh toán', bgClass: 'bg-green-100', textClass: 'text-green-800' };
+    case 'pending': return { label: 'Chờ thanh toán', bgClass: 'bg-amber-100', textClass: 'text-amber-800' };
+    case 'overdue': return { label: 'Quá hạn', bgClass: 'bg-red-100', textClass: 'text-red-800' };
   }
 };
 
@@ -556,33 +559,31 @@ export const StudentPaymentScreen: React.FC = () => {
     const config = getPaymentStatusConfig(item.status);
 
     return (
-      <Card style={styles.paymentCard}>
-        <Card.Content>
-          <View style={styles.paymentHeader}>
-            <View style={styles.paymentInfo}>
-              <Text style={styles.paymentTitle}>{item.title}</Text>
-              <Text style={styles.paymentDueDate}>Hạn: {item.dueDate}</Text>
-            </View>
-            <Chip mode="flat" style={[styles.paymentChip, { backgroundColor: config.color }]}>
-              <Text style={[styles.paymentChipText, { color: config.textColor }]}>{config.label}</Text>
-            </Chip>
+      <View className="mb-4 rounded-2xl bg-white shadow-sm px-4 py-4">
+        <View className="flex-row justify-between items-start mb-2">
+          <View className="flex-1">
+            <Text className="text-base font-semibold text-gray-900 mb-1">{item.title}</Text>
+            <Text className="text-xs text-gray-500">Hạn: {item.dueDate}</Text>
           </View>
-          <Text style={styles.paymentAmount}>{formatCurrency(item.amount)}</Text>
-        </Card.Content>
-      </Card>
+          <View className={`h-7 px-2 rounded-full items-center justify-center ${config.bgClass}`}>
+            <Text className={`text-[10px] font-bold uppercase ${config.textClass}`}>{config.label}</Text>
+          </View>
+        </View>
+        <Text className="text-lg font-extrabold text-sky-600 mt-2">{formatCurrency(item.amount)}</Text>
+      </View>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Học phí</Text>
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
+        <Text className="text-2xl font-bold text-white">Học phí</Text>
       </View>
       <FlatList
         data={MOCK_PAYMENTS}
         renderItem={renderPaymentItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="p-4 pb-24"
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -615,489 +616,34 @@ const getMaterialIcon = (type: MaterialItem['type']) => {
 
 export const StudentStudyMaterialsScreen: React.FC = () => {
   const renderMaterialItem = ({ item }: { item: MaterialItem }) => (
-    <Card style={styles.materialCard}>
-      <Card.Content style={styles.materialContent}>
-        <Text style={styles.materialIcon}>{getMaterialIcon(item.type)}</Text>
-        <View style={styles.materialInfo}>
-          <Text style={styles.materialTitle}>{item.title}</Text>
-          <View style={styles.materialMeta}>
-            <Chip mode="flat" compact style={styles.materialSubjectChip}>
-              <Text style={styles.materialSubjectText}>{item.subject}</Text>
-            </Chip>
-            <Text style={styles.materialDate}>{item.date}</Text>
+    <View className="mb-3 rounded-xl bg-white shadow-sm px-4 py-3">
+      <View className="flex-row items-center">
+        <Text className="text-3xl mr-3">{getMaterialIcon(item.type)}</Text>
+        <View className="flex-1">
+          <Text className="text-sm font-semibold text-gray-900 mb-1.5">{item.title}</Text>
+          <View className="flex-row items-center justify-between">
+            <View className="bg-sky-100 h-6 px-2 rounded-full items-center justify-center">
+              <Text className="text-[10px] text-sky-600 font-semibold">{item.subject}</Text>
+            </View>
+            <Text className="text-[11px] text-gray-400">{item.date}</Text>
           </View>
         </View>
-      </Card.Content>
-    </Card>
+      </View>
+    </View>
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Tài liệu học tập</Text>
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
+        <Text className="text-2xl font-bold text-white">Tài liệu học tập</Text>
       </View>
       <FlatList
         data={MOCK_MATERIALS}
         renderItem={renderMaterialItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="p-4 pb-24"
         showsVerticalScrollIndicator={false}
       />
     </View>
   );
 };
-
-// ==================== STYLES ====================
-
-const baseStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-  },
-  listContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  dayCard: {
-    marginBottom: 16,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  dayHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  dayName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  dayDate: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  periodsContainer: {
-    gap: 12,
-  },
-  periodRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  periodTime: {
-    width: 100,
-  },
-  periodTimeText: {
-    fontSize: 11,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  periodInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  periodSubject: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  periodTeacher: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  roomChip: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#E0F2FE',
-    height: 24,
-  },
-  roomChipText: {
-    fontSize: 10,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  gradeCard: {
-    marginBottom: 16,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  gradeHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  gradeSubject: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  averageBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  averageText: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  divider: {
-    marginBottom: 12,
-  },
-  gradeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  gradeType: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
-  gradeScore: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  attendanceCard: {
-    marginBottom: 12,
-    borderRadius: 12,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  attendanceContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  attendanceDate: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  attendanceReason: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  attendanceChip: {
-    height: 28,
-  },
-  attendanceChipText: {
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  feedbackCard: {
-    marginBottom: 16,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  feedbackHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  feedbackTeacher: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  feedbackTeacherInfo: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  feedbackTeacherName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  feedbackSubject: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  feedbackDate: {
-    fontSize: 11,
-    color: '#9CA3AF',
-  },
-  feedbackContent: {
-    padding: 12,
-    borderRadius: 12,
-  },
-  feedbackContentText: {
-    fontSize: 13,
-    color: '#374151',
-    lineHeight: 18,
-  },
-  leaveCard: {
-    marginBottom: 12,
-    borderRadius: 12,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  leaveHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  leaveDate: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  leaveReason: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  leaveChip: {
-    height: 28,
-  },
-  leaveChipText: {
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  newRequestButton: {
-    marginTop: 16,
-    borderRadius: 12,
-  },
-  newsCard: {
-    marginBottom: 16,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  newsMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  newsCategoryChip: {
-    height: 24,
-  },
-  newsCategoryText: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    color: '#0284C7',
-  },
-  newsDate: {
-    fontSize: 11,
-    color: '#9CA3AF',
-  },
-  newsTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 8,
-  },
-  newsContent: {
-    fontSize: 13,
-    color: '#6B7280',
-    lineHeight: 18,
-  },
-  summaryCard: {
-    marginBottom: 16,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  summaryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  summaryItem: {
-    width: (width - 32 - 24) / 2,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  summaryIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  summaryIconText: {
-    fontSize: 24,
-  },
-  summaryValue: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  summaryLabel: {
-    fontSize: 11,
-    color: '#6B7280',
-    textAlign: 'center',
-  },
-  detailedSummaryCard: {
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  detailSectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 16,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  detailLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  detailValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  paymentCard: {
-    marginBottom: 16,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  paymentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  paymentInfo: {
-    flex: 1,
-  },
-  paymentTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  paymentDueDate: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  paymentChip: {
-    height: 26,
-  },
-  paymentChipText: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  paymentAmount: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.primary,
-    marginTop: 8,
-  },
-  materialCard: {
-    marginBottom: 12,
-    borderRadius: 12,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  materialContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  materialIcon: {
-    fontSize: 32,
-    marginRight: 12,
-  },
-  materialInfo: {
-    flex: 1,
-  },
-  materialTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 6,
-  },
-  materialMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  materialSubjectChip: {
-    backgroundColor: '#E0F2FE',
-    height: 22,
-  },
-  materialSubjectText: {
-    fontSize: 10,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  materialDate: {
-    fontSize: 11,
-    color: '#9CA3AF',
-  },
-});
-
-const styles = baseStyles;

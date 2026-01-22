@@ -4,8 +4,7 @@
  */
 
 import React from 'react';
-import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, Card, Avatar, Badge } from 'react-native-paper';
+import { View, FlatList, TouchableOpacity, Text } from 'react-native';
 import { useParentStore } from '../../stores';
 import { colors } from '../../theme';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -76,47 +75,69 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({ navigation }) =>
     <TouchableOpacity
       onPress={() => (navigation as any).navigate('ChatDetail', { messageId: item.id })}
       activeOpacity={0.7}
+      className={`mb-3 rounded-2xl ${item.unreadCount > 0 ? 'bg-sky-50 border border-sky-600' : 'bg-white'}`}
     >
-      <Card style={[styles.messageCard, item.unreadCount > 0 && styles.unreadCard]}>
-        <Card.Content style={styles.messageContent}>
-          <View style={styles.avatarContainer}>
-            <Avatar.Text
-              size={56}
-              label={item.teacherAvatar}
-              style={{ backgroundColor: '#E0F2FE' }}
-              labelStyle={{ color: colors.primary }}
-            />
-            {item.isOnline && <View style={styles.onlineIndicator} />}
-            {item.unreadCount > 0 && (
-              <Badge
-                style={styles.unreadBadge}
-                size={20}
-              >
-                {item.unreadCount > 9 ? '9+' : item.unreadCount}
-              </Badge>
-            )}
-          </View>
-          <View style={styles.messageInfo}>
-            <View style={styles.messageHeader}>
-              <Text style={styles.teacherName}>{item.teacherName}</Text>
-              <Text style={styles.messageTime}>{item.time}</Text>
-            </View>
-            <Text style={styles.subject}>{item.subject}</Text>
-            <Text style={styles.lastMessage} numberOfLines={2}>
-              {item.lastMessage}
+      <View className="flex-row p-3 py-2">
+        <View className="relative mr-3">
+          <View
+            className="rounded-full justify-center items-center"
+            style={{ width: 56, height: 56, backgroundColor: '#E0F2FE' }}
+          >
+            <Text className="text-base font-bold" style={{ color: colors.primary }}>
+              {item.teacherAvatar}
             </Text>
           </View>
-        </Card.Content>
-      </Card>
+          {item.isOnline && (
+            <View
+              className="absolute bottom-0.5 right-0.5 rounded-full border-2 border-white"
+              style={{ width: 14, height: 14, backgroundColor: '#22C55E' }}
+            />
+          )}
+          {item.unreadCount > 0 && (
+            <View
+              className="absolute -top-1 -right-1 rounded-full justify-center items-center"
+              style={{
+                width: 20,
+                height: 20,
+                backgroundColor: colors.error,
+                minWidth: 20,
+              }}
+            >
+              <Text className="text-white text-[10px] font-bold">
+                {item.unreadCount > 9 ? '9+' : item.unreadCount}
+              </Text>
+            </View>
+          )}
+        </View>
+        <View className="flex-1 justify-center">
+          <View className="flex-row justify-between items-center mb-1">
+            <Text className="text-gray-900 text-base font-extrabold">
+              {item.teacherName}
+            </Text>
+            <Text className="text-gray-400 text-xs">
+              {item.time}
+            </Text>
+          </View>
+          <Text className="text-xs font-semibold mb-1" style={{ color: colors.primary }}>
+            {item.subject}
+          </Text>
+          <Text className="text-gray-600 text-[13px] leading-[18px]" numberOfLines={2}>
+            {item.lastMessage}
+          </Text>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Tin nhắn</Text>
+    <View className="flex-1 bg-slate-50">
+      <View
+        className="bg-primary pt-16 px-6 pb-6"
+        style={{ borderBottomLeftRadius: 20, borderBottomRightRadius: 20, backgroundColor: colors.primary }}
+      >
+        <Text className="text-white text-2xl font-extrabold">Tin nhắn</Text>
         {selectedChild && (
-          <Text style={styles.headerSubtitle}>
+          <Text className="text-white/80 text-sm mt-1">
             {selectedChild.name} • Lớp {selectedChild.grade}{selectedChild.section}
           </Text>
         )}
@@ -125,108 +146,9 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({ navigation }) =>
         data={MOCK_MESSAGES}
         renderItem={renderMessage}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="p-4 pb-24"
         showsVerticalScrollIndicator={false}
       />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-  },
-  listContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  messageCard: {
-    marginBottom: 12,
-    borderRadius: 16,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 2,
-    backgroundColor: '#FFFFFF',
-  },
-  unreadCard: {
-    backgroundColor: '#F0F9FF',
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  messageContent: {
-    flexDirection: 'row',
-    paddingVertical: 8,
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginRight: 12,
-  },
-  onlineIndicator: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#22C55E',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  unreadBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: colors.error,
-  },
-  messageInfo: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  messageHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  teacherName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  messageTime: {
-    fontSize: 12,
-    color: '#9CA3AF',
-  },
-  subject: {
-    fontSize: 12,
-    color: colors.primary,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  lastMessage: {
-    fontSize: 13,
-    color: '#6B7280',
-    lineHeight: 18,
-  },
-});

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle2, Clock } from 'lucide-react'
-import type { FeeStats } from '@/lib/mock-data'
+import type { FeeStats } from '@/lib/types'
 import { useState, useEffect } from 'react'
 
 interface FeeCollectionChartProps {

@@ -4,8 +4,7 @@
  */
 
 import React from 'react';
-import { View, ScrollView, StyleSheet, FlatList } from 'react-native';
-import { Text, Card, Chip } from 'react-native-paper';
+import { View, FlatList, Text } from 'react-native';
 import { useParentStore } from '../../stores';
 import { colors } from '../../theme';
 
@@ -52,40 +51,40 @@ export const ScheduleScreen: React.FC = () => {
   const selectedChild = children.find(c => c.id === selectedChildId) || children[0];
 
   const renderPeriod = (period: Period, index: number) => (
-    <View key={index} style={styles.periodRow}>
-      <View style={styles.periodTime}>
-        <Text style={styles.periodTimeText}>{period.time}</Text>
+    <View key={index} className="flex-row items-start gap-3">
+      <View className="w-25">
+        <Text className="text-xs text-gray-500 font-medium">{period.time}</Text>
       </View>
-      <View style={styles.periodInfo}>
-        <Text style={styles.periodSubject}>{period.subject}</Text>
-        <Text style={styles.periodTeacher}>{period.teacher}</Text>
-        <Chip mode="flat" compact style={styles.roomChip} textStyle={styles.roomChipText}>
-          {period.room}
-        </Chip>
+      <View className="flex-1 gap-1">
+        <Text className="text-base font-semibold text-gray-800">{period.subject}</Text>
+        <Text className="text-xs text-gray-500">{period.teacher}</Text>
+        <View className="self-start bg-sky-100 px-2 py-0.5 rounded-full h-6">
+          <Text className="text-[10px] text-sky-600 font-semibold">{period.room}</Text>
+        </View>
       </View>
     </View>
   );
 
   const renderDay = ({ item }: { item: ScheduleDay }) => (
-    <Card style={styles.dayCard}>
-      <Card.Content>
-        <View style={styles.dayHeader}>
-          <Text style={styles.dayName}>{item.dayName}</Text>
-          <Text style={styles.dayDate}>{item.date}</Text>
+    <View className="mb-4 bg-white rounded-2xl shadow-sm">
+      <View className="p-4">
+        <View className="flex-row justify-between items-center mb-4 pb-3 border-b border-gray-200">
+          <Text className="text-lg font-bold text-gray-800">{item.dayName}</Text>
+          <Text className="text-xs text-gray-500">{item.date}</Text>
         </View>
-        <View style={styles.periodsContainer}>
+        <View className="gap-3">
           {item.periods.map((period, index) => renderPeriod(period, index))}
         </View>
-      </Card.Content>
-    </Card>
+      </View>
+    </View>
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Thời khóa biểu</Text>
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-blue-600 pt-15 px-6 pb-6 rounded-b-2xl">
+        <Text className="text-2xl font-bold text-white">Thời khóa biểu</Text>
         {selectedChild && (
-          <Text style={styles.headerSubtitle}>
+          <Text className="text-sm text-white/80 mt-1">
             {selectedChild.name} • Lớp {selectedChild.grade}{selectedChild.section}
           </Text>
         )}
@@ -94,104 +93,9 @@ export const ScheduleScreen: React.FC = () => {
         data={MOCK_SCHEDULE}
         renderItem={renderDay}
         keyExtractor={(item) => item.date}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="p-4 pb-25"
         showsVerticalScrollIndicator={false}
       />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-  },
-  listContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  dayCard: {
-    marginBottom: 16,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  dayHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  dayName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  dayDate: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  periodsContainer: {
-    gap: 12,
-  },
-  periodRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  periodTime: {
-    width: 100,
-  },
-  periodTimeText: {
-    fontSize: 11,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  periodInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  periodSubject: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  periodTeacher: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  roomChip: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#E0F2FE',
-    height: 24,
-  },
-  roomChipText: {
-    fontSize: 10,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-});

@@ -4,10 +4,8 @@
  */
 
 import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet, Alert } from 'react-native';
-import { Text, Card, TextInput, Button, Chip } from 'react-native-paper';
+import { View, ScrollView, Alert, TouchableOpacity, TextInput as RNTextInput, Text } from 'react-native';
 import { useParentStore } from '../../stores';
-import { colors } from '../../theme';
 
 interface LeaveRequestForm {
   childId: string;
@@ -54,234 +52,120 @@ export const LeaveRequestScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Đơn xin nghỉ phép</Text>
+    <View className="flex-1 bg-slate-50">
+      {/* Header */}
+      <View className="bg-primary pt-15 px-6 pb-6 rounded-b-3xl">
+        <Text className="text-2xl font-bold text-white">Đơn xin nghỉ phép</Text>
         {selectedChild && (
-          <Text style={styles.headerSubtitle}>
+          <Text className="text-sm text-white/80 mt-1">
             {selectedChild.name} • Lớp {selectedChild.grade}{selectedChild.section}
           </Text>
         )}
       </View>
+
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerClassName="p-4 pb-25"
         showsVerticalScrollIndicator={false}
       >
         {/* Student Info Card */}
-        <Card style={styles.studentCard}>
-          <Card.Content>
-            <Text style={styles.cardTitle}>Học sinh</Text>
-            <Text style={styles.studentName}>{selectedChild?.name}</Text>
-            <Text style={styles.studentClass}>
-              Lớp {selectedChild?.grade}{selectedChild?.section}
-            </Text>
-          </Card.Content>
-        </Card>
+        <View className="mb-5 bg-white rounded-2xl p-4 shadow-sm">
+          <Text className="text-xs text-gray-500 font-semibold mb-1">Học sinh</Text>
+          <Text className="text-lg font-bold text-gray-900">{selectedChild?.name}</Text>
+          <Text className="text-sm text-gray-500 mt-0.5">
+            Lớp {selectedChild?.grade}{selectedChild?.section}
+          </Text>
+        </View>
 
         {/* Reason Selection */}
-        <Text style={styles.sectionTitle}>Lý do nghỉ</Text>
-        <Card style={styles.reasonCard}>
-          <Card.Content>
-            <View style={styles.reasonGrid}>
-              {LEAVE_REASONS.map((reason) => (
-                <Chip
-                  key={reason.id}
-                  mode={selectedReason === reason.id ? 'flat' : 'outlined'}
-                  selected={selectedReason === reason.id}
-                  onPress={() => setSelectedReason(reason.id)}
-                  style={[
-                    styles.reasonChip,
-                    selectedReason === reason.id && styles.reasonChipSelected,
-                  ]}
-                  textStyle={[
-                    styles.reasonChipText,
-                    selectedReason === reason.id && styles.reasonChipTextSelected,
-                  ]}
-                  icon={reason.icon as any}
+        <Text className="text-base font-bold text-gray-900 mb-3 mt-2">Lý do nghỉ</Text>
+        <View className="mb-5 bg-white rounded-2xl p-4 shadow-sm">
+          <View className="flex-row flex-wrap gap-2">
+            {LEAVE_REASONS.map((reason) => (
+              <TouchableOpacity
+                key={reason.id}
+                onPress={() => setSelectedReason(reason.id)}
+                className={`px-4 py-2 rounded-full border ${
+                  selectedReason === reason.id
+                    ? 'bg-primary border-primary'
+                    : 'bg-transparent border-gray-200'
+                }`}
+              >
+                <Text
+                  className={`text-sm font-medium ${
+                    selectedReason === reason.id ? 'text-white' : 'text-gray-600'
+                  }`}
                 >
                   {reason.label}
-                </Chip>
-              ))}
-            </View>
-          </Card.Content>
-        </Card>
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
 
         {/* Date Range */}
-        <Text style={styles.sectionTitle}>Thời gian nghỉ</Text>
-        <Card style={styles.dateCard}>
-          <Card.Content>
-            <TextInput
-              label="Từ ngày *"
-              value={startDate}
-              onChangeText={setStartDate}
-              placeholder="DD/MM/YYYY"
-              mode="outlined"
-              keyboardType="numeric"
-              style={styles.input}
-              right={<TextInput.Icon icon="calendar" />}
-            />
-            <TextInput
-              label="Đến ngày *"
-              value={endDate}
-              onChangeText={setEndDate}
-              placeholder="DD/MM/YYYY"
-              mode="outlined"
-              keyboardType="numeric"
-              style={styles.input}
-              right={<TextInput.Icon icon="calendar" />}
-            />
-          </Card.Content>
-        </Card>
+        <Text className="text-base font-bold text-gray-900 mb-3 mt-2">Thời gian nghỉ</Text>
+        <View className="mb-5 bg-white rounded-2xl p-4 shadow-sm">
+          <View className="mb-3">
+            <Text className="text-sm text-gray-700 font-medium mb-2">Từ ngày *</Text>
+            <View className="flex-row items-center border border-gray-300 rounded-xl px-4 py-3 bg-white">
+              <RNTextInput
+                value={startDate}
+                onChangeText={setStartDate}
+                placeholder="DD/MM/YYYY"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+                className="flex-1 text-base text-gray-900"
+              />
+              <Text className="text-primary text-2xl">📅</Text>
+            </View>
+          </View>
+          <View>
+            <Text className="text-sm text-gray-700 font-medium mb-2">Đến ngày *</Text>
+            <View className="flex-row items-center border border-gray-300 rounded-xl px-4 py-3 bg-white">
+              <RNTextInput
+                value={endDate}
+                onChangeText={setEndDate}
+                placeholder="DD/MM/YYYY"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+                className="flex-1 text-base text-gray-900"
+              />
+              <Text className="text-primary text-2xl">📅</Text>
+            </View>
+          </View>
+        </View>
 
         {/* Notes */}
-        <Text style={styles.sectionTitle}>Ghi chú thêm</Text>
-        <Card style={styles.notesCard}>
-          <Card.Content>
-            <TextInput
-              label="Chi tiết lý do (không bắt buộc)"
+        <Text className="text-base font-bold text-gray-900 mb-3 mt-2">Ghi chú thêm</Text>
+        <View className="mb-5 bg-white rounded-2xl p-4 shadow-sm">
+          <Text className="text-sm text-gray-700 font-medium mb-2">Chi tiết lý do (không bắt buộc)</Text>
+          <View className="border border-gray-300 rounded-xl px-4 py-3 bg-white min-h-25">
+            <RNTextInput
               value={notes}
               onChangeText={setNotes}
               placeholder="Nhập chi tiết lý do nghỉ..."
-              mode="outlined"
+              placeholderTextColor="#9CA3AF"
               multiline
               numberOfLines={4}
-              style={styles.notesInput}
+              className="text-base text-gray-900"
+              textAlignVertical="top"
+              style={{ minHeight: 100 }}
             />
-          </Card.Content>
-        </Card>
+          </View>
+        </View>
 
         {/* Submit Button */}
-        <Button
-          mode="contained"
+        <TouchableOpacity
           onPress={handleSubmit}
-          style={styles.submitButton}
-          contentStyle={styles.submitButtonContent}
-          labelStyle={styles.submitButtonLabel}
+          className="bg-primary mt-2 py-3 rounded-xl shadow-sm active:opacity-80"
         >
-          Gửi đơn xin nghỉ
-        </Button>
+          <Text className="text-base font-bold text-white text-center">Gửi đơn xin nghỉ</Text>
+        </TouchableOpacity>
 
-        <Text style={styles.noteText}>
+        <Text className="text-xs text-gray-400 text-center mt-4 italic">
           * Đơn xin nghỉ cần được gửi trước ít nhất 1 ngày
         </Text>
       </ScrollView>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  studentCard: {
-    marginBottom: 20,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  cardTitle: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  studentName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  studentClass: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 12,
-    marginTop: 8,
-  },
-  reasonCard: {
-    marginBottom: 20,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  reasonGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  reasonChip: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  reasonChipSelected: {
-    backgroundColor: colors.primary,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  reasonChipText: {
-    color: '#6B7280',
-  },
-  reasonChipTextSelected: {
-    color: '#FFFFFF',
-  },
-  dateCard: {
-    marginBottom: 20,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  input: {
-    marginBottom: 12,
-  },
-  notesCard: {
-    marginBottom: 20,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  notesInput: {
-    minHeight: 100,
-  },
-  submitButton: {
-    backgroundColor: colors.primary,
-    marginTop: 8,
-  },
-  submitButtonContent: {
-    paddingVertical: 10,
-  },
-  submitButtonLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  noteText: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    textAlign: 'center',
-    marginTop: 16,
-    fontStyle: 'italic',
-  },
-});

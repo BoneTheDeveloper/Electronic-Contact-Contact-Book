@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Users, GraduationCap } from 'lucide-react'
 import { BaseModal, BaseModalProps } from '@/components/admin/shared/modals/BaseModal'
-import { SUPPORTED_GRADES } from '@/lib/mock-data'
+import { SUPPORTED_GRADES } from '@/lib/constants'
 
 export interface AddClassModalProps extends Omit<BaseModalProps, 'title' | 'children'> {
   onSuccess?: () => void

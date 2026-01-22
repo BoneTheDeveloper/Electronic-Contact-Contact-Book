@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getFeeAssignmentById, FEE_ITEMS } from '@/lib/mock-data'
+import { getFeeAssignments, getFeeItems } from '@/lib/supabase/queries'
+
+// Helper function to get fee assignment by ID
+async function getFeeAssignmentById(id: string) {
+  const assignments = await getFeeAssignments()
+  return assignments.find(a => a.id === id)
+}
 
 // GET /api/fee-assignments/[id] - Get a specific fee assignment
 export async function GET(
@@ -18,10 +24,11 @@ export async function GET(
     }
 
     // Enrich with fee item details
+    const allFeeItems = await getFeeItems()
     const enrichedAssignment = {
       ...assignment,
       feeItemDetails: assignment.feeItems.map(feeId => {
-        const fee = FEE_ITEMS.find(f => f.id === feeId)
+        const fee = allFeeItems.find(f => f.id === feeId)
         return fee || { id: feeId, name: 'Unknown', amount: 0 }
       })
     }

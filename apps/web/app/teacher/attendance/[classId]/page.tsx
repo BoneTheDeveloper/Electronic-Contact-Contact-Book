@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getClassStudents, getTeacherClasses } from '@/lib/mock-data'
+import { getClassStudents, getTeacherClasses } from '@/lib/supabase/queries'
 import { AttendanceForm } from '@/components/teacher/AttendanceForm'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar } from 'lucide-react'
@@ -10,7 +10,7 @@ interface PageProps {
 
 export default async function ClassAttendancePage({ params }: PageProps) {
   const { classId } = await params
-  const classes = await getTeacherClasses()
+  const classes = await getTeacherClasses('current-teacher-id')
   const cls = classes.find(c => c.id === classId)
   const students = await getClassStudents(classId)
 

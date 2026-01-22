@@ -4,9 +4,7 @@
  */
 
 import React from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
-import { Text, Card, Avatar, Divider } from 'react-native-paper';
-import { mockNotifications } from '../../mock-data';
+import { View, FlatList, Text } from 'react-native';
 import { colors } from '../../theme';
 
 interface Notification {
@@ -18,12 +16,12 @@ interface Notification {
   read: boolean;
 }
 
-const NOTIFICATION_ICONS: Record<string, string> = {
-  announcement: 'bell',
-  homework: 'book-open-variant',
-  exam: 'clipboard-text',
-  fee: 'cash',
-  general: 'information',
+const NOTIFICATION_EMOJIS: Record<string, string> = {
+  announcement: '🔔',
+  homework: '📚',
+  exam: '📋',
+  fee: '💰',
+  general: 'ℹ️',
 };
 
 const NOTIFICATION_COLORS: Record<string, string> = {
@@ -91,118 +89,51 @@ export const NotificationsScreen: React.FC = () => {
 
   const renderNotification = ({ item }: { item: Notification }) => {
     const iconColor = NOTIFICATION_COLORS[item.type];
-    const iconName = NOTIFICATION_ICONS[item.type];
+    const iconEmoji = NOTIFICATION_EMOJIS[item.type];
 
     return (
-      <Card style={[styles.notificationCard, !item.read && styles.unreadCard]}>
-        <Card.Content style={styles.notificationContent}>
-          <Avatar.Icon
-            size={48}
-            icon={iconName as any}
+      <View
+        className={`rounded-xl py-3 px-4 ${!item.read ? 'bg-sky-50' : 'bg-white'}`}
+      >
+        <View className="flex-row items-start pr-6">
+          <View
+            className="w-12 h-12 rounded-full justify-center items-center"
             style={{ backgroundColor: `${iconColor}20` }}
-            color={iconColor}
-          />
-          <View style={styles.notificationInfo}>
-            <Text style={styles.notificationTitle}>{item.title}</Text>
-            <Text style={styles.notificationMessage} numberOfLines={2}>
+          >
+            <Text style={{ fontSize: 24 }}>{iconEmoji}</Text>
+          </View>
+          <View className="flex-1 ml-3">
+            <Text className="text-[15px] font-bold text-gray-800 mb-1">{item.title}</Text>
+            <Text className="text-[13px] text-gray-500 leading-[18px] mb-1.5" numberOfLines={2}>
               {item.message}
             </Text>
-            <Text style={styles.notificationDate}>{formatDate(item.date)}</Text>
+            <Text className="text-[11px] text-gray-400">{formatDate(item.date)}</Text>
           </View>
-          {!item.read && <View style={styles.unreadDot} />}
-        </Card.Content>
-      </Card>
+          {!item.read && (
+            <View
+              className="w-2 h-2 rounded-full mt-1.5"
+              style={{ backgroundColor: colors.primary }}
+            />
+          )}
+        </View>
+      </View>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Thông báo</Text>
-        <Text style={styles.headerSubtitle}>Cập nhật từ nhà trường</Text>
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-sky-600 pt-[60px] px-6 pb-6 rounded-b-[20px]">
+        <Text className="text-[24px] font-bold text-white">Thông báo</Text>
+        <Text className="text-[14px] text-white/80 mt-1">Cập nhật từ nhà trường</Text>
       </View>
       <FlatList
         data={MOCK_NOTIFICATIONS}
         renderItem={renderNotification}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="p-4 pb-[100px]"
         showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() => <Divider style={styles.divider} />}
+        ItemSeparatorComponent={() => <View className="h-px bg-gray-200 ml-[76px]" />}
       />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-  },
-  listContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  notificationCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    elevation: 0,
-  },
-  unreadCard: {
-    backgroundColor: '#F0F9FF',
-  },
-  notificationContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: 12,
-    paddingRight: 24,
-  },
-  notificationInfo: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  notificationTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  notificationMessage: {
-    fontSize: 13,
-    color: '#6B7280',
-    lineHeight: 18,
-    marginBottom: 6,
-  },
-  notificationDate: {
-    fontSize: 11,
-    color: '#9CA3AF',
-  },
-  unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.primary,
-    marginTop: 6,
-  },
-  divider: {
-    backgroundColor: '#E5E7EB',
-    marginLeft: 76,
-  },
-});

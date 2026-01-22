@@ -8,9 +8,8 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, Text } from 'react-native';
-import Svg, { Path, Polyline, Circle, Line } from 'react-native-svg';
+import Svg, { Path, Polyline, Circle } from 'react-native-svg';
 import { useUIStore } from '../stores';
-import { colors } from '../theme';
 import {
   DashboardScreen,
   ScheduleScreen,
@@ -23,10 +22,11 @@ import {
 import { PaymentOverviewScreen, PaymentDetailScreen, PaymentMethodScreen, PaymentReceiptScreen } from '../screens/parent';
 import { MessagesScreen, NotificationsScreen, NewsScreen } from '../screens/parent';
 import { TeacherDirectoryScreen } from '../screens/parent';
-import type { ParentPaymentStackParamList, ParentTabParamList } from './types';
+import type { ParentTabParamList, ParentHomeStackParamList } from './types';
 
-// Home Stack (Dashboard, Schedule, Grades, Attendance, TeacherFeedback, LeaveRequest, Summary, TeacherDirectory)
-const HomeStack = createNativeStackNavigator();
+// Home Stack (Dashboard + all service screens accessible from dashboard)
+// Including News and Payment screens for dashboard navigation
+const HomeStack = createNativeStackNavigator<ParentHomeStackParamList>();
 const HomeStackNavigator = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
     <HomeStack.Screen name="Dashboard" component={DashboardScreen} />
@@ -37,36 +37,31 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name="LeaveRequest" component={LeaveRequestScreen} />
     <HomeStack.Screen name="Summary" component={SummaryScreen} />
     <HomeStack.Screen name="TeacherDirectory" component={TeacherDirectoryScreen} />
+    {/* News screen for dashboard navigation */}
+    <HomeStack.Screen name="News" component={NewsScreen} />
+    {/* Payment screens for dashboard navigation */}
+    <HomeStack.Screen name="PaymentOverview" component={PaymentOverviewScreen} />
+    <HomeStack.Screen name="PaymentDetail" component={PaymentDetailScreen} />
+    <HomeStack.Screen name="PaymentMethod" component={PaymentMethodScreen} />
+    <HomeStack.Screen name="PaymentReceipt" component={PaymentReceiptScreen} />
   </HomeStack.Navigator>
 );
 
-// Payment Stack (Overview, Detail, Method, Receipt)
-const PaymentStack = createNativeStackNavigator<ParentPaymentStackParamList>();
-const PaymentStackNavigator: React.FC = () => (
-  <PaymentStack.Navigator screenOptions={{ headerShown: false }}>
-    <PaymentStack.Screen name="PaymentOverview" component={PaymentOverviewScreen} />
-    <PaymentStack.Screen name="PaymentDetail" component={PaymentDetailScreen} />
-    <PaymentStack.Screen name="PaymentMethod" component={PaymentMethodScreen} />
-    <PaymentStack.Screen name="PaymentReceipt" component={PaymentReceiptScreen} />
-  </PaymentStack.Navigator>
-);
-
-// Communication Stack (Messages, Notifications, News)
+// Communication Stack (Messages, Notifications - News is in HomeStack for Dashboard access)
 const CommStack = createNativeStackNavigator();
 const CommStackNavigator = () => (
   <CommStack.Navigator screenOptions={{ headerShown: false }}>
     <CommStack.Screen name="Messages" component={MessagesScreen} />
     <CommStack.Screen name="Notifications" component={NotificationsScreen} />
-    <CommStack.Screen name="News" component={NewsScreen} />
   </CommStack.Navigator>
 );
 
 // Profile Stack (placeholder for now)
 const ProfileStack = createNativeStackNavigator();
 const ProfileScreen = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC' }}>
-    <Text style={{ fontSize: 18, fontWeight: '700', color: '#1F2937' }}>Profile Screen</Text>
-    <Text style={{ fontSize: 14, color: '#6B7280', marginTop: 8 }}>Coming soon...</Text>
+  <View className="flex-1 justify-center items-center bg-slate-50">
+    <Text className="text-lg font-extrabold text-gray-800">Profile Screen</Text>
+    <Text className="text-sm text-gray-500 mt-2">Coming soon...</Text>
   </View>
 );
 const ProfileStackNavigator = () => (
@@ -77,28 +72,28 @@ const ProfileStackNavigator = () => (
 
 // Custom Tab Bar Icons
 const HomeIcon = ({ focused }: { focused: boolean }) => (
-  <View style={{ alignItems: 'center' }}>
+  <View className="items-center">
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-      <Path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke={focused ? colors.primary : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
-      <Polyline points="9 22 9 12 15 12 15 22" stroke={focused ? colors.primary : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
+      <Path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke={focused ? '#0284C7' : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
+      <Polyline points="9 22 9 12 15 12 15 22" stroke={focused ? '#0284C7' : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
     </Svg>
   </View>
 );
 
 const MessageIcon = ({ focused, hasBadge }: { focused: boolean; hasBadge?: boolean }) => (
-  <View style={{ alignItems: 'center' }}>
+  <View className="items-center">
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-      <Path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke={focused ? colors.primary : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
+      <Path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke={focused ? '#0284C7' : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
     </Svg>
-    {hasBadge && <View style={{ position: 'absolute', top: -2, right: -4, width: 10, height: 10, borderRadius: 5, backgroundColor: '#EF4444', borderWidth: 2, borderColor: '#FFFFFF' }} />}
+    {hasBadge && <View className="absolute top-[-2px] right-[-4px] w-[10px] h-[10px] rounded-[5px] bg-red-500 border-2 border-white" />}
   </View>
 );
 
 const ProfileIcon = ({ focused }: { focused: boolean }) => (
-  <View style={{ alignItems: 'center' }}>
+  <View className="items-center">
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-      <Path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke={focused ? colors.primary : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
-      <Circle cx="12" cy="7" r="4" stroke={focused ? colors.primary : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
+      <Path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke={focused ? '#0284C7' : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
+      <Circle cx="12" cy="7" r="4" stroke={focused ? '#0284C7' : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
     </Svg>
   </View>
 );
@@ -112,7 +107,7 @@ const ParentTabs: React.FC = () => {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
+        tabBarActiveTintColor: '#0284C7',
         tabBarInactiveTintColor: '#D1D5DB',
         tabBarStyle: {
           backgroundColor: isDarkMode ? '#1E1E1E' : 'rgba(255, 255, 255, 0.9)',

@@ -13,13 +13,13 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import {
   getTeacherStats,
-  getGradeReviewRequests,
   getLeaveRequests,
   getTeacherSchedule,
-  getRegularAssessments,
   getTeacherClasses,
   type TeacherStats,
-} from '@/lib/mock-data'
+} from '@/lib/supabase/queries'
+import { requireAuth } from '@/lib/auth'
+import type { LeaveRequest } from '@/lib/types'
 
 interface DashboardData {
   stats: TeacherStats & { homeroomClassId?: string }
@@ -76,8 +76,12 @@ function getInitials(name?: string): string {
 }
 
 async function fetchDashboardData(): Promise<DashboardData> {
+  // Get authenticated teacher
+  const user = await requireAuth()
+  const teacherId = user.id
+
   // Get classes first to find homeroom class
-  const teacherClasses = await getTeacherClasses().catch(() => [])
+  const teacherClasses = await getTeacherClasses(teacherId).catch(() => [])
   const homeroomClass = teacherClasses.find((c) => c.isHomeroom)
   const homeroomClassId = homeroomClass?.id || '6A1'
 
@@ -92,12 +96,10 @@ async function fetchDashboardData(): Promise<DashboardData> {
     todaySchedule: [],
   }
 
-  const [stats, gradeReviews, leaveRequests, schedule, assessments, classes] = await Promise.all([
-    getTeacherStats().catch(() => defaultStats),
-    getGradeReviewRequests().catch(() => []),
+  const [stats, leaveRequests, schedule, classes] = await Promise.all([
+    getTeacherStats(teacherId).catch(() => defaultStats),
     getLeaveRequests(homeroomClassId).catch(() => []),
-    getTeacherSchedule().catch(() => []),
-    getRegularAssessments().catch(() => []),
+    getTeacherSchedule(teacherId).catch(() => []),
     Promise.resolve(teacherClasses),
   ])
 
@@ -106,15 +108,15 @@ async function fetchDashboardData(): Promise<DashboardData> {
       ...stats,
       homeroomClassId,
     },
-    gradeReviews: gradeReviews || [],
+    gradeReviews: [], // TODO: Implement getGradeReviewRequests in Supabase queries
     leaveRequests: (leaveRequests || []).filter((r: WithStatus) => r.status === 'pending'),
     schedule: schedule || [],
     classes: classes || [],
     assessments: {
-      evaluated: (assessments || []).filter((a: WithStatus) => a.status === 'evaluated').length,
-      pending: (assessments || []).filter((a: WithStatus) => a.status === 'pending').length,
-      positive: (assessments || []).filter((a: WithStatus & WithRating) => a.rating && a.rating >= 4).length,
-      needsAttention: (assessments || []).filter((a: WithStatus) => a.status === 'needs-attention').length,
+      evaluated: 0, // TODO: Implement getRegularAssessments in Supabase queries
+      pending: 0,
+      positive: 0,
+      needsAttention: 0,
     },
   }
 }

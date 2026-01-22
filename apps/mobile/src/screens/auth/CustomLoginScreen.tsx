@@ -16,8 +16,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Text,
+  TextInput,
+  ActivityIndicator,
+  Modal,
 } from 'react-native';
-import { Text, TextInput, Button, Avatar, Portal, Modal, ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Rect, Line, Polyline } from 'react-native-svg';
 import { useAuthStore } from '../../stores';
@@ -55,12 +58,11 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
 
     try {
-      // Determine email based on role and identifier
-      const email = selectedRole === 'parent'
-        ? `parent@econtact.vn`
-        : `student@econtact.vn`;
-
-      await login(email, password);
+      // For demo: map identifiers to emails
+      // Parent: phone number (0901234569) -> parent@school.edu
+      // Student: student code (ST2024001) -> student@school.edu
+      // For production, this would query Supabase to find user by code/phone
+      await login(identifier, password);
 
       // For student, simulate first login and show change password
       if (selectedRole === 'student') {
@@ -194,36 +196,27 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           <TextInput
             value={identifier}
             onChangeText={setIdentifier}
-            mode="flat"
             style={styles.input}
             placeholder={selectedRole === 'parent' ? '0901 xxx xxx' : 'NH2026001'}
             placeholderTextColor="#9CA3AF"
-            underlineStyle={{ display: 'none' }}
-            contentStyle={styles.inputContent}
-            theme={{ colors: { background: '#FFFFFF' } }}
           />
         </View>
 
         <View>
           <Text style={styles.inputLabel}>Mật khẩu</Text>
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            mode="flat"
-            secureTextEntry={!showPassword}
-            style={styles.input}
-            placeholder="••••••••"
-            placeholderTextColor="#9CA3AF"
-            underlineStyle={{ display: 'none' }}
-            contentStyle={styles.inputContent}
-            right={
-              <TextInput.Icon
-                icon={showPassword ? 'eye-off' : 'eye'}
-                onPress={() => setShowPassword(!showPassword)}
-              />
-            }
-            theme={{ colors: { background: '#FFFFFF' } }}
-          />
+          <View style={styles.inputWrapper}>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              style={styles.inputWithIcon}
+              placeholder="••••••••"
+              placeholderTextColor="#9CA3AF"
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.inputIcon}>
+              <Text style={styles.inputIconText}>{showPassword ? '👁️‍🗨️' : '👁️'}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <TouchableOpacity onPress={() => setCurrentScreen('forgotPassword')}>
@@ -232,18 +225,20 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-        <Button
-          mode="contained"
+        <TouchableOpacity
           onPress={handleLogin}
-          loading={isLoading}
           disabled={isLoading || !identifier || !password}
-          style={styles.loginButton}
-          contentStyle={styles.loginButtonContent}
-          labelStyle={styles.loginButtonText}
-          buttonColor={colors.primary}
+          style={[
+            styles.loginButton,
+            (isLoading || !identifier || !password) && styles.loginButtonDisabled,
+          ]}
         >
-          ĐĂNG NHẬP
-        </Button>
+          {isLoading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.loginButtonText}>ĐĂNG NHẬP</Text>
+          )}
+        </TouchableOpacity>
       </View>
 
       {/* Footer */}
@@ -353,28 +348,20 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         <TextInput
           value={phoneNumber}
           onChangeText={(text) => setPhoneNumber(formatPhoneNumber(text))}
-          mode="flat"
           style={styles.input}
           placeholder="0901 xxx xxx"
           placeholderTextColor="#9CA3AF"
           keyboardType="phone-pad"
-          underlineStyle={{ display: 'none' }}
-          contentStyle={styles.inputContent}
-          theme={{ colors: { background: '#FFFFFF' } }}
         />
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-        <Button
-          mode="contained"
+        <TouchableOpacity
           onPress={handleSendOTP}
           style={styles.loginButton}
-          contentStyle={styles.loginButtonContent}
-          labelStyle={styles.loginButtonText}
-          buttonColor={colors.primary}
         >
-          GỬI MÃ OTP
-        </Button>
+          <Text style={styles.loginButtonText}>GỬI MÃ OTP</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -407,14 +394,10 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 // Focus next input
               }
             }}
-            mode="flat"
-            style={styles.tpInput}
+            style={styles.otpInput}
             textAlign="center"
             maxLength={1}
             keyboardType="number-pad"
-            underlineStyle={{ display: 'none' }}
-            contentStyle={styles.otpInputContent}
-            theme={{ colors: { background: '#FFFFFF' } }}
           />
         ))}
       </View>
@@ -430,16 +413,12 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <Button
-        mode="contained"
+      <TouchableOpacity
         onPress={handleVerifyOTP}
         style={styles.loginButton}
-        contentStyle={styles.loginButtonContent}
-        labelStyle={styles.loginButtonText}
-        buttonColor={colors.primary}
       >
-        XÁC THỰC
-      </Button>
+        <Text style={styles.loginButtonText}>XÁC THỰC</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -496,19 +475,15 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         </View>
       </View>
 
-      <Button
-        mode="contained"
+      <TouchableOpacity
         onPress={() => {
           setCurrentScreen('login');
           setError('');
         }}
         style={styles.loginButton}
-        contentStyle={styles.loginButtonContent}
-        labelStyle={styles.loginButtonText}
-        buttonColor={colors.primary}
       >
-        GỬI YÊU CẦU
-      </Button>
+        <Text style={styles.loginButtonText}>GỬI YÊU CẦU</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -527,7 +502,9 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
       {/* Student Info Card */}
       <View style={styles.studentCard}>
-        <Avatar.Text size={48} label="HB" style={{ backgroundColor: '#9333EA' }} labelStyle={{ color: '#FFFFFF', fontSize: 20 }} />
+        <View style={styles.studentAvatar}>
+          <Text style={styles.studentAvatarText}>HB</Text>
+        </View>
         <View style={styles.studentInfo}>
           <Text style={styles.studentLabel}>Học sinh</Text>
           <Text style={styles.studentName}>Nguyễn Hoàng B • Lớp 9A1</Text>
@@ -553,19 +530,15 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         <View style={styles.radioSelected} />
       </TouchableOpacity>
 
-      <Button
-        mode="contained"
+      <TouchableOpacity
         onPress={() => {
           setCurrentScreen('login');
           setError('');
         }}
-        style={styles.loginButton}
-        contentStyle={styles.loginButtonContent}
-        labelStyle={styles.loginButtonText}
-        buttonColor="#9333EA"
+        style={[styles.loginButton, { backgroundColor: '#9333EA' }]}
       >
-        GỬI YÊU CẦU
-      </Button>
+        <Text style={styles.loginButtonText}>GỬI YÊU CẦU</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -577,50 +550,40 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
       <View style={styles.form}>
         <Text style={styles.inputLabel}>Mật khẩu mới</Text>
-        <TextInput
-          value={newPassword}
-          onChangeText={(text) => {
-            setNewPassword(text);
-            setError('');
-          }}
-          mode="flat"
-          secureTextEntry={!showNewPassword}
-          style={styles.input}
-          placeholder="Nhập mật khẩu mới"
-          placeholderTextColor="#9CA3AF"
-          underlineStyle={{ display: 'none' }}
-          contentStyle={styles.inputContent}
-          right={
-            <TextInput.Icon
-              icon={showNewPassword ? 'eye-off' : 'eye'}
-              onPress={() => setShowNewPassword(!showNewPassword)}
-            />
-          }
-          theme={{ colors: { background: '#FFFFFF' } }}
-        />
+        <View style={styles.inputWrapper}>
+          <TextInput
+            value={newPassword}
+            onChangeText={(text) => {
+              setNewPassword(text);
+              setError('');
+            }}
+            secureTextEntry={!showNewPassword}
+            style={styles.inputWithIcon}
+            placeholder="Nhập mật khẩu mới"
+            placeholderTextColor="#9CA3AF"
+          />
+          <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)} style={styles.inputIcon}>
+            <Text style={styles.inputIconText}>{showNewPassword ? '👁️‍🗨️' : '👁️'}</Text>
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.inputLabel}>Xác nhận mật khẩu mới</Text>
-        <TextInput
-          value={confirmPassword}
-          onChangeText={(text) => {
-            setConfirmPassword(text);
-            setError('');
-          }}
-          mode="flat"
-          secureTextEntry={!showConfirmPassword}
-          style={styles.input}
-          placeholder="Nhập lại mật khẩu mới"
-          placeholderTextColor="#9CA3AF"
-          underlineStyle={{ display: 'none' }}
-          contentStyle={styles.inputContent}
-          right={
-            <TextInput.Icon
-              icon={showConfirmPassword ? 'eye-off' : 'eye'}
-              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-            />
-          }
-          theme={{ colors: { background: '#FFFFFF' } }}
-        />
+        <View style={styles.inputWrapper}>
+          <TextInput
+            value={confirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              setError('');
+            }}
+            secureTextEntry={!showConfirmPassword}
+            style={styles.inputWithIcon}
+            placeholder="Nhập lại mật khẩu mới"
+            placeholderTextColor="#9CA3AF"
+          />
+          <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.inputIcon}>
+            <Text style={styles.inputIconText}>{showConfirmPassword ? '👁️‍🗨️' : '👁️'}</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Password Strength Indicator */}
         {newPassword ? (
@@ -647,16 +610,12 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-        <Button
-          mode="contained"
+        <TouchableOpacity
           onPress={handleChangePassword}
           style={styles.loginButton}
-          contentStyle={styles.loginButtonContent}
-          labelStyle={styles.loginButtonText}
-          buttonColor={colors.primary}
         >
-          ĐỔI MẬT KHẨU
-        </Button>
+          <Text style={styles.loginButtonText}>ĐỔI MẬT KHẨU</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -770,6 +729,33 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 16,
     height: 56,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  inputWrapper: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  inputWithIcon: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    borderRadius: 16,
+    height: 56,
+    paddingHorizontal: 16,
+    paddingRight: 50,
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  inputIcon: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    padding: 4,
+  },
+  inputIconText: {
+    fontSize: 20,
   },
   inputContent: {
     fontSize: 16,
@@ -790,7 +776,14 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     marginTop: 8,
+    backgroundColor: colors.primary,
     borderRadius: 16,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loginButtonDisabled: {
+    opacity: 0.5,
   },
   loginButtonContent: {
     height: 56,
@@ -799,6 +792,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: 1,
+    color: '#FFFFFF',
   },
   // Footer
   footer: {
@@ -886,6 +880,17 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     marginTop: 48,
   },
+  otpInput: {
+    width: 45,
+    height: 55,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
+    fontSize: 20,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
   tpInput: {
     width: 45,
     height: 55,
@@ -966,6 +971,19 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 24,
+  },
+  studentAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#9333EA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  studentAvatarText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '600',
   },
   studentInfo: {
     marginLeft: 12,

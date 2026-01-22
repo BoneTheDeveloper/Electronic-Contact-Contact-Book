@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getUserById, type User } from '@/lib/mock-data'
+import { getUserById, updateUser, deleteUser, type User } from '@/lib/supabase/queries'
 import { getCurrentUser, sanitizeInput, checkRateLimit } from '@/lib/security-utils'
 
 // GET /api/users/[id] - Get a specific user
@@ -103,18 +103,13 @@ export async function PUT(
       )
     }
 
-    // Mock update - in real implementation, update database
-    const updatedUser: User = {
-      ...existingUser,
-      name: name ? sanitizeInput(name.trim()) : existingUser.name,
-      email: email ? sanitizeInput(email.trim()) : existingUser.email,
-      role: role || existingUser.role,
-      status: status || existingUser.status,
-      classId: classId !== undefined ? classId : existingUser.classId,
-      avatar: avatar || existingUser.avatar
-    }
+    // Update user using Supabase
+    const updatedUser = await updateUser(id, {
+      full_name: name ? sanitizeInput(name.trim()) : undefined,
+      status: status || undefined,
+      avatar_url: avatar || undefined
+    })
 
-    // TODO: Real API - Save to database
     return NextResponse.json({
       success: true,
       data: updatedUser,
@@ -157,11 +152,9 @@ export async function DELETE(
       )
     }
 
-    // Mock delete - in real implementation, delete from database
-    // Check if user has associated records before allowing deletion
-    // For now, just return success
+    // Delete user using Supabase
+    await deleteUser(id)
 
-    // TODO: Real API - Delete from database
     return NextResponse.json({
       success: true,
       message: 'Xóa người dùng thành công'

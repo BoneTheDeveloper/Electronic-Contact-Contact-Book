@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getInvoices, type Invoice } from '@/lib/mock-data'
+import { getInvoices } from '@/lib/supabase/queries'
+import type { Invoice } from '@/lib/types'
 
 // GET /api/invoices/[id] - Get a specific invoice
 export async function GET(

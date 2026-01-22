@@ -4,8 +4,7 @@
  */
 
 import React from 'react';
-import { View, ScrollView, StyleSheet, FlatList } from 'react-native';
-import { Text, Card, Avatar, Divider, Chip } from 'react-native-paper';
+import { View, ScrollView, FlatList, Text } from 'react-native';
 import { useParentStore } from '../../stores';
 import { colors } from '../../theme';
 
@@ -81,45 +80,59 @@ export const TeacherFeedbackScreen: React.FC = () => {
   const renderFeedback = ({ item }: { item: Feedback }) => {
     const config = SENTIMENT_CONFIG[item.sentiment];
     return (
-      <Card style={styles.feedbackCard}>
-        <Card.Content>
-          <View style={styles.feedbackHeader}>
-            <View style={styles.teacherInfo}>
-              <Avatar.Text
-                size={48}
-                label={item.teacherAvatar}
-                style={{ backgroundColor: '#E0F2FE' }}
-                labelStyle={{ color: colors.primary }}
-              />
-              <View style={styles.teacherDetails}>
-                <Text style={styles.teacherName}>{item.teacherName}</Text>
-                <Text style={styles.subject}>{item.subject}</Text>
-              </View>
+      <View
+        className="bg-white rounded-2xl mb-4 p-4"
+        style={{
+          elevation: 2,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.05,
+          shadowRadius: 2,
+        }}
+      >
+        <View className="flex-row justify-between items-start mb-3">
+          <View className="flex-row items-center flex-1">
+            <View
+              className="rounded-full justify-center items-center"
+              style={{ width: 48, height: 48, backgroundColor: '#E0F2FE' }}
+            >
+              <Text className="text-base font-bold" style={{ color: colors.primary }}>
+                {item.teacherAvatar}
+              </Text>
             </View>
-            <Chip
-              mode="flat"
-              compact
-              style={[styles.sentimentChip, { backgroundColor: config.bgColor }]}
-              textStyle={[styles.sentimentChipText, { color: config.color }]}
-              icon={config.icon as any}
+            <View className="ml-3 flex-1">
+              <Text className="text-base font-extrabold text-gray-800">{item.teacherName}</Text>
+              <Text className="text-sm text-gray-500 mt-0.5">{item.subject}</Text>
+            </View>
+          </View>
+          <View
+            className="rounded-full px-2.5 py-1 self-start"
+            style={{ backgroundColor: config.bgColor, minHeight: 28 }}
+          >
+            <Text
+              className="text-[10px] font-extrabold uppercase tracking-wider"
+              style={{ color: config.color }}
             >
               {config.label}
-            </Chip>
+            </Text>
           </View>
-          <Divider style={styles.divider} />
-          <Text style={styles.message}>{item.message}</Text>
-          <Text style={styles.date}>{formatDate(item.date)}</Text>
-        </Card.Content>
-      </Card>
+        </View>
+        <View className="h-px bg-gray-200 mb-3" />
+        <Text className="text-sm leading-[22px] text-gray-700 mb-3">{item.message}</Text>
+        <Text className="text-xs text-gray-400 text-right">{formatDate(item.date)}</Text>
+      </View>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Nhận xét giáo viên</Text>
+    <View className="flex-1 bg-gray-50">
+      <View
+        className="bg-primary pt-16 px-6 pb-6"
+        style={{ borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }}
+      >
+        <Text className="text-2xl font-extrabold text-white">Nhận xét giáo viên</Text>
         {selectedChild && (
-          <Text style={styles.headerSubtitle}>
+          <Text className="text-sm text-white/80 mt-1">
             {selectedChild.name} • Lớp {selectedChild.grade}{selectedChild.section}
           </Text>
         )}
@@ -128,95 +141,9 @@ export const TeacherFeedbackScreen: React.FC = () => {
         data={MOCK_FEEDBACK}
         renderItem={renderFeedback}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="p-4 pb-24"
         showsVerticalScrollIndicator={false}
       />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-  },
-  listContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  feedbackCard: {
-    marginBottom: 16,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  feedbackHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  teacherInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  teacherDetails: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  teacherName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  subject: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  sentimentChip: {
-    height: 28,
-  },
-  sentimentChipText: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  divider: {
-    backgroundColor: '#E5E7EB',
-    marginBottom: 12,
-  },
-  message: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: '#374151',
-    marginBottom: 12,
-  },
-  date: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    textAlign: 'right',
-  },
-});

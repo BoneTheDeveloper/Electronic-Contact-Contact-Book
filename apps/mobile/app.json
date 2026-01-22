@@ -10,7 +10,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.schoolmanagement.econtact"
+      "bundleIdentifier": "com.schoolmanagement.econtact",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.schoolmanagement.econtact"
@@ -22,23 +25,24 @@
         {
           "android": {
             "kotlinVersion": "2.0.21",
-            "newArchEnabled": false
+            "newArchEnabled": true
           },
           "ios": {
-            "newArchEnabled": false
+            "newArchEnabled": true
           }
         }
       ]
     ],
     "jsEngine": "hermes",
-    "newArchEnabled": false,
     "experiments": {
       "typedRoutes": false
     },
     "extra": {
       "eas": {
         "projectId": "34d17c6d-8e17-4a4c-a2d7-f38d943667f3"
-      }
+      },
+      "EXPO_PUBLIC_SUPABASE_URL": "https://lshmmoenfeodsrthsevf.supabase.co",
+      "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzaG1tb2VuZmVvZHNydGhzZXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwODIyNDMsImV4cCI6MjA4NDY1ODI0M30.t0oJez_q2nDLQrZaHK54XO6Q__Ct0DwfXz4fg4Jda_A"
     }
   }
 }

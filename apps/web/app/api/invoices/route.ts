@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getInvoices, getPaymentStats, type Invoice } from '@/lib/mock-data'
+import { getInvoices, getPaymentStats, type Invoice } from '@/lib/supabase/queries'
 
 // GET /api/invoices - List invoices with filters
 export async function GET(request: NextRequest) {
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     // Filter by class (student grade field)
     if (classId) {
-      const students = await (await import('@/lib/mock-data')).getStudents()
+      const students = await (await import('@/lib/supabase/queries')).getStudents()
       const classStudentIds = students
         .filter(s => s.grade === classId)
         .map(s => s.id)

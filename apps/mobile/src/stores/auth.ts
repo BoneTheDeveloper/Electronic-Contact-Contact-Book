@@ -2,9 +2,13 @@
  * Authentication Store
  * Manages user authentication state and operations
  *
- * SECURITY NOTICE: This is MOCK authentication only.
- * Accepts any password for demo purposes.
- * DO NOT use in production without proper backend.
+ * REAL authentication using Supabase Auth + custom code/phone lookup
+ *
+ * Login identifiers:
+ * - Parent: phone number or email
+ * - Student: student_code (ST2024001) or email
+ * - Teacher: employee_code (TC001) or email
+ * - Admin: admin_code (AD001) or email
  */
 
 import { create } from 'zustand';
@@ -13,7 +17,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import from shared-types
 import type { User, UserRole, Student, Parent, Teacher, Admin } from '@school-management/shared-types';
-import { mockUserDatabase } from '@school-management/shared-types';
+import { supabase } from '@/lib/supabase/client';
+import { logInfo, logWarn, logError, logDebug } from '@/lib/logger';
+
+// Debug logger using custom logger
+const log = {
+  info: (tag: string, ...args: any[]) => logInfo(`AUTH:${tag}`, args.join(' ')),
+  warn: (tag: string, ...args: any[]) => logWarn(`AUTH:${tag}`, args.join(' ')),
+  error: (tag: string, ...args: any[]) => logError(`AUTH:${tag}`, args.join(' ')),
+  debug: (tag: string, ...args: any[]) => logDebug(`AUTH:${tag}`, args.join(' ')),
+};
 
 interface AuthState {
   // State
@@ -24,72 +37,121 @@ interface AuthState {
   token: string | null;
 
   // Actions
-  login: (email: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
   setLoading: (loading: boolean) => void;
 }
 
-// Convert mock user to full User type with required fields
-const convertMockToUser = (email: string, mockUser: typeof mockUserDatabase[string]): User => {
-  if (mockUser.role === 'student') {
-    const student: Student = {
-      id: mockUser.id,
-      email: mockUser.email,
-      name: mockUser.name,
-      role: 'student',
-      avatar: mockUser.avatar,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      rollNumber: `STU${mockUser.id}`,
-      classId: 'CLASS10A',
-      section: 'A',
-      dateOfBirth: new Date('2009-01-01'),
-      parentIds: ['1'],
-    };
-    return student;
-  } else if (mockUser.role === 'parent') {
-    const parent: Parent = {
-      id: mockUser.id,
-      email: mockUser.email,
-      name: mockUser.name,
-      role: 'parent',
-      avatar: mockUser.avatar,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      phone: '+84 123 456 789',
-      address: '123 Main St',
-      childrenIds: ['2'],
-    };
-    return parent;
-  } else if (mockUser.role === 'teacher') {
-    const teacher: Teacher = {
-      id: mockUser.id,
-      email: mockUser.email,
-      name: mockUser.name,
-      role: 'teacher',
-      avatar: mockUser.avatar,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      employeeId: `EMP${mockUser.id}`,
-      subjects: ['Mathematics', 'Physics'],
-      phone: '+84 123 456 789',
-    };
-    return teacher;
-  } else {
-    const admin: Admin = {
-      id: mockUser.id,
-      email: mockUser.email,
-      name: mockUser.name,
-      role: 'admin',
-      avatar: mockUser.avatar,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      permissions: ['all'],
-    };
-    return admin;
+/**
+ * Find user's email by identifier (code/phone/email)
+ * Used to map custom identifiers to Supabase Auth email
+ */
+async function findUserEmailByIdentifier(identifier: string): Promise<string | null> {
+  const normalizedId = identifier.trim().toUpperCase();
+
+  log('IDENTIFIER_LOOKUP', `Looking up identifier: "${identifier}" (normalized: "${normalizedId}")`);
+
+  // 1. Check admin_code
+  if (normalizedId.startsWith('AD')) {
+    log('IDENTIFIER_LOOKUP', 'Checking admin_code...');
+    const { data, error } = await supabase
+      .from('admins')
+      .select('email, profiles!inner(status)')
+      .eq('admin_code', normalizedId)
+      .eq('profiles.status', 'active')
+      .maybeSingle();
+
+    log('IDENTIFIER_LOOKUP', 'Admin lookup result:', { data, error });
+    if (data?.email) return data.email;
   }
-};
+
+  // 2. Check employee_code
+  if (normalizedId.startsWith('TC')) {
+    log('IDENTIFIER_LOOKUP', 'Checking employee_code...');
+    const { data, error } = await supabase
+      .from('teachers')
+      .select('email, profiles!inner(status)')
+      .eq('employee_code', normalizedId)
+      .eq('profiles.status', 'active')
+      .maybeSingle();
+
+    log('IDENTIFIER_LOOKUP', 'Teacher lookup result:', { data, error });
+    if (data?.email) return data.email;
+  }
+
+  // 3. Check student_code
+  if (normalizedId.startsWith('ST')) {
+    log('IDENTIFIER_LOOKUP', 'Checking student_code...');
+    const { data, error } = await supabase
+      .from('students')
+      .select('profiles!inner(email, status)')
+      .eq('student_code', normalizedId)
+      .eq('profiles.status', 'active')
+      .maybeSingle();
+
+    log('IDENTIFIER_LOOKUP', 'Student lookup result:', { data, error });
+    if (data?.profiles?.email) return data.profiles.email;
+  }
+
+  // 4. Check phone number (for parents)
+  const cleanPhone = identifier.replace(/\s/g, '');
+  if (/^\d{10,11}$/.test(cleanPhone)) {
+    log('IDENTIFIER_LOOKUP', `Checking phone: ${cleanPhone}`);
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('phone', cleanPhone)
+      .eq('role', 'parent')
+      .eq('status', 'active')
+      .maybeSingle();
+
+    log('IDENTIFIER_LOOKUP', 'Phone lookup result:', { data, error });
+    if (data?.email) return data.email;
+  }
+
+  // 5. Check email directly
+  if (identifier.includes('@')) {
+    log('IDENTIFIER_LOOKUP', `Checking email: ${identifier.toLowerCase()}`);
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', identifier.toLowerCase())
+      .eq('status', 'active')
+      .maybeSingle();
+
+    log('IDENTIFIER_LOOKUP', 'Email lookup result:', { data, error });
+    if (data?.email) return data.email;
+  }
+
+  log('IDENTIFIER_LOOKUP', 'No user found for identifier:', identifier);
+  return null;
+}
+
+/**
+ * Get full user profile from Supabase
+ */
+async function getUserProfile(userId: string): Promise<User | null> {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, email, role, full_name, phone, avatar_url, status, created_at, updated_at')
+    .eq('id', userId)
+    .eq('status', 'active')
+    .single();
+
+  if (!profile) return null;
+
+  // Convert to User type
+  return {
+    id: profile.id,
+    email: profile.email,
+    name: profile.full_name || profile.email.split('@')[0],
+    role: profile.role as UserRole,
+    avatar: profile.avatar_url || undefined,
+    createdAt: new Date(profile.created_at),
+    updatedAt: new Date(profile.updated_at),
+  };
+}
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -101,101 +163,71 @@ export const useAuthStore = create<AuthState>()(
       error: null,
       token: null,
 
-      // Login action - auto-detects role from email
-      login: async (email: string, password: string) => {
+      // Login action - REAL authentication with Supabase
+      login: async (identifier: string, password: string) => {
+        log('LOGIN_START', `Starting login for identifier: "${identifier}"`);
         set({ isLoading: true, error: null });
 
         try {
-          // Simulate API delay
-          await new Promise((resolve) => setTimeout(resolve, 800));
+          // Step 1: Find user's email by identifier
+          log('LOGIN_STEP_1', 'Finding user email by identifier...');
+          const userEmail = await findUserEmailByIdentifier(identifier);
 
-          // MOCK authentication - accepts any password for demo
-          const mockUser = mockUserDatabase[email];
-
-          if (!mockUser) {
-            // For demo: create user on-the-fly if not in database
-            // Detect role from email domain/prefix
-            let detectedRole: UserRole = 'student';
-            if (email.includes('admin')) detectedRole = 'admin';
-            else if (email.includes('teacher')) detectedRole = 'teacher';
-            else if (email.includes('parent')) detectedRole = 'parent';
-
-            // Create demo user with proper type
-            let demoUser: User;
-
-            if (detectedRole === 'student') {
-              const studentUser: Student = {
-                id: `demo-${Date.now()}`,
-                email,
-                name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                role: 'student',
-                avatar: undefined,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                rollNumber: 'DEMO001',
-                classId: 'DEMO',
-                section: 'A',
-                dateOfBirth: new Date(),
-                parentIds: [],
-              };
-              demoUser = studentUser;
-            } else if (detectedRole === 'parent') {
-              const parentUser: Parent = {
-                id: `demo-${Date.now()}`,
-                email,
-                name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                role: 'parent',
-                avatar: undefined,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                phone: '',
-                address: '',
-                childrenIds: [],
-              };
-              demoUser = parentUser;
-            } else if (detectedRole === 'teacher') {
-              const teacherUser: Teacher = {
-                id: `demo-${Date.now()}`,
-                email,
-                name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                role: 'teacher',
-                avatar: undefined,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                employeeId: 'DEMO_EMP',
-                subjects: [],
-                phone: '',
-              };
-              demoUser = teacherUser;
-            } else {
-              const adminUser: Admin = {
-                id: `demo-${Date.now()}`,
-                email,
-                name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                role: 'admin',
-                avatar: undefined,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                permissions: ['all'],
-              };
-              demoUser = adminUser;
-            }
-
-            const token = `demo-token-${Date.now()}`;
+          if (!userEmail) {
+            log('LOGIN_ERROR', 'User not found or inactive');
             set({
-              user: demoUser,
-              isAuthenticated: true,
               isLoading: false,
-              error: null,
-              token,
+              error: 'User not found or inactive',
             });
-            return;
+            throw new Error('User not found or inactive');
           }
 
-          // Convert and set user
-          const user = convertMockToUser(email, mockUser);
-          const token = `mock-token-${Date.now()}`;
+          log('LOGIN_STEP_1', `Found email: ${userEmail}`);
 
+          // Step 2: Authenticate with Supabase Auth
+          log('LOGIN_STEP_2', 'Authenticating with Supabase Auth...');
+          const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email: userEmail,
+            password: password,
+          });
+
+          log('LOGIN_STEP_2', 'Auth result:', { authData, authError });
+
+          if (authError || !authData.user) {
+            log('LOGIN_ERROR', 'Auth failed:', authError);
+            set({
+              isLoading: false,
+              error: authError?.message || 'Invalid password',
+            });
+            throw new Error(authError?.message || 'Invalid password');
+          }
+
+          log('LOGIN_STEP_2', `Auth successful for user ID: ${authData.user.id}`);
+
+          // Step 3: Get full user profile
+          log('LOGIN_STEP_3', 'Fetching user profile...');
+          const user = await getUserProfile(authData.user.id);
+
+          if (!user) {
+            log('LOGIN_ERROR', 'Profile not found');
+            set({
+              isLoading: false,
+              error: 'Profile not found',
+            });
+            throw new Error('Profile not found');
+          }
+
+          log('LOGIN_STEP_3', 'User profile:', user);
+
+          // Step 4: Get session token
+          log('LOGIN_STEP_4', 'Getting session token...');
+          const { data: { session } } = await supabase.auth.getSession();
+          const token = session?.access_token || null;
+
+          log('LOGIN_STEP_4', `Session token: ${token ? 'present' : 'missing'}`);
+
+          // Step 5: Update state
+          log('LOGIN_SUCCESS', `Login successful for ${user.role}:`, user.name);
           set({
             user,
             isAuthenticated: true,
@@ -204,6 +236,7 @@ export const useAuthStore = create<AuthState>()(
             token,
           });
         } catch (error) {
+          log('LOGIN_CATCH', 'Login error caught:', error);
           set({
             user: null,
             isAuthenticated: false,
@@ -222,8 +255,8 @@ export const useAuthStore = create<AuthState>()(
         });
 
         try {
-          // Simulate API delay
-          await new Promise((resolve) => setTimeout(resolve, 300));
+          // Sign out from Supabase Auth
+          await supabase.auth.signOut();
 
           // Clear auth state
           set({

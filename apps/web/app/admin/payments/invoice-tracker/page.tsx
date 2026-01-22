@@ -1,5 +1,5 @@
 import { InvoiceTracker } from '@/components/admin/InvoiceTracker'
-import { getInvoices } from '@/lib/mock-data'
+import { getInvoices } from '@/lib/supabase/queries'
 
 export default async function InvoiceTrackerPage() {
   const invoices = await getInvoices()

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { type Invoice } from '@/lib/mock-data'
+import type { Invoice } from '@/lib/types'
 
 // Mock data
 const mockInvoices: Invoice[] = [

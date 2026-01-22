@@ -4,8 +4,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, Card, Chip } from 'react-native-paper';
+import { View, ScrollView, TouchableOpacity, Text } from 'react-native';
 import { useParentStore } from '../../stores';
 import { getFeesByStudentId } from '../../mock-data';
 import { colors } from '../../theme';
@@ -71,210 +70,83 @@ export const PaymentOverviewScreen: React.FC<PaymentOverviewProps> = ({ navigati
         key={fee.id}
         onPress={() => (navigation as any).navigate('PaymentDetail', { feeId: fee.id })}
         activeOpacity={0.7}
+        className="mb-3 rounded-xl bg-white border border-gray-100 p-4"
       >
-        <Card style={styles.feeCard}>
-          <Card.Content>
-            <View style={styles.feeHeader}>
-              <View>
-                <Text style={styles.feeType}>{FEE_TYPE_LABELS[fee.type] || fee.type}</Text>
-                <Text style={styles.feeDate}>Hạn chót: {formatDate(fee.dueDate)}</Text>
-              </View>
-              <Chip
-                mode="flat"
-                compact
-                style={[styles.statusChip, { backgroundColor: config.bgColor }]}
-                textStyle={[styles.statusChipText, { color: config.color }]}
-              >
-                {config.label}
-              </Chip>
-            </View>
-            <View style={styles.feeAmountRow}>
-              <Text style={styles.feeAmount}>{formatCurrency(fee.amount)}</Text>
-              <Text style={styles.viewDetails}>Chi tiết →</Text>
-            </View>
-          </Card.Content>
-        </Card>
+        <View className="flex-row justify-between items-start mb-3">
+          <View>
+            <Text className="text-base font-bold text-gray-800 mb-1">{FEE_TYPE_LABELS[fee.type] || fee.type}</Text>
+            <Text className="text-xs text-gray-500">Hạn chót: {formatDate(fee.dueDate)}</Text>
+          </View>
+          <View
+            className="h-6 px-2 py-1 rounded-full"
+            style={{ backgroundColor: config.bgColor }}
+          >
+            <Text
+              className="text-[10px] font-bold uppercase"
+              style={{ color: config.color }}
+            >
+              {config.label}
+            </Text>
+          </View>
+        </View>
+        <View className="flex-row justify-between items-center">
+          <Text className="text-lg font-extrabold text-primary">{formatCurrency(fee.amount)}</Text>
+          <Text className="text-sm text-primary font-semibold">Chi tiết →</Text>
+        </View>
       </TouchableOpacity>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Học phí</Text>
+    <View className="flex-1 bg-slate-50">
+      <View
+        className="pt-[60px] px-6 pb-6 rounded-b-[20px]"
+        style={{ backgroundColor: colors.primary }}
+      >
+        <Text className="text-2xl font-bold text-white">Học phí</Text>
         {selectedChild && (
-          <Text style={styles.headerSubtitle}>
+          <Text className="text-sm text-white/80 mt-1">
             {selectedChild.name} • Lớp {selectedChild.grade}{selectedChild.section}
           </Text>
         )}
       </View>
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerClassName="p-4 pb-[100px]"
         showsVerticalScrollIndicator={false}
       >
         {/* Summary Card */}
-        <Card style={styles.summaryCard}>
-          <Card.Content>
-            <Text style={styles.summaryTitle}>Tổng quan học phí</Text>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Tổng cộng:</Text>
-              <Text style={styles.summaryValue}>{formatCurrency(stats.total)}</Text>
+        <View className="mb-6 rounded-2xl bg-white shadow-md border border-gray-100 p-4">
+          <Text className="text-lg font-bold text-gray-800 mb-4">Tổng quan học phí</Text>
+          <View className="flex-row justify-between items-center pb-3 border-b border-gray-200">
+            <Text className="text-base font-semibold text-gray-800">Tổng cộng:</Text>
+            <Text className="text-xl font-extrabold text-primary">{formatCurrency(stats.total)}</Text>
+          </View>
+          <View className="flex-row mt-2">
+            <View className="flex-1 items-center">
+              <Text className="text-[11px] text-gray-500 mb-1">Đã thanh toán</Text>
+              <Text className="text-sm font-bold text-success">
+                {formatCurrency(stats.paid)}
+              </Text>
             </View>
-            <View style={[styles.summaryRow, { marginTop: 8 }]}>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryItemLabel}>Đã thanh toán</Text>
-                <Text style={[styles.summaryItemValue, { color: colors.success }]}>
-                  {formatCurrency(stats.paid)}
-                </Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryItemLabel}>Chưa thanh toán</Text>
-                <Text style={[styles.summaryItemValue, { color: colors.warning }]}>
-                  {formatCurrency(stats.pending)}
-                </Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryItemLabel}>Quá hạn</Text>
-                <Text style={[styles.summaryItemValue, { color: colors.error }]}>
-                  {formatCurrency(stats.overdue)}
-                </Text>
-              </View>
+            <View className="flex-1 items-center">
+              <Text className="text-[11px] text-gray-500 mb-1">Chưa thanh toán</Text>
+              <Text className="text-sm font-bold text-warning">
+                {formatCurrency(stats.pending)}
+              </Text>
             </View>
-          </Card.Content>
-        </Card>
+            <View className="flex-1 items-center">
+              <Text className="text-[11px] text-gray-500 mb-1">Quá hạn</Text>
+              <Text className="text-sm font-bold text-error">
+                {formatCurrency(stats.overdue)}
+              </Text>
+            </View>
+          </View>
+        </View>
 
         {/* Fee List */}
-        <Text style={styles.sectionTitle}>Chi tiết các khoản</Text>
+        <Text className="text-lg font-bold text-gray-800 mb-3 mt-2">Chi tiết các khoản</Text>
         {fees.map(renderFeeCard)}
       </ScrollView>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  summaryCard: {
-    marginBottom: 24,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 16,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  summaryLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  summaryValue: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  summaryItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  summaryItemLabel: {
-    fontSize: 11,
-    color: '#6B7280',
-    marginBottom: 4,
-  },
-  summaryItemValue: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 12,
-    marginTop: 8,
-  },
-  feeCard: {
-    marginBottom: 12,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-  feeHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  feeType: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  feeDate: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  statusChip: {
-    height: 26,
-  },
-  statusChipText: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  feeAmountRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  feeAmount: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  viewDetails: {
-    fontSize: 13,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-});
