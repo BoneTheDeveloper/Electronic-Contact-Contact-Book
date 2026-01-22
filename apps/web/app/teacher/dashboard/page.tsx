@@ -18,16 +18,11 @@ import {
   getTeacherSchedule,
   getRegularAssessments,
   getTeacherClasses,
+  type TeacherStats,
 } from '@/lib/mock-data'
 
 interface DashboardData {
-  stats: {
-    teaching: number
-    homeroom: string
-    gradeReviewRequests: number
-    leaveRequests: number
-    pendingGrades: number
-  }
+  stats: TeacherStats & { homeroomClassId?: string }
   gradeReviews: Array<{
     id: string
     studentName?: string
@@ -35,6 +30,7 @@ interface DashboardData {
     assessmentType?: string
     currentScore?: number
     reason?: string
+    status?: string
   }>
   leaveRequests: Array<{
     id: string
@@ -42,6 +38,7 @@ interface DashboardData {
     startDate?: string
     endDate?: string
     reason?: string
+    status?: string
   }>
   classes: Array<{
     id: string
@@ -66,6 +63,10 @@ interface DashboardData {
   }
 }
 
+// Type for data with status field
+type WithStatus = { status?: string }
+type WithRating = { rating?: number }
+
 // Safe helper to extract initials from name
 function getInitials(name?: string): string {
   if (!name) return '??'
@@ -77,11 +78,22 @@ function getInitials(name?: string): string {
 async function fetchDashboardData(): Promise<DashboardData> {
   // Get classes first to find homeroom class
   const teacherClasses = await getTeacherClasses().catch(() => [])
-  const homeroomClass = teacherClasses.find((c: any) => c.isHomeroom)
+  const homeroomClass = teacherClasses.find((c) => c.isHomeroom)
   const homeroomClassId = homeroomClass?.id || '6A1'
 
+  const defaultStats: TeacherStats = {
+    homeroom: 0,
+    teaching: 0,
+    students: 0,
+    pendingAttendance: 0,
+    pendingGrades: 0,
+    gradeReviewRequests: 0,
+    leaveRequests: 0,
+    todaySchedule: [],
+  }
+
   const [stats, gradeReviews, leaveRequests, schedule, assessments, classes] = await Promise.all([
-    getTeacherStats().catch(() => ({ teaching: 0, homeroom: 'N/A', gradeReviewRequests: 0, leaveRequests: 0, pendingGrades: 0 })),
+    getTeacherStats().catch(() => defaultStats),
     getGradeReviewRequests().catch(() => []),
     getLeaveRequests(homeroomClassId).catch(() => []),
     getTeacherSchedule().catch(() => []),
@@ -95,14 +107,14 @@ async function fetchDashboardData(): Promise<DashboardData> {
       homeroomClassId,
     },
     gradeReviews: gradeReviews || [],
-    leaveRequests: (leaveRequests || []).filter((r: any) => r.status === 'pending'),
+    leaveRequests: (leaveRequests || []).filter((r: WithStatus) => r.status === 'pending'),
     schedule: schedule || [],
     classes: classes || [],
     assessments: {
-      evaluated: (assessments || []).filter((a: any) => a.status === 'evaluated').length,
-      pending: (assessments || []).filter((a: any) => a.status === 'pending').length,
-      positive: (assessments || []).filter((a: any) => a.rating && a.rating >= 4).length,
-      needsAttention: (assessments || []).filter((a: any) => a.status === 'needs-attention').length,
+      evaluated: (assessments || []).filter((a: WithStatus) => a.status === 'evaluated').length,
+      pending: (assessments || []).filter((a: WithStatus) => a.status === 'pending').length,
+      positive: (assessments || []).filter((a: WithStatus & WithRating) => a.rating && a.rating >= 4).length,
+      needsAttention: (assessments || []).filter((a: WithStatus) => a.status === 'needs-attention').length,
     },
   }
 }
@@ -110,7 +122,16 @@ async function fetchDashboardData(): Promise<DashboardData> {
 export default async function TeacherDashboard() {
   const data = await fetchDashboardData()
   const {
-    stats = { teaching: 0, homeroom: 'N/A', gradeReviewRequests: 0, leaveRequests: 0, pendingGrades: 0 },
+    stats = {
+      homeroom: 0,
+      teaching: 0,
+      students: 0,
+      pendingAttendance: 0,
+      pendingGrades: 0,
+      gradeReviewRequests: 0,
+      leaveRequests: 0,
+      todaySchedule: [],
+    },
     gradeReviews = [],
     leaveRequests = [],
     classes = [],
