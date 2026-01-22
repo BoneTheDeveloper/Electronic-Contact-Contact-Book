@@ -7,6 +7,7 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
+    'next/core-web-vitals',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -19,6 +20,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/no-explicit-any': 'warn',
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    '@typescript-eslint/no-unused-vars': 'warn',
   },
   ignorePatterns: [
     'node_modules/',
@@ -27,5 +29,6 @@ module.exports = {
     '.next/',
     'coverage/',
     '*.config.js',
+    'apps/mobile/',
   ],
 };
