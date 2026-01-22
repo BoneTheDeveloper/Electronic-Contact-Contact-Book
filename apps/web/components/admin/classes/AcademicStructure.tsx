@@ -163,7 +163,7 @@ export function AcademicStructure() {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-slate-800">Danh sách Lớp học</h2>
               <div className="flex gap-2">
-                {['Khối 10', 'Khối 11', 'Khối 12'].map((grade) => (
+                {['Khối 6', 'Khối 7', 'Khối 8', 'Khối 9'].map((grade) => (
                   <button
                     key={grade}
                     className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition-all hover:bg-slate-50 hover:border-[#0284C7]"

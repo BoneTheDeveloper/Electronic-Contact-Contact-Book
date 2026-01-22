@@ -6,13 +6,18 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const teacherId = searchParams.get('teacherId') || undefined
 
+    // Get classes first to find homeroom class
+    const teacherClasses = await getTeacherClasses(teacherId).catch(() => [])
+    const homeroomClass = teacherClasses.find((c: any) => c.isHomeroom)
+    const homeroomClassId = homeroomClass?.id || '6A1'  // Dynamic fallback to grade 6
+
     const [stats, gradeReviews, leaveRequests, schedule, assessments, classes] = await Promise.all([
       getTeacherStats(teacherId).catch(() => ({ teaching: 0, homeroom: 'N/A', gradeReviewRequests: 0, leaveRequests: 0, pendingGrades: 0 })),
       getGradeReviewRequests().catch(() => []),
-      getLeaveRequests('10A1').catch(() => []),
+      getLeaveRequests(homeroomClassId).catch(() => []),  // Use dynamic classId
       getTeacherSchedule(teacherId).catch(() => []),
       getRegularAssessments(teacherId).catch(() => []),
-      getTeacherClasses(teacherId).catch(() => []),
+      Promise.resolve(teacherClasses),
     ])
 
     return NextResponse.json({
@@ -20,7 +25,7 @@ export async function GET(request: Request) {
       data: {
         stats: {
           ...stats,
-          homeroomClassId: '10A1',
+          homeroomClassId,  // Dynamic class ID (6A1, 7A1, etc.)
         },
         gradeReviews: gradeReviews || [],
         leaveRequests: (leaveRequests || []).filter((r: any) => r.status === 'pending'),

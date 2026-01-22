@@ -274,7 +274,7 @@ export default async function TeacherDashboard() {
                 <div>
                   <CardTitle className="text-lg font-black">Đơn nghỉ phép chờ duyệt (GVCN)</CardTitle>
                   <p className="text-xs text-gray-500 font-medium uppercase tracking-widest mt-1">
-                    Lớp chủ nhiệm 10A
+                    Lớp chủ nhiệm {stats.homeroom}
                   </p>
                 </div>
                 <Button variant="link" className="text-sky-600 text-xs font-black uppercase tracking-widest">

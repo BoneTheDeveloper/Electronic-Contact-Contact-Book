@@ -4,6 +4,9 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { DollarSign, TrendingUp, AlertCircle, FileText } from 'lucide-react'
 import { StatCard, DataTable, StatusBadge, FilterBar } from '@/components/admin/shared'
 import type { Column } from '@/components/admin/shared'
+import { FeeItemsTable } from './FeeItemsTable'
+import { FeeAssignmentWizard } from './FeeAssignmentWizard'
+import { QuickAccessCard } from './QuickAccessCard'
 
 interface Invoice {
   id: string
@@ -45,6 +48,8 @@ export function PaymentsManagement() {
     status: '',
     class: '',
   })
+  const [activeTab, setActiveTab] = useState<'fees' | 'assignment' | 'invoices'>('fees')
+  const [refreshKey, setRefreshKey] = useState(0)
 
   // Use ref to track previous filter values
   const prevFiltersRef = useRef<string>('')
@@ -198,77 +203,174 @@ export function PaymentsManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Tổng học phí"
-          value={`${formatCurrency(stats.totalAmount)} đ`}
-          icon={<DollarSign className="h-5 w-5" />}
-          color="blue"
-        />
-        <StatCard
-          title="Đã thu"
-          value={`${formatCurrency(stats.collectedAmount)} đ`}
-          trend={stats.collectionRate}
-          icon={<TrendingUp className="h-5 w-5" />}
-          color="green"
-        />
-        <StatCard
-          title="Chờ thu"
-          value={stats.pendingCount}
-          icon={<AlertCircle className="h-5 w-5" />}
-          color="orange"
-        />
-        <StatCard
-          title="Quá hạn"
-          value={stats.overdueCount}
-          icon={<AlertCircle className="h-5 w-5" />}
-          color="red"
-        />
+      {/* Quick Access to Invoice Tracker */}
+      <QuickAccessCard />
+
+      {/* Tab Navigation */}
+      <div className="flex gap-2 bg-slate-100 p-1 rounded-xl">
+        <button
+          onClick={() => setActiveTab('fees')}
+          className={`flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+            activeTab === 'fees'
+              ? 'bg-white text-[#0284C7] shadow-sm'
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          Danh mục Khoản thu
+        </button>
+        <button
+          onClick={() => setActiveTab('assignment')}
+          className={`flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+            activeTab === 'assignment'
+              ? 'bg-white text-[#0284C7] shadow-sm'
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          Thiết lập Đợt thu
+        </button>
+        <button
+          onClick={() => setActiveTab('invoices')}
+          className={`flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+            activeTab === 'invoices'
+              ? 'bg-white text-[#0284C7] shadow-sm'
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          Theo dõi Hóa đơn
+        </button>
       </div>
 
-      {/* Collection Rate */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-slate-800">Tỷ lệ thu học phí</h3>
-          <span className="text-3xl font-black text-[#0284C7]">{stats.collectionRate}%</span>
+      {/* Content based on active tab */}
+      {activeTab === 'fees' && (
+        <div>
+          {/* Section Header */}
+          <div className="mb-4 p-6 bg-white rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl">
+                  <FileText className="w-6 h-6 text-[#0284C7]" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-800 tracking-tight">Quản lý Danh mục Khoản thu</h3>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">Fee Item Library</p>
+                </div>
+              </div>
+              <button className="px-5 py-2.5 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1] flex items-center gap-2 shadow-lg shadow-blue-100 transition-all">
+                <FileText className="w-4 h-4" />
+                Thêm khoản thu mới
+              </button>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="flex items-center gap-4 mb-4">
+            <select className="bg-slate-50 border border-slate-200 text-xs font-bold rounded-xl px-4 py-2 outline-none">
+              <option>2025-2026</option>
+              <option>2024-2025</option>
+            </select>
+            <select className="bg-slate-50 border border-slate-200 text-xs font-bold rounded-xl px-4 py-2 outline-none">
+              <option value="all">Tất cả học kỳ</option>
+              <option value="1">Học kỳ 1</option>
+              <option value="2">Học kỳ 2</option>
+            </select>
+          </div>
+          <FeeItemsTable key={refreshKey} />
         </div>
-        <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-full bg-gradient-to-r from-[#0284C7] to-[#0369a1] transition-all duration-500"
-            style={{ width: `${stats.collectionRate}%` }}
+      )}
+
+      {activeTab === 'assignment' && (
+        <div>
+          {/* Section Header */}
+          <div className="mb-4 p-6 bg-white rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
+                <TrendingUp className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-slate-800 tracking-tight">Thiết lập Đợt thu và Áp dụng</h3>
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">Fee Assignment - Tạo phiếu thu hàng loạt</p>
+              </div>
+            </div>
+          </div>
+          <FeeAssignmentWizard onComplete={() => setRefreshKey(k => k + 1)} />
+        </div>
+      )}
+
+      {activeTab === 'invoices' && (
+        <div>
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+            <StatCard
+              title="Tổng học phí"
+              value={`${formatCurrency(stats.totalAmount)} đ`}
+              icon={<DollarSign className="h-5 w-5" />}
+              color="blue"
+            />
+            <StatCard
+              title="Đã thu"
+              value={`${formatCurrency(stats.collectedAmount)} đ`}
+              trend={stats.collectionRate}
+              icon={<TrendingUp className="h-5 w-5" />}
+              color="green"
+            />
+            <StatCard
+              title="Chờ thu"
+              value={stats.pendingCount}
+              icon={<AlertCircle className="h-5 w-5" />}
+              color="orange"
+            />
+            <StatCard
+              title="Quá hạn"
+              value={stats.overdueCount}
+              icon={<AlertCircle className="h-5 w-5" />}
+              color="red"
+            />
+          </div>
+
+          {/* Collection Rate */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm mb-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-800">Tỷ lệ thu học phí</h3>
+              <span className="text-3xl font-black text-[#0284C7]">{stats.collectionRate}%</span>
+            </div>
+            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full bg-gradient-to-r from-[#0284C7] to-[#0369a1] transition-all duration-500"
+                style={{ width: `${stats.collectionRate}%` }}
+              />
+            </div>
+            <div className="mt-2 text-xs text-slate-500">
+              {formatCurrency(stats.collectedAmount)} đ / {formatCurrency(stats.totalAmount)} đ
+            </div>
+          </div>
+
+          {/* Filters */}
+          <FilterBar
+            searchKey="search"
+            searchPlaceholder="Tìm kiếm học sinh hoặc mã hóa đơn..."
+            filters={filterBarFilters}
+            values={filters}
+            onChange={handleFilterChange}
+            onClear={handleClearFilters}
           />
-        </div>
-        <div className="mt-2 text-xs text-slate-500">
-          {formatCurrency(stats.collectedAmount)} đ / {formatCurrency(stats.totalAmount)} đ
-        </div>
-      </div>
 
-      {/* Filters */}
-      <FilterBar
-        searchKey="search"
-        searchPlaceholder="Tìm kiếm học sinh hoặc mã hóa đơn..."
-        filters={filterBarFilters}
-        values={filters}
-        onChange={handleFilterChange}
-        onClear={handleClearFilters}
-      />
-
-      {/* Invoice Table */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-slate-800">Theo dõi Học phí</h3>
-          <span className="text-sm text-slate-500">
-            {invoices.length} hóa đơn
-          </span>
+          {/* Invoice Table */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-800">Theo dõi Học phí</h3>
+              <span className="text-sm text-slate-500">
+                {invoices.length} hóa đơn
+              </span>
+            </div>
+            <DataTable
+              data={invoices}
+              columns={columns}
+              loading={loading}
+              emptyMessage="Không tìm thấy hóa đơn"
+            />
+          </div>
         </div>
-        <DataTable
-          data={invoices}
-          columns={columns}
-          loading={loading}
-          emptyMessage="Không tìm thấy hóa đơn"
-        />
-      </div>
+      )}
     </div>
   )
 }

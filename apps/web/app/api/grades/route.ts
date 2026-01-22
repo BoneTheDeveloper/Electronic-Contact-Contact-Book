@@ -11,18 +11,18 @@ interface GradeRecord {
   letterGrade: 'A' | 'B' | 'C' | 'D' | 'F'
 }
 
-// Mock data
+// Mock data - Middle school grades 6-9 (THCS)
 const mockGrades: GradeRecord[] = [
-  { id: '1', studentName: 'Nguyễn Văn An', classId: '10A1', subject: 'Toán', midterm: 8.5, final: 9.0, average: 8.8, letterGrade: 'A' },
-  { id: '2', studentName: 'Trần Thị Bình', classId: '10A1', subject: 'Toán', midterm: 7.5, final: 8.0, average: 7.8, letterGrade: 'B' },
-  { id: '3', studentName: 'Lê Văn Cường', classId: '10A1', subject: 'Toán', midterm: 6.5, final: 7.0, average: 6.8, letterGrade: 'C' },
-  { id: '4', studentName: 'Phạm Thị Dung', classId: '10A1', subject: 'Toán', midterm: 5.5, final: 6.0, average: 5.8, letterGrade: 'C' },
-  { id: '5', studentName: 'Hoàng Văn Em', classId: '10A2', subject: 'Toán', midterm: 9.0, final: 9.5, average: 9.3, letterGrade: 'A' },
-  { id: '6', studentName: 'Đỗ Thị Gái', classId: '10A2', subject: 'Toán', midterm: 8.0, final: 8.5, average: 8.3, letterGrade: 'A' },
-  { id: '7', studentName: 'Vũ Văn Hùng', classId: '10A2', subject: 'Toán', midterm: 4.5, final: 5.0, average: 4.8, letterGrade: 'D' },
-  { id: '8', studentName: 'Ngô Thị Hoa', classId: '10A3', subject: 'Toán', midterm: 3.5, final: 4.0, average: 3.8, letterGrade: 'F' },
-  { id: '9', studentName: 'Nguyễn Văn An', classId: '10A1', subject: 'Văn', midterm: 7.0, final: 7.5, average: 7.3, letterGrade: 'B' },
-  { id: '10', studentName: 'Trần Thị Bình', classId: '10A1', subject: 'Văn', midterm: 8.0, final: 8.5, average: 8.3, letterGrade: 'A' },
+  { id: '1', studentName: 'Nguyễn Văn An', classId: '6A1', subject: 'Toán', midterm: 8.5, final: 9.0, average: 8.8, letterGrade: 'A' },
+  { id: '2', studentName: 'Trần Thị Bình', classId: '6A1', subject: 'Toán', midterm: 7.5, final: 8.0, average: 7.8, letterGrade: 'B' },
+  { id: '3', studentName: 'Lê Văn Cường', classId: '6A1', subject: 'Toán', midterm: 6.5, final: 7.0, average: 6.8, letterGrade: 'C' },
+  { id: '4', studentName: 'Phạm Thị Dung', classId: '6A1', subject: 'Toán', midterm: 5.5, final: 6.0, average: 5.8, letterGrade: 'C' },
+  { id: '5', studentName: 'Hoàng Văn Em', classId: '6A2', subject: 'Toán', midterm: 9.0, final: 9.5, average: 9.3, letterGrade: 'A' },
+  { id: '6', studentName: 'Đỗ Thị Gái', classId: '6A2', subject: 'Toán', midterm: 8.0, final: 8.5, average: 8.3, letterGrade: 'A' },
+  { id: '7', studentName: 'Vũ Văn Hùng', classId: '6A2', subject: 'Toán', midterm: 4.5, final: 5.0, average: 4.8, letterGrade: 'D' },
+  { id: '8', studentName: 'Ngô Thị Hoa', classId: '6A3', subject: 'Toán', midterm: 3.5, final: 4.0, average: 3.8, letterGrade: 'F' },
+  { id: '9', studentName: 'Nguyễn Văn An', classId: '6A1', subject: 'Văn', midterm: 7.0, final: 7.5, average: 7.3, letterGrade: 'B' },
+  { id: '10', studentName: 'Trần Thị Bình', classId: '6A1', subject: 'Văn', midterm: 8.0, final: 8.5, average: 8.3, letterGrade: 'A' },
 ]
 
 export async function GET(request: Request) {
@@ -70,6 +70,20 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const body = await request.json()
+
+  // Validate classId is for grades 6-9
+  if (body.classId) {
+    const gradeMatch = body.classId.match(/^(\d+)/)
+    if (gradeMatch) {
+      const grade = gradeMatch[1]
+      if (!['6', '7', '8', '9'].includes(grade)) {
+        return NextResponse.json({
+          success: false,
+          message: 'Khối lớp không hợp lệ (chỉ hỗ trợ lớp 6-9)',
+        }, { status: 400 })
+      }
+    }
+  }
 
   // Calculate average and letter grade
   const average = (body.midterm + body.final) / 2

@@ -88,8 +88,10 @@ export default function RegularAssessmentPage() {
               onChange={(e) => setSelectedClass(e.target.value)}
             >
               <option value="all">Tất cả các lớp</option>
-              <option value="10A1">10A1</option>
-              <option value="9A3">9A3</option>
+              <option value="6A">6A</option>
+              <option value="7A">7A</option>
+              <option value="8A">8A</option>
+              <option value="9A">9A</option>
             </select>
             <select
               className="px-3 py-2 border rounded-lg text-sm bg-white"

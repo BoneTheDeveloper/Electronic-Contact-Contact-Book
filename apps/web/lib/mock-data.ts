@@ -1,4 +1,19 @@
-// Mock data types
+// ==================== DATA CONTRACT EXPORTS ====================
+// Grade level contract for middle school (THCS grades 6-9)
+export const SUPPORTED_GRADES = ['6', '7', '8', '9']
+
+// Class ID pattern validation for grades 6-9
+export const CLASS_ID_PATTERN = /^[6-9][A-Z]\d*$/
+
+// Vietnamese grade labels for display
+export const GRADE_LABELS_VN: Record<string, string> = {
+  '6': 'Khối 6',
+  '7': 'Khối 7',
+  '8': 'Khối 8',
+  '9': 'Khối 9'
+}
+
+// ==================== MOCK DATA TYPES ====================
 export interface DashboardStats {
   students: number
   parents: number
@@ -97,14 +112,14 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 // Students data
 export async function getStudents(): Promise<Student[]> {
   return [
-    { id: '1', name: 'Nguyễn Văn An', grade: '10A', attendance: 95, feesStatus: 'paid' },
-    { id: '2', name: 'Trần Thị Bình', grade: '10B', attendance: 98, feesStatus: 'paid' },
-    { id: '3', name: 'Lê Văn Cường', grade: '11A', attendance: 92, feesStatus: 'pending' },
+    { id: '1', name: 'Nguyễn Văn An', grade: '6A', attendance: 95, feesStatus: 'paid' },
+    { id: '2', name: 'Trần Thị Bình', grade: '6B', attendance: 98, feesStatus: 'paid' },
+    { id: '3', name: 'Lê Văn Cường', grade: '7A', attendance: 92, feesStatus: 'pending' },
     { id: '4', name: 'Phạm Thị Dung', grade: '9A', attendance: 97, feesStatus: 'paid' },
-    { id: '5', name: 'Hoàng Văn Em', grade: '12A', attendance: 89, feesStatus: 'overdue' },
-    { id: '6', name: 'Ngô Thị Giang', grade: '8A', attendance: 96, feesStatus: 'paid' },
-    { id: '7', name: 'Đỗ Văn Hùng', grade: '10A', attendance: 94, feesStatus: 'pending' },
-    { id: '8', name: 'Vũ Thị Lan', grade: '11B', attendance: 99, feesStatus: 'paid' },
+    { id: '5', name: 'Hoàng Văn Em', grade: '8A', attendance: 89, feesStatus: 'overdue' },
+    { id: '6', name: 'Ngô Thị Giang', grade: '6A', attendance: 96, feesStatus: 'paid' },
+    { id: '7', name: 'Đỗ Văn Hùng', grade: '7A', attendance: 94, feesStatus: 'pending' },
+    { id: '8', name: 'Vũ Thị Lan', grade: '7B', attendance: 99, feesStatus: 'paid' },
   ]
 }
 
@@ -112,13 +127,13 @@ export async function getStudents(): Promise<Student[]> {
 export async function getUsers(): Promise<User[]> {
   return [
     { id: '1', name: 'Admin User', email: 'admin@school.vn', role: 'admin', status: 'active' },
-    { id: '2', name: 'Nguyễn Thanh T.', email: 'nguyenthanh@school.vn', role: 'teacher', status: 'active', classId: '10A' },
-    { id: '3', name: 'Trần Thị Mai', email: 'tranmai@school.vn', role: 'teacher', status: 'active', classId: '11A' },
+    { id: '2', name: 'Nguyễn Thanh T.', email: 'nguyenthanh@school.vn', role: 'teacher', status: 'active', classId: '6A' },
+    { id: '3', name: 'Trần Thị Mai', email: 'tranmai@school.vn', role: 'teacher', status: 'active', classId: '7A' },
     { id: '4', name: 'Lê Văn Nam', email: 'lenam@school.vn', role: 'parent', status: 'active' },
     { id: '5', name: 'Phạm Thị Hoa', email: 'phamhoa@school.vn', role: 'parent', status: 'active' },
-    { id: '6', name: 'Nguyễn Văn An', email: 'nguyenan@school.vn', role: 'student', status: 'active', classId: '10A' },
-    { id: '7', name: 'Trần Thị Bình', email: 'tranbinh@school.vn', role: 'student', status: 'active', classId: '10B' },
-    { id: '8', name: 'Lê Văn Cường', email: 'lecuong@school.vn', role: 'student', status: 'inactive', classId: '11A' },
+    { id: '6', name: 'Nguyễn Văn An', email: 'nguyenan@school.vn', role: 'student', status: 'active', classId: '6A' },
+    { id: '7', name: 'Trần Thị Bình', email: 'tranbinh@school.vn', role: 'student', status: 'active', classId: '6B' },
+    { id: '8', name: 'Lê Văn Cường', email: 'lecuong@school.vn', role: 'student', status: 'inactive', classId: '7A' },
   ]
 }
 
@@ -131,13 +146,12 @@ export async function getUserById(id: string): Promise<User | null> {
 // Classes data
 export async function getClasses(): Promise<Class[]> {
   return [
-    { id: '10A', name: '10A', grade: '10', teacher: 'Nguyễn Thanh T.', studentCount: 35, room: 'A101' },
-    { id: '10B', name: '10B', grade: '10', teacher: 'Trần Thị Mai', studentCount: 33, room: 'A102' },
-    { id: '11A', name: '11A', grade: '11', teacher: 'Lê Văn Chính', studentCount: 32, room: 'B201' },
-    { id: '11B', name: '11B', grade: '11', teacher: 'Phạm Thị Dung', studentCount: 34, room: 'B202' },
-    { id: '12A', name: '12A', grade: '12', teacher: 'Hoàng Văn Em', studentCount: 31, room: 'C301' },
+    { id: '6A', name: '6A', grade: '6', teacher: 'Nguyễn Thanh T.', studentCount: 35, room: 'A101' },
+    { id: '6B', name: '6B', grade: '6', teacher: 'Trần Thị Mai', studentCount: 33, room: 'A102' },
+    { id: '7A', name: '7A', grade: '7', teacher: 'Lê Văn Chính', studentCount: 32, room: 'B201' },
+    { id: '7B', name: '7B', grade: '7', teacher: 'Phạm Thị Dung', studentCount: 34, room: 'B202' },
+    { id: '8A', name: '8A', grade: '8', teacher: 'Hoàng Văn Em', studentCount: 31, room: 'C301' },
     { id: '9A', name: '9A', grade: '9', teacher: 'Ngô Thị Giang', studentCount: 36, room: 'A201' },
-    { id: '8A', name: '8A', grade: '8', teacher: 'Đỗ Văn Hùng', studentCount: 38, room: 'A103' },
   ]
 }
 
@@ -285,7 +299,7 @@ export async function getActivities(): Promise<Activity[]> {
     {
       id: '4',
       user: 'Trần Thị Mai (GVCN)',
-      action: 'Điểm danh lớp 11A',
+      action: 'Điểm danh lớp 7A',
       time: 'Hôm qua',
       note: '32/32 có mặt',
     },
@@ -411,20 +425,20 @@ export interface LeaveRequest {
 export async function getTeacherClasses(teacherId: string = '2'): Promise<TeacherClass[]> {
   return [
     {
-      id: '10A',
-      name: '10A',
+      id: '6A',
+      name: '6A',
       subject: 'Toán',
-      grade: '10',
+      grade: '6',
       room: 'A102',
       studentCount: 35,
       schedule: 'Thứ 2-4-6, Tiết 1-3',
       isHomeroom: true,
     },
     {
-      id: '9A3',
-      name: '9A3',
+      id: '7A3',
+      name: '7A3',
       subject: 'Toán',
-      grade: '9',
+      grade: '7',
       room: 'A205',
       studentCount: 32,
       schedule: 'Thứ 3-5, Tiết 4-5',
@@ -441,23 +455,13 @@ export async function getTeacherClasses(teacherId: string = '2'): Promise<Teache
       isHomeroom: false,
     },
     {
-      id: '11A1',
-      name: '11A1',
+      id: '9A1',
+      name: '9A1',
       subject: 'Toán',
-      grade: '11',
+      grade: '9',
       room: 'C201',
       studentCount: 31,
       schedule: 'Thứ 3-5, Tiết 7-9',
-      isHomeroom: false,
-    },
-    {
-      id: '12A',
-      name: '12A',
-      subject: 'Toán',
-      grade: '12',
-      room: 'C301',
-      studentCount: 28,
-      schedule: 'Thứ 7, Tiết 1-4',
       isHomeroom: false,
     },
   ]
@@ -478,7 +482,7 @@ export async function getTeacherStats(teacherId: string = '2'): Promise<TeacherS
         id: '1',
         period: 'Tiết 1-2',
         time: '07:30 - 09:00',
-        className: '10A',
+        className: '6A',
         subject: 'Toán học',
         room: 'A102',
       },
@@ -486,7 +490,7 @@ export async function getTeacherStats(teacherId: string = '2'): Promise<TeacherS
         id: '2',
         period: 'Tiết 4',
         time: '10:15 - 11:00',
-        className: '9A3',
+        className: '7A3',
         subject: 'Toán học',
         room: 'A205',
       },
@@ -571,8 +575,8 @@ export async function getAssessments(teacherId: string = '2'): Promise<Assessmen
   return [
     {
       id: '1',
-      classId: '10A',
-      className: '10A',
+      classId: '6A',
+      className: '6A',
       subject: 'Toán',
       type: 'quiz',
       name: 'Kiểm tra 15 phút số 3',
@@ -584,8 +588,8 @@ export async function getAssessments(teacherId: string = '2'): Promise<Assessmen
     },
     {
       id: '2',
-      classId: '9A3',
-      className: '9A3',
+      classId: '7A3',
+      className: '7A3',
       subject: 'Toán',
       type: 'midterm',
       name: 'Giữa kỳ I',
@@ -675,7 +679,7 @@ export async function getTeacherConversations(teacherId: string = '2'): Promise<
       parentName: 'Nguyễn Văn An',
       studentName: 'Nguyễn Văn An',
       studentId: 'HS001',
-      className: '10A1',
+      className: '6A1',
       lastMessage: 'Thưa thầy, em có thể xin lịch hẹn gặp không ạ?',
       timestamp: '10 phút trước',
       unreadCount: 2,
@@ -686,7 +690,7 @@ export async function getTeacherConversations(teacherId: string = '2'): Promise<
       parentName: 'Trần Thị Bình',
       studentName: 'Trần Thị Bình',
       studentId: 'HS002',
-      className: '10A1',
+      className: '6A1',
       lastMessage: 'Cảm ơn thầy đã thông báo',
       timestamp: '2 giờ trước',
       unreadCount: 0,
@@ -697,7 +701,7 @@ export async function getTeacherConversations(teacherId: string = '2'): Promise<
       parentName: 'Lê Văn Cường',
       studentName: 'Lê Văn Cường',
       studentId: 'HS003',
-      className: '10A1',
+      className: '6A1',
       lastMessage: 'Con đã nộp bài tập chưa thầy?',
       timestamp: 'Hôm qua',
       unreadCount: 1,
@@ -746,8 +750,8 @@ export async function getGradeReviewRequests(teacherId: string = '2'): Promise<a
       id: '1',
       studentId: '1',
       studentName: 'Nguyễn An',
-      classId: '10A',
-      className: '9A1',
+      classId: '6A',
+      className: '6A1',
       assessmentType: 'final',
       currentScore: 4.5,
       reason: 'Em nghĩ bài làm đúng hơn điểm nhận được',
@@ -758,8 +762,8 @@ export async function getGradeReviewRequests(teacherId: string = '2'): Promise<a
       id: '2',
       studentId: '2',
       studentName: 'Trần Huy',
-      classId: '9A3',
-      className: '9A3',
+      classId: '7A3',
+      className: '7A3',
       assessmentType: 'quiz',
       currentScore: 7.0,
       reason: 'Thầy điểm nhầm bài câu 3',
@@ -882,17 +886,51 @@ export interface LeaveRequestApproval {
   parentContact?: string
 }
 
+// ==================== FEE & FINANCE DATA TYPES (Phase 07) ====================
+
+export interface FeeItem {
+  id: string
+  name: string
+  code: string
+  type: 'mandatory' | 'voluntary'
+  amount: number
+  semester: '1' | '2' | 'all'
+  status: 'active' | 'inactive'
+}
+
+export interface FeeAssignment {
+  id: string
+  name: string
+  targetGrades: string[]
+  targetClasses: string[]
+  feeItems: string[]
+  startDate: string
+  dueDate: string
+  reminderDays: number
+  reminderFrequency: 'once' | 'daily' | 'weekly'
+  totalStudents: number
+  totalAmount: number
+  status: 'draft' | 'published' | 'closed'
+  createdAt: string
+}
+
+export interface GradeData {
+  grade: string
+  classes: string[]
+  students: number
+}
+
 // Get Teacher Schedule
 export async function getTeacherSchedule(
   teacherId?: string,
   date?: string
 ): Promise<TeacherScheduleItem[]> {
   return [
-    { period: 1, time: '07:30 - 08:15', className: '10A1', subject: 'Toán', room: 'P.101' },
-    { period: 2, time: '08:20 - 09:05', className: '11A3', subject: 'Toán', room: 'P.201' },
-    { period: 3, time: '09:15 - 10:00', className: '10A1', subject: 'Toán', room: 'P.101' },
-    { period: 4, time: '10:10 - 10:55', className: '12A2', subject: 'Toán', room: 'P.302' },
-    { period: 5, time: '11:00 - 11:45', className: '11A3', subject: 'Toán', room: 'P.201' },
+    { period: 1, time: '07:30 - 08:15', className: '6A1', subject: 'Toán', room: 'P.101' },
+    { period: 2, time: '08:20 - 09:05', className: '7A3', subject: 'Toán', room: 'P.201' },
+    { period: 3, time: '09:15 - 10:00', className: '6A1', subject: 'Toán', room: 'P.101' },
+    { period: 4, time: '10:10 - 10:55', className: '8A2', subject: 'Toán', room: 'P.302' },
+    { period: 5, time: '11:00 - 11:45', className: '7A3', subject: 'Toán', room: 'P.201' },
   ]
 }
 
@@ -904,9 +942,9 @@ export async function getClassManagementData(
 
   return {
     classId,
-    className: '10A1',
+    className: '6A1',
     subject: 'Toán',
-    grade: '10',
+    grade: '6',
     room: 'P.101',
     schedule,
     students: [
@@ -936,8 +974,8 @@ export async function getRegularAssessments(
     {
       studentId: '1',
       studentName: 'Nguyễn Văn An',
-      classId: '10A1',
-      className: '10A1',
+      classId: '6A1',
+      className: '6A1',
       subject: 'Toán',
       status: 'evaluated',
       comment: { category: 'Tiến bộ học tập', content: 'Có tiến bộ tốt trong giải toán' },
@@ -947,8 +985,8 @@ export async function getRegularAssessments(
     {
       studentId: '2',
       studentName: 'Trần Thị Bình',
-      classId: '10A1',
-      className: '10A1',
+      classId: '6A1',
+      className: '6A1',
       subject: 'Toán',
       status: 'evaluated',
       comment: { category: 'Đóng góp lớp', content: 'Học sinh tích cực, giúp đỡ bạn bè' },
@@ -958,8 +996,8 @@ export async function getRegularAssessments(
     {
       studentId: '3',
       studentName: 'Lê Văn Cường',
-      classId: '10A1',
-      className: '10A1',
+      classId: '6A1',
+      className: '6A1',
       subject: 'Toán',
       status: 'pending',
       createdAt: '2026-01-14',
@@ -967,8 +1005,8 @@ export async function getRegularAssessments(
     {
       studentId: '4',
       studentName: 'Phạm Thị Dung',
-      classId: '10A1',
-      className: '10A1',
+      classId: '6A1',
+      className: '6A1',
       subject: 'Toán',
       status: 'needs-attention',
       comment: { category: 'Cần cải thiện', content: 'Cần chú ý hơn trong lớp, làm bài tập chưa đầy đủ' },
@@ -978,8 +1016,8 @@ export async function getRegularAssessments(
     {
       studentId: '5',
       studentName: 'Ngô Thị Giang',
-      classId: '10A1',
-      className: '10A1',
+      classId: '6A1',
+      className: '6A1',
       subject: 'Toán',
       status: 'evaluated',
       comment: { category: 'Tiến bộ học tập', content: 'Nắm bắt kiến thức tốt, làm bài tập cẩn thận' },
@@ -989,8 +1027,8 @@ export async function getRegularAssessments(
     {
       studentId: '6',
       studentName: 'Đỗ Văn Hùng',
-      classId: '10A1',
-      className: '10A1',
+      classId: '6A1',
+      className: '6A1',
       subject: 'Toán',
       status: 'pending',
       createdAt: '2026-01-14',
@@ -1013,9 +1051,9 @@ export async function getHomeroomClassData(
   classId: string
 ): Promise<HomeroomClassDetail> {
   return {
-    classId: '10A1',
-    className: '10A1',
-    grade: '10',
+    classId: '6A1',
+    className: '6A1',
+    grade: '6',
     room: 'P.101',
     studentCount: 45,
     maleCount: 23,
@@ -1026,7 +1064,7 @@ export async function getHomeroomClassData(
         id: '1',
         name: 'Nguyễn Văn An',
         code: 'HS001',
-        dob: '2008-05-15',
+        dob: '2012-05-15',
         parentName: 'Nguyễn Văn X',
         parentPhone: '0901234567',
         address: '123 Đường A, Quận B, TP HCM',
@@ -1035,7 +1073,7 @@ export async function getHomeroomClassData(
         id: '2',
         name: 'Trần Thị Bình',
         code: 'HS002',
-        dob: '2008-08-20',
+        dob: '2012-08-20',
         parentName: 'Trần Thị Y',
         parentPhone: '0901234568',
         address: '456 Đường B, Quận C, TP HCM',
@@ -1044,7 +1082,7 @@ export async function getHomeroomClassData(
         id: '3',
         name: 'Lê Văn Cường',
         code: 'HS003',
-        dob: '2008-03-10',
+        dob: '2012-03-10',
         parentName: 'Lê Văn Z',
         parentPhone: '0901234569',
         address: '789 Đường C, Quận D, TP HCM',
@@ -1053,7 +1091,7 @@ export async function getHomeroomClassData(
         id: '4',
         name: 'Phạm Thị Dung',
         code: 'HS004',
-        dob: '2008-12-25',
+        dob: '2012-12-25',
         parentName: 'Phạm Văn T',
         parentPhone: '0901234570',
         address: '321 Đường D, Quận E, TP HCM',
@@ -1062,7 +1100,7 @@ export async function getHomeroomClassData(
         id: '5',
         name: 'Hoàng Văn Em',
         code: 'HS005',
-        dob: '2008-07-08',
+        dob: '2012-07-08',
         parentName: 'Hoàng Thị V',
         parentPhone: '0901234571',
         address: '654 Đường E, Quận A, TP HCM',
@@ -1081,8 +1119,8 @@ export async function getLeaveApprovalRequests(
       id: 'LR001',
       studentId: '1',
       studentName: 'Nguyễn Văn An',
-      classId: '10A1',
-      className: '10A1',
+      classId: '6A1',
+      className: '6A1',
       startDate: '2026-01-20',
       endDate: '2026-01-22',
       reason: 'Đi cùng gia đình công tác',
@@ -1094,8 +1132,8 @@ export async function getLeaveApprovalRequests(
       id: 'LR002',
       studentId: '2',
       studentName: 'Trần Thị Bình',
-      classId: '10A1',
-      className: '10A1',
+      classId: '6A1',
+      className: '6A1',
       startDate: '2026-01-18',
       endDate: '2026-01-18',
       reason: 'Đi khám bệnh định kỳ',
@@ -1107,8 +1145,8 @@ export async function getLeaveApprovalRequests(
       id: 'LR003',
       studentId: '3',
       studentName: 'Lê Văn Cường',
-      classId: '10A1',
-      className: '10A1',
+      classId: '6A1',
+      className: '6A1',
       startDate: '2026-01-16',
       endDate: '2026-01-17',
       reason: 'Ốm, sốt',
@@ -1120,8 +1158,8 @@ export async function getLeaveApprovalRequests(
       id: 'LR004',
       studentId: '4',
       studentName: 'Phạm Thị Dung',
-      classId: '10A1',
-      className: '10A1',
+      classId: '6A1',
+      className: '6A1',
       startDate: '2026-01-10',
       endDate: '2026-01-12',
       reason: 'Việc gia đình',
@@ -1133,8 +1171,8 @@ export async function getLeaveApprovalRequests(
       id: 'LR005',
       studentId: '5',
       studentName: 'Hoàng Văn Em',
-      classId: '10A1',
-      className: '10A1',
+      classId: '6A1',
+      className: '6A1',
       startDate: '2026-01-08',
       endDate: '2026-01-08',
       reason: 'Lý do không hợp lý',
@@ -1150,3 +1188,202 @@ export async function getLeaveApprovalRequests(
 
   return requests
 }
+
+// ==================== FEE & FINANCE DATA (Phase 07) ====================
+
+// Fee items matching wireframe specifications
+export const FEE_ITEMS: FeeItem[] = [
+  {
+    id: 'tuition-hk1',
+    name: 'Học phí',
+    code: 'HP-HK1',
+    type: 'mandatory',
+    amount: 2500000,
+    semester: '1',
+    status: 'active'
+  },
+  {
+    id: 'insurance',
+    name: 'Bảo hiểm y tế',
+    code: 'BHYT-25',
+    type: 'mandatory',
+    amount: 854000,
+    semester: 'all',
+    status: 'active'
+  },
+  {
+    id: 'uniform-hk1',
+    name: 'Tiền đồng phục',
+    code: 'DP-HK1',
+    type: 'voluntary',
+    amount: 850000,
+    semester: '1',
+    status: 'active'
+  },
+  {
+    id: 'boarding-hk1',
+    name: 'Tiền ăn bán trú',
+    code: 'BT-HK1',
+    type: 'voluntary',
+    amount: 1200000,
+    semester: '1',
+    status: 'active'
+  }
+]
+
+// Grade data for middle school (grades 6-9 with 6 classes each)
+export const GRADE_DATA: Record<string, GradeData> = {
+  '6': { grade: '6', classes: ['6A', '6B', '6C', '6D', '6E', '6F'], students: 180 },
+  '7': { grade: '7', classes: ['7A', '7B', '7C', '7D', '7E', '7F'], students: 195 },
+  '8': { grade: '8', classes: ['8A', '8B', '8C', '8D', '8E', '8F'], students: 188 },
+  '9': { grade: '9', classes: ['9A', '9B', '9C', '9D', '9E', '9F'], students: 175 }
+}
+
+// Fee assignments mock data
+export const FEE_ASSIGNMENTS: FeeAssignment[] = [
+  {
+    id: 'fa-001',
+    name: 'Học phí HK1 - 2025',
+    targetGrades: ['6', '7', '8', '9'],
+    targetClasses: ['6A', '6B', '7A', '7B', '8A', '9A'],
+    feeItems: ['tuition-hk1', 'insurance'],
+    startDate: '2025-09-01',
+    dueDate: '2025-10-15',
+    reminderDays: 7,
+    reminderFrequency: 'weekly',
+    totalStudents: 278,
+    totalAmount: 695000000,
+    status: 'published',
+    createdAt: '2025-08-20T00:00:00Z'
+  }
+]
+
+// Get fee items with optional filters
+export async function getFeeItems(filters?: {
+  semester?: string
+  type?: 'mandatory' | 'voluntary'
+}): Promise<FeeItem[]> {
+  let items = FEE_ITEMS
+
+  if (filters?.semester && filters.semester !== 'all') {
+    items = items.filter(item => item.semester === filters.semester)
+  }
+
+  if (filters?.type) {
+    items = items.filter(item => item.type === filters.type)
+  }
+
+  return items
+}
+
+// Get fee item by ID
+export async function getFeeItemById(id: string): Promise<FeeItem | undefined> {
+  return FEE_ITEMS.find(item => item.id === id)
+}
+
+// Get grade data
+export async function getGradeData(): Promise<Record<string, GradeData>> {
+  return GRADE_DATA
+}
+
+// Get classes by grade
+export async function getClassesByGrade(grade: string): Promise<string[]> {
+  return GRADE_DATA[grade]?.classes || []
+}
+
+// Get fee assignments
+export async function getFeeAssignments(): Promise<FeeAssignment[]> {
+  return FEE_ASSIGNMENTS
+}
+
+// Get fee assignment by ID
+export async function getFeeAssignmentById(id: string): Promise<FeeAssignment | undefined> {
+  return FEE_ASSIGNMENTS.find(assignment => assignment.id === id)
+}
+
+// Create fee assignment
+export async function createFeeAssignment(
+  data: Omit<FeeAssignment, 'id' | 'createdAt' | 'totalStudents' | 'totalAmount'>
+): Promise<FeeAssignment> {
+  // Estimate students: assume equal distribution across classes in a grade
+  const totalStudents = data.targetClasses.reduce((sum, cls) => {
+    const grade = cls.charAt(0)
+    const gradeData = GRADE_DATA[grade]
+    if (!gradeData) return sum
+    return sum + (gradeData.students / gradeData.classes.length)
+  }, 0)
+
+  // Calculate total amount: sum of fee items * number of students
+  const feeItemsTotal = data.feeItems.reduce((sum, feeId) => {
+    const fee = FEE_ITEMS.find(f => f.id === feeId)
+    return sum + (fee?.amount || 0)
+  }, 0)
+
+  const totalAmount = Math.round(feeItemsTotal * totalStudents)
+
+  const newAssignment: FeeAssignment = {
+    ...data,
+    id: `fa-${Date.now()}`,
+    totalStudents: Math.round(totalStudents),
+    totalAmount,
+    createdAt: new Date().toISOString()
+  }
+
+  FEE_ASSIGNMENTS.push(newAssignment)
+  return newAssignment
+}
+
+// Enhanced getPaymentStats function
+export async function getPaymentStats(): Promise<{
+  totalAmount: number
+  collectedAmount: number
+  pendingCount: number
+  overdueCount: number
+  collectionRate: number
+}> {
+  const invoices = await getInvoices()
+
+  const totalAmount = invoices.reduce((sum, inv) => sum + inv.amount, 0)
+  const collectedAmount = invoices
+    .filter(inv => inv.status === 'paid')
+    .reduce((sum, inv) => sum + inv.amount, 0)
+  const pendingCount = invoices.filter(inv => inv.status === 'pending').length
+  const overdueCount = invoices.filter(inv => inv.status === 'overdue').length
+  const collectionRate = totalAmount > 0 ? Math.round((collectedAmount / totalAmount) * 100) : 0
+
+  return {
+    totalAmount,
+    collectedAmount,
+    pendingCount,
+    overdueCount,
+    collectionRate
+  }
+}
+
+// Generate invoices from fee assignment
+export async function generateInvoicesFromAssignment(assignmentId: string): Promise<Invoice[]> {
+  const assignment = await getFeeAssignmentById(assignmentId)
+  if (!assignment) return []
+
+  const invoices: Invoice[] = []
+  const students = await getStudents()
+
+  for (const cls of assignment.targetClasses) {
+    const classStudents = students.filter(s => s.grade === cls)
+    const amountPerStudent = assignment.totalAmount / assignment.totalStudents
+
+    for (const student of classStudents) {
+      invoices.push({
+        id: `inv-${assignment.id}-${student.id}`,
+        studentId: student.id,
+        studentName: student.name,
+        amount: Math.round(amountPerStudent),
+        status: 'pending',
+        dueDate: assignment.dueDate
+      })
+    }
+  }
+
+  return invoices
+}
+
