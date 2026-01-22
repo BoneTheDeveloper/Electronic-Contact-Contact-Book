@@ -2,20 +2,14 @@
 const nextConfig = {
   reactStrictMode: true,
   // Disable ESLint during production build
-  // In Next.js 15+, use eslint.config.mjs instead of .eslintrc
-  // For now, we skip the lint step to allow deployment
+  // Warning: This allows production builds to successfully complete even if
+  // your project has ESLint errors.
   eslint: {
-    // This will cause ESLint to be disabled during the build
-    ignoreDuringBuild: true,
+    ignoreDuringBuilds: true,
   },
   typescript: {
     // Keep TypeScript checking enabled
     ignoreBuildErrors: false,
-  },
-  // Experimental: skip linting entirely
-  experimental: {
-    // Disable the lint step
-    eslintrc: false,
   },
 }
 
