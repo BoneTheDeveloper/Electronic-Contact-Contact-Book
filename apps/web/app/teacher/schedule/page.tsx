@@ -24,7 +24,7 @@ async function fetchSchedule(): Promise<ScheduleItem[]> {
 }
 
 export default async function TeachingSchedulePage() {
-  const schedule = await fetchSchedule()
+  const schedule = await fetchSchedule() || []
 
   return (
     <div className="space-y-6 p-8">

@@ -81,7 +81,14 @@ async function fetchDashboardData(): Promise<DashboardData> {
 
 export default async function TeacherDashboard() {
   const data = await fetchDashboardData()
-  const { stats, gradeReviews, leaveRequests, classes, schedule, assessments } = data
+  const {
+    stats = { teaching: 0, homeroom: 'N/A', gradeReviewRequests: 0, leaveRequests: 0, pendingGrades: 0 },
+    gradeReviews = [],
+    leaveRequests = [],
+    classes = [],
+    schedule = [],
+    assessments = { evaluated: 0, pending: 0, positive: 0, needsAttention: 0 }
+  } = data || {}
 
   return (
     <div className="space-y-8 p-8">
