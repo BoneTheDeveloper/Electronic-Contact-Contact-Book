@@ -11,6 +11,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import {
+  getTeacherStats,
+  getGradeReviewRequests,
+  getLeaveRequests,
+  getTeacherSchedule,
+  getRegularAssessments,
+  getTeacherClasses,
+} from '@/lib/mock-data'
 
 interface DashboardData {
   stats: {
@@ -67,14 +75,36 @@ function getInitials(name?: string): string {
 }
 
 async function fetchDashboardData(): Promise<DashboardData> {
-  const res = await fetch('/api/teacher/dashboard', {
-    cache: 'no-store',
-  })
-  if (!res.ok) {
-    throw new Error(`Failed to fetch dashboard data: ${res.status}`)
+  // Get classes first to find homeroom class
+  const teacherClasses = await getTeacherClasses().catch(() => [])
+  const homeroomClass = teacherClasses.find((c: any) => c.isHomeroom)
+  const homeroomClassId = homeroomClass?.id || '6A1'
+
+  const [stats, gradeReviews, leaveRequests, schedule, assessments, classes] = await Promise.all([
+    getTeacherStats().catch(() => ({ teaching: 0, homeroom: 'N/A', gradeReviewRequests: 0, leaveRequests: 0, pendingGrades: 0 })),
+    getGradeReviewRequests().catch(() => []),
+    getLeaveRequests(homeroomClassId).catch(() => []),
+    getTeacherSchedule().catch(() => []),
+    getRegularAssessments().catch(() => []),
+    Promise.resolve(teacherClasses),
+  ])
+
+  return {
+    stats: {
+      ...stats,
+      homeroomClassId,
+    },
+    gradeReviews: gradeReviews || [],
+    leaveRequests: (leaveRequests || []).filter((r: any) => r.status === 'pending'),
+    schedule: schedule || [],
+    classes: classes || [],
+    assessments: {
+      evaluated: (assessments || []).filter((a: any) => a.status === 'evaluated').length,
+      pending: (assessments || []).filter((a: any) => a.status === 'pending').length,
+      positive: (assessments || []).filter((a: any) => a.rating && a.rating >= 4).length,
+      needsAttention: (assessments || []).filter((a: any) => a.status === 'needs-attention').length,
+    },
   }
-  const json = await res.json()
-  return json.data
 }
 
 export default async function TeacherDashboard() {

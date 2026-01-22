@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Clock, MapPin } from 'lucide-react'
+import { getTeacherSchedule } from '@/lib/mock-data'
 
 interface ScheduleItem {
   period: number
@@ -11,14 +12,7 @@ interface ScheduleItem {
 }
 
 async function fetchSchedule(): Promise<ScheduleItem[]> {
-  const res = await fetch('/api/teacher/schedule', {
-    cache: 'no-store',
-  })
-  if (!res.ok) {
-    throw new Error(`Failed to fetch schedule: ${res.status}`)
-  }
-  const json = await res.json()
-  return json.data
+  return await getTeacherSchedule().catch(() => [])
 }
 
 export default async function TeachingSchedulePage() {
