@@ -1,0 +1,8 @@
+{
+  "name": "eslint-plugin-no-string-boolean-props",
+  "version": "1.0.0",
+  "main": "rule.js",
+  "peerDependencies": {
+    "eslint": ">=7.0.0"
+  }
+}

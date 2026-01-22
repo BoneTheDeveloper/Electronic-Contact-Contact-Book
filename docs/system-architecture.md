@@ -1,414 +1,438 @@
-# System Architecture - EContact School Management
-
-**Version**: 1.0
-**Last Updated**: 2026-01-19
-**Status**: React Native New Architecture Enabled
+# System Architecture - School Management System
 
 ## Overview
 
-The EContact system is a comprehensive school management platform designed to streamline administrative workflows, enhance teacher efficiency, and improve communication between stakeholders.
+The School Management System is built as a monorepo application with two primary client applications (mobile and web) and a shared backend infrastructure. The architecture is designed for scalability, maintainability, and performance while maintaining separation of concerns across different user roles.
 
-## Architecture Overview
+## Architecture Diagram
 
-### Monorepo Structure
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                            Load Balancer                                │
+└─────────────────────────────┬───────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         API Gateway                                    │
+│  - Rate Limiting                                                       │
+│  - Authentication                                                     │
+│  - Request Logging                                                   │
+│  - CORS Management                                                   │
+└─────────────────────────────┬───────────────────────────────────────────┘
+                              │
+     ┌─────────────────────────┼─────────────────────────┐
+     │                         │                         │
+┌────▼─────────┐     ┌────────▼──────────┐     ┌────────▼──────────┐
+│   Web App    │     │   Mobile App     │     │   Admin Portal   │
+│   (Next.js)  │     │   (React Native) │     │   (Next.js)      │
+└────┬─────────┘     └────────┬─────────┘     └────────┬─────────┘
+     │                         │                         │
+     └─────────────────────────┼─────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          Backend Services                              │
+│  ┌─────────────────────────┐  ┌─────────────────────────┐               │
+│  │    Supabase Database    │  │   Supabase Storage    │               │
+│  │   - PostgreSQL          │  │   - File Storage      │               │
+│  │   - Realtime            │  │   - CDN              │               │
+│  │   - Auth                │  │   - Image Processing  │               │
+│  └─────────────────────────┘  └─────────────────────────┘               │
+│                                                                         │
+│  ┌─────────────────────────┐  ┌─────────────────────────┐               │
+│  │   Edge Functions        │  │   External APIs       │               │
+│  │   - Authentication     │  │   - Email Service     │               │
+│  │   - Webhooks            │  │   - SMS Gateway       │               │
+│  │   - Background Jobs     │  │   - Payment Gateway   │               │
+│  └─────────────────────────┘  └─────────────────────────┘               │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+## Monorepo Structure
+
+The project uses a monorepo structure with Turborepo for build orchestration:
 
 ```
 electric_contact_book/
-├── apps/
-│   ├── mobile/          # React Native + Expo (Parents/Students)
-│   └── web/             # Next.js 15 (Admin/Teachers)
-├── packages/
-│   └── shared-types/    # TypeScript shared types
-└── docs/               # Project documentation
+├── apps/                    # Applications
+│   ├── mobile/             # React Native + Expo mobile app
+│   │   ├── src/
+│   │   │   ├── screens/    # Screen components
+│   │   │   ├── navigation/ # Navigation setup
+│   │   │   ├── stores/     # Zustand state management
+│   │   │   ├── utils/      # Utility functions
+│   │   │   └── types/      # TypeScript types
+│   │   ├── App.tsx
+│   │   └── package.json
+│   └── web/                # Next.js web app
+│       ├── app/           # App Router
+│       │   ├── api/       # API routes
+│       │   ├── (auth)/    # Auth routes
+│       │   ├── (admin)/   # Admin routes
+│       │   └── (teacher)/ # Teacher routes
+│       ├── components/    # Reusable components
+│       ├── lib/          # Utilities and config
+│       └── package.json
+│
+├── packages/              # Shared packages
+│   └── shared-types/      # TypeScript shared types
+│
+├── docs/                 # Documentation
+├── plans/                # Implementation plans
+└── .turbo/               # Turborepo configuration
 ```
 
 ## Application Architecture
 
-### 1. Mobile Application (Parents/Students)
+### Mobile App (React Native + Expo)
 
-#### Tech Stack
-- **Framework**: React Native 0.81.0 (New Architecture Enabled)
-- **Platform**: Expo ~54.0.0 (SDK 54+)
-- **Navigation**: React Navigation 7.x (Centralized types)
+#### Technology Stack
+- **Framework**: React Native 0.76.9 with Expo SDK 54
+- **Navigation**: React Navigation 7.x
 - **UI Components**: React Native Paper 5.x (Material Design)
-- **State Management**: Zustand 4.x
-- **Type Safety**: TypeScript 5.x (Strict mode)
-- **Asset Handling**: Expo Asset Bundle
+- **State Management**: Zustand
+- **Authentication**: Supabase Auth
+- **Database**: Supabase Realtime + PostgreSQL
+- **Storage**: Supabase Storage
+- **Code Quality**: ESLint with custom boolean props rules
 
-#### Entry Points
-- **Main Entry**: `./App.tsx` (RootNavigator)
-- **Development Metro Server**: `npx expo start`
-- **Build Command**: `npx expo prebuild`
+#### Component Architecture
+```
+App.tsx
+├── AuthNavigator.tsx
+│   ├── LoginScreen.tsx
+│   └── CustomLoginScreen.tsx
+├── ParentTabs.tsx
+│   ├── Dashboard.tsx
+│   ├── Grades.tsx
+│   ├── Attendance.tsx
+│   ├── Messages.tsx
+│   ├── Notifications.tsx
+│   ├── News.tsx
+│   ├── TeacherDirectory.tsx
+│   ├── LeaveRequest.tsx
+│   ├── Schedule.tsx
+│   ├── Summary.tsx
+│   ├── PaymentOverview.tsx
+│   ├── PaymentMethod.tsx
+│   └── PaymentDetail.tsx
+└── StudentTabs.tsx
+    ├── Dashboard.tsx
+    └── StudentScreens.tsx
+```
 
-#### Key Components
+#### State Management Pattern
 ```typescript
-// apps/mobile/App.tsx - Root Navigation
-RootNavigator
-├── AuthNavigator (Login)
-└── MainNavigator (Role-based)
-    ├── ParentTab (Bottom Tabs)
-    │   ├── ParentHome (Dashboard, Schedule, Grades, etc.)
-    │   ├── ParentMessages (Messages, Notifications, News)
-    │   └── ParentProfile (Profile)
-    ├── StudentTab
-    │   ├── StudentHome (StudentDashboard, StudentSchedule, etc.)
-    │   └── StudentProfile (Profile)
-    ├── Teacher (Direct access)
-    └── Admin (Direct access)
+// Centralized store using Zustand
+interface AuthState {
+  user: User | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+}
 
-// apps/mobile/src/navigation/types.ts - Centralized Type Definitions
-export type RootStackParamList = {
-  Auth: NavigatorScreenParams<AuthStackParamList>;
-  Parent: NavigatorScreenParams<ParentTabParamList>;
-  Student: NavigatorScreenParams<StudentTabParamList>;
-  Teacher: undefined;
-  Admin: undefined;
+const useAuthStore = create<AuthState>((set) => ({
+  user: null,
+  isLoading: false,
+  isAuthenticated: false,
+  // Actions
+}));
+
+// Screen-level state
+const useDashboardData = () => {
+  return useQuery({
+    queryKey: ['dashboard'],
+    queryFn: fetchDashboardData,
+  });
 };
 ```
 
-#### Assets Configuration
-- **Icon**: Default Expo icon or custom PNG
-- **Splash Screen**: Expo default splash screen
-- **Asset Bundle Patterns**: `**/*` (All files in assets dir)
-- **Tablet Support**: iOS only, via app.json configuration
+### Web App (Next.js 15)
 
-#### Project Structure
+#### Technology Stack
+- **Framework**: Next.js 15 with App Router
+- **Runtime**: Node.js 18+
+- **State Management**: React Query + Zustand
+- **UI Components**: shadcn/ui with Tailwind CSS
+- **Authentication**: NextAuth.js + Supabase
+- **Database**: PostgreSQL with Supabase
+- **Forms**: React Hook Form with Zod validation
+
+#### Component Architecture
 ```
-apps/mobile/
-├── App.tsx                    # Root component & navigation
-├── package.json              # Dependencies & scripts
-├── app.json                  # Expo configuration
-├── assets/                   # Images, icons, logos
-│   ├── icon.png
-│   ├── splash.png
-│   └── README.md
-├── src/
-│   ├── screens/              # Screen components
-│   ├── navigation/           # Navigation configs
-│   ├── stores/               # Zustand stores
-│   ├── theme/                # App theming
-│   └── mock-data/            # Mock data files
-└── tsconfig.json             # TypeScript config
-```
-
-### 2. Web Application (Admin/Teachers)
-
-#### Tech Stack
-- **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript 5.x
-- **Styling**: Tailwind CSS + shadcn/ui
-- **State Management**: React Context + useReducer
-- **Authentication**: Mock auth (expand to JWT/OAuth)
-- **API Integration**: RESTful with mock data
-
-#### Project Structure
-```
-apps/web/
-├── app/
-│   ├── (auth)/              # Authentication pages
-│   ├── (admin)/             # Admin routes
-│   ├── (teacher)/           # Teacher routes
-│   └── api/                 # API routes
-├── components/              # React components
-├── lib/                     # Utilities & mock data
-├── package.json             # Dependencies & scripts
-└── tsconfig.json            # TypeScript config
+app/
+├── layout.tsx                    # Root layout
+├── page.tsx                      # Home page
+├── (auth)/
+│   ├── login/
+│   │   └── page.tsx             # Login page
+│   └── register/
+│       └── page.tsx             # Register page
+├── (admin)/
+│   ├── dashboard/
+│   │   └── page.tsx             # Admin dashboard
+│   ├── users/
+│   │   └── page.tsx             # User management
+│   └── classes/
+│       └── page.tsx             # Class management
+├── (teacher)/
+│   ├── dashboard/
+│   │   └── page.tsx             # Teacher dashboard
+│   ├── attendance/
+│   │   └── page.tsx             # Attendance marking
+│   └── grades/
+│       └── page.tsx             # Grade management
+└── api/                         # API routes
+    ├── auth/
+    ├── users/
+    ├── classes/
+    └── payments/
 ```
 
-#### Authentication Flow
+#### API Route Architecture
 ```typescript
-// Mock authentication system
-Role Detection: Based on email prefix
-- admin@... → Admin Portal
-- teacher@... → Teacher Portal
-- parent@... → Parent Portal (Future)
-- student@... → Student Portal (Future)
-Password: Any accepted (Mock)
-```
+// Dynamic API route
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const page = searchParams.get('page');
 
-## Shared Components & Types
+  const users = await getUsers(parseInt(page) || 1);
 
-### Shared Types Package
-- **Location**: `packages/shared-types/`
-- **Purpose**: Common interfaces, types, constants
-- **Usage**: Import via `@school-management/shared-types`
-
-### Design System
-- **Primary Color**: #0284C7 (Sky Blue)
-- **Typography**: Inter Font (Vietnamese support)
-- **Components**: Consistent across platforms
-- **Accessibility**: WCAG 2.1 AA compliant
-
-## Data Flow
-
-### Mobile App Data Flow
-```mermaid
-graph LR
-    A[User] --> B[App.tsx Root]
-    B --> C[Zustand Store]
-    C --> D[React Navigation]
-    D --> E[Screen Components]
-    E --> F[Mock Data API]
-    F --> G[UI Update]
-```
-
-### Web App Data Flow
-```mermaid
-graph LR
-    A[Browser] --> B[Next.js Server]
-    B --> C[App Router]
-    C --> D[React Components]
-    D --> E[Context Provider]
-    E --> F[Mock Data Service]
-    F --> G[Rendered UI]
-```
-
-## Build & Deployment Architecture
-
-### Mobile Build Pipeline
-1. **Development**: `npx expo start` → Metro bundler
-2. **Prebuild**: `npx expo prebuild` → Native codegen
-3. **Build**: `npx eas build` → App binary
-4. **Deploy**: App Store Connect / Google Play
-
-### Web Build Pipeline
-1. **Development**: `npm run dev` → Vite dev server
-2. **Production Build**: `npm run build` → Static files
-3. **Deploy**: Vercel / Static hosting
-
-## Phase 03: Component Compatibility Improvements (2026-01-19)
-
-#### Overview
-Enhanced component compatibility for Expo SDK 54 and React Navigation 7.x with centralized type safety.
-
-#### Navigation Type System
-```typescript
-// apps/mobile/src/navigation/types.ts - Centralized type definitions
-- Root Stack: Auth, Parent, Student, Teacher, Admin
-- Parent Tabs: Home, Messages, Profile
-- Student Tabs: Home, Profile
-- Authentication: Login screen with navigation safety
-- Payment Flow: Route parameter typing for payment details
-```
-
-#### Type Safety Improvements
-1. **Centralized Navigation Types**: Single source of truth for all navigation types
-2. **Removed Duplication**: Eliminated duplicate type definitions across components
-3. **Enhanced Type Safety**: Proper TypeScript generics for navigation props
-4. **Route Parameter Typing**: Fixed paymentId parameters in PaymentDetail screen
-
-#### Component Compatibility
-- **Expo SDK 54+**: Fully compatible with latest Expo features
-- **React Navigation 7.x**: Updated to latest version with proper typing
-- **New Architecture**: React Native New Architecture support verified
-- **TypeScript Strict Mode**: All navigation types strictly typed
-
-## Configuration Management
-
-### Environment Variables
-- **Development**: `.env.local`
-- **Production**: Vercel/Expo environment variables
-
-### Key Configuration Files
-```typescript
-// Mobile: apps/mobile/app.json
-{
-  "expo": {
-    "name": "EContact School",
-    "slug": "econtact-school",
-    "orientation": "portrait",
-    "userInterfaceStyle": "light",
-    "assetBundlePatterns": ["**/*"],
-    "ios": { "supportsTablet": true },
-    "android": { "package": "com.schoolmanagement.econtact" },
-    "newArchEnabled": true,
-    "plugins": ["expo-dev-client"]
-  }
+  return Response.json(users);
 }
 
-// Mobile: apps/mobile/package.json
-{
-  "main": "./App.tsx",
-  "dependencies": {
-    "@school-management/shared-types": "workspace:*",
-    "expo": "~54.0.0",
-    "react-native": "0.81.0",
-    "expo-dev-client": "~6.0.0"
-  }
-}
+// API route with middleware
+export const POST = withAuth(async (req: Request) => {
+  const userData = await req.json();
+
+  // Validate input
+  const validated = userSchema.parse(userData);
+
+  // Create user
+  const user = await createUser(validated);
+
+  return Response.json(user, { status: 201 });
+});
 ```
+
+## Data Architecture
+
+### Database Schema Overview
+```mermaid
+erDiagram
+    profiles ||--o{ admins : ""
+    profiles ||--o{ teachers : ""
+    profiles ||--o{ parents : ""
+    profiles ||--o{ students : ""
+
+    profiles {
+        uuid id PK
+        string email
+        string full_name
+        string phone
+        string avatar_url
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    admins {
+        uuid profile_id FK
+        string admin_code
+    }
+
+    teachers {
+        uuid profile_id FK
+        string employee_code
+        string subject
+        string department
+    }
+
+    parents {
+        uuid profile_id FK
+        string relationship
+    }
+
+    students {
+        uuid profile_id FK
+        string student_code
+        uuid guardian_id FK
+        date date_of_birth
+        string gender
+    }
+
+    classes {
+        uuid id PK
+        string name
+        string grade_level
+        uuid teacher_id FK
+    }
+
+    enrollments {
+        uuid id PK
+        uuid student_id FK
+        uuid class_id FK
+        date enroll_date
+        date withdraw_date
+    }
+
+    attendance {
+        uuid id PK
+        uuid student_id FK
+        uuid class_id FK
+        date date
+        string status
+        string notes
+    }
+
+    grades {
+        uuid id PK
+        uuid student_id FK
+        uuid class_id FK
+        uuid assignment_id FK
+        score numeric
+        string grade
+        date submitted_date
+    }
+```
+
+### Data Flow
+1. **Authentication Flow**:
+   ```
+   User Login → Supabase Auth → JWT Token → Protected Routes
+   ```
+
+2. **Data Synchronization**:
+   ```
+   Client Request → API Gateway → Edge Functions → PostgreSQL
+   ↑                            ↓
+   Supabase Realtime ← Realtime Subscriptions
+   ```
+
+3. **File Storage**:
+   ```
+   File Upload → Supabase Storage → CDN Distribution
+   ```
 
 ## Security Architecture
 
-### Current State (Demo)
-- **Authentication**: Mock auth (any password accepted)
-- **Data**: Mock data only
-- **API**: No real backend
-- **Storage**: Local state only
-
-### Production Security Plan
-1. JWT authentication with refresh tokens
-2. Input validation & sanitization
-3. Rate limiting & DDoS protection
-4. HTTPS with TLS 1.3
-5. Audit logging system
-6. Role-based access control (RBAC)
-
-## Performance Optimization
-
-### Mobile Optimizations
-- **Code Splitting**: React Navigation lazy loading
-- **Image Optimization**: Expo Image component
-- **Bundle Analysis**: Metro inspector
-- **Memory Management**: Proper cleanup in screens
-
-### Web Optimizations
-- **Static Site Generation**: Next.js SSG
-- **Image Optimization**: Next.js Image component
-- **Code Splitting**: Dynamic imports
-- **Caching**: CDN & browser cache headers
-
-## Monitoring & Analytics
-
-### Development Monitoring
-- **Metro Bundler**: Real-time error detection
-- **React DevTools**: Component inspection
-- **Expo Debugger**: Native debugging
-
-### Production Monitoring (Future)
-- **Error Tracking**: Sentry integration
-- **Performance**: Lighthouse scores
-- **User Analytics**: Mixpanel/Amplitude
-- **APM**: New Relic/Dynatrace
-
-## Future Architecture Evolution
-
-### Phase 2: Backend Integration
-```typescript
-// Real API endpoints
-/api/v1/auth/login
-/api/v1/students
-/api/v1/attendance
-/api/v1/grades
-/api/v1/notifications
-```
-
-### Phase 3: Real-time Features
-- **WebSocket**: Live notifications
-- **Push Notifications**: Mobile & Web
-- **Live Attendance**: Real-time updates
-
-### Phase 4: Advanced Features
-- **Microservices**: Monolith → Services
-- **GraphQL**: API modernization
-- **Serverless**: AWS Lambda/Cloud Functions
-- **Edge Computing**: CDN edge functions
-
-## React Native New Architecture Enablement (2026-01-19)
-
-### Overview
-Enabled React Native New Architecture (Fabric/TurboModules) for enhanced performance and bridgeless communication.
-
-### Configuration Changes
-1. **app.json**: Added `newArchEnabled: true` and `expo-dev-client` plugin
-2. **babel.config.js**: Verified compatibility with New Architecture syntax
-
-### Performance Benefits
-- **Bridgeless Architecture**: Direct native module communication without JavaScript bridge
-- **Fabric Renderer**: Improved UI performance with native-like rendering
-- **TurboModules**: Faster native module initialization and smaller app size
-- **Memory Efficiency**: Reduced memory footprint and improved garbage collection
-
-### Compatibility
-- Existing components work seamlessly with both old and new architecture
-- No breaking changes to current implementation
-- Babel configuration supports New Architecture features
-
-## Entry Point Configuration Changes (2026-01-19) - Previous
-
-### Issue Fixed
-- **Problem**: Mobile app failed to start due to incorrect entry point configuration
-- **Root Cause**: package.json pointed to `expo-router/entry` but used custom navigation
-- **Solution**: Updated entry point to `./App.tsx` and configured asset handling
-
-### Changes Made
-1. **package.json**: Changed `"main"` from `"expo-router/entry"` to `"./App.tsx"`
-2. **app.json**: Removed specific asset references, using Expo defaults
-3. **Assets**: Created minimal placeholder files or used Expo's built-in assets
-
-### Verification
-- Metro bundler starts successfully
-- No ConfigError messages
-- App launches in Expo Go/dev client
-- Navigation works correctly
-
-## Architecture Diagrams
-
-### High-Level System Architecture
+### Authentication & Authorization
 ```mermaid
-graph TB
-    subgraph "User Interfaces"
-        MOB[Mobile App<br/>Parents/Students]
-        WEB[Web App<br/>Admin/Teachers]
-    end
-
-    subgraph "Development Environment"
-        EXPO[Expo CLI]
-        NEXT[Next.js CLI]
-    end
-
-    subgraph "Build Tools"
-        TURBO[Turborepo]
-        EAS[EAS Build]
-        VERCEL[Vercel]
-    end
-
-    MOB --> EXPO
-    WEB --> NEXT
-    EXPO --> TURBO
-    NEXT --> TURBO
-    TURBO --> EAS
-    TURBO --> VERCEL
+graph TD
+    A[User Login] --> B{Validate Credentials}
+    B -->|Valid| C[Generate JWT]
+    B -->|Invalid| D[Deny Access]
+    C --> E[Store in Session]
+    E --> F[Attach to Requests]
+    F --> G{Check Permissions}
+    G -->|Authorized| H[Access Resource]
+    G -->|Unauthorized| I[Return 401]
 ```
 
-### Data Flow Architecture
+### Security Measures
+1. **Authentication**:
+   - JWT-based authentication with refresh tokens
+   - Role-based access control (RBAC)
+   - Session management with expiration
+
+2. **Data Protection**:
+   - HTTPS encryption for all communications
+   - Password hashing with bcrypt
+   - Input validation and sanitization
+   - SQL injection prevention
+
+3. **API Security**:
+   - Rate limiting (100 requests/minute)
+   - CORS configuration
+   - Request size limits
+   - API key management for external services
+
+## Performance Architecture
+
+### Caching Strategy
 ```mermaid
 graph LR
-    subgraph "Mobile App"
-        A1[User] --> A2[App.tsx]
-        A2 --> A3[Zustand]
-        A3 --> A4[Navigation]
-        A4 --> A5[Screens]
-        A5 --> A6[Mock Data]
-    end
-
-    subgraph "Web App"
-        B1[Browser] --> B2[Next.js]
-        B2 --> B3[App Router]
-        B3 --> B4[Components]
-        B4 --> B5[Context]
-        B5 --> B6[Mock Data]
-    end
-
-    A6 --> C1[Shared Types]
-    B6 --> C1
-    C1 --> C2[Future Backend API]
+    A[Client] --> B{First Request}
+    B --> C[Check Cache]
+    C -->|Hit| D[Return Cached Data]
+    C -->|Miss| E[Fetch from Database]
+    E --> F[Update Cache]
+    F --> D
+    D --> G[Display to User]
 ```
 
-## Technical Debt & Improvements
+### Optimization Techniques
+1. **Web App**:
+   - Next.js automatic code splitting
+   - Static generation for static pages
+   - ISR (Incremental Static Regeneration)
+   - Image optimization with Next.js Image
 
-### Current Technical Debt
-1. **Authentication**: Mock auth needs replacement
-2. **Data Layer**: Static mock data needs API integration
-3. **State Management**: Centralized state needed for cross-app sync
-4. **Testing**: No automated tests coverage
+2. **Mobile App**:
+   - React Native FlatList for large data
+   - Image caching and optimization
+   - Lazy loading of components
+   - Background data fetching
 
-### Planned Improvements
-1. **Type Safety**: Increase test coverage to 80%+
-2. **Performance**: Bundle size optimization
-3. **Accessibility**: Full WCAG 2.1 AA compliance
-4. **Security**: Production-ready authentication
+3. **API**:
+   - Response caching with Redis (future)
+   - Database query optimization
+   - CDN for static assets
+   - Compression (gzip/brotli)
 
-## Conclusion
+## Monitoring & Observability
 
-The EContact system architecture provides a solid foundation for a school management platform with clear separation between mobile and web applications. The monorepo structure enables shared code and consistent development practices. The recent entry point configuration fix ensures the mobile app can start successfully, paving the way for continued feature development and eventual production deployment.
+### Error Tracking
+- **Sentry**: JavaScript error monitoring
+- **Supabase Logs**: Database operation tracking
+- **Custom Logging**: Application-specific events
+
+### Performance Monitoring
+- **Web Vitals**: Lighthouse CI integration
+- **Bundle Analyzer**: Webpack size monitoring
+- **React DevTools**: Component performance metrics
+
+### Analytics
+- **User Behavior**: Feature usage tracking
+- **Performance**: API response time monitoring
+- **Error Rates**: System health metrics
+
+## Deployment Architecture
+
+### CI/CD Pipeline
+```mermaid
+graph TD
+    A[Git Push] --> B{GitHub Actions}
+    B --> C[Lint & Type Check]
+    C --> D[Run Tests]
+    D --> E[Build Mobile App]
+    D --> F[Build Web App]
+    E --> G[EAS Deploy]
+    F --> H[Vercel Deploy]
+    G --> I[Mobile Store]
+    H --> J[Production]
+```
+
+### Environment Strategy
+1. **Development**: Local development with mock data
+2. **Staging**: Replica of production for testing
+3. **Production**: Live deployment with production database
+
+## Future Architecture Considerations
+
+### Scalability Plans
+1. **Database**: Read replicas for scaling reads
+2. **API**: Microservices architecture for scaling
+3. **CDN**: Global distribution for faster access
+4. **Caching**: Redis for session and data caching
+
+### Technology Evolution
+1. **Mobile**: New Architecture migration for better performance
+2. **Web**: Server components for enhanced performance
+3. **Code Quality**: Enhanced ESLint rules and automated compliance checking
+4. **Backend**: GraphQL for more efficient data fetching
+5. **Infrastructure**: Kubernetes for container orchestration
+
+---
+
+**Document Version**: 1.0.0
+**Last Updated**: January 23, 2026
+**Architecture Review Date**: Quarterly

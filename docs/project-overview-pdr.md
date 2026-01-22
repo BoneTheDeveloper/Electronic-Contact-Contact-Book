@@ -1,445 +1,227 @@
-# ECONTACT - Product Development Requirements (PDR)
-
-**Version**: 1.0
-**Last Updated**: 2026-01-19
-**Project Status**: Phase 03: Component Compatibility Completed
-
----
-
-## Table of Contents
-
-1. [Project Overview](#project-overview)
-2. [Product Vision](#product-vision)
-3. [Target Users](#target-users)
-4. [Core Features](#core-features)
-5. [Technical Requirements](#technical-requirements)
-6. [Design System](#design-system)
-7. [Implementation Status](#implementation-status)
-8. [Success Metrics](#success-metrics)
-9. [Future Roadmap](#future-roadmap)
-
----
+# School Management System - Project Overview & PDR
 
 ## Project Overview
 
-**ECONTACT** is an electronic contact book management system designed for educational institutions. The system provides a centralized platform for administrators and teachers to manage student information, academic records, and communications.
+The School Management System is a comprehensive educational platform designed to streamline communication and management between administrators, teachers, parents, and students. The system consists of two main applications: a mobile app for parent and student portals, and a web app for administrator and teacher portals.
 
-### Project Details
+### Mission
+To create an intuitive, efficient, and modern school management system that enhances communication, reduces administrative workload, and provides real-time access to academic information for all stakeholders.
 
-- **Project Name**: ECONTACT - Electronic Contact Book System
-- **Institution**: Bach Khoa University, Hanoi
-- **Development Team**: Project 2 - Academic Year 2025-2026
-- **Platform**: Web Application (React Native)
-- **Language**: Vietnamese UI throughout
-- **Launch Date**: Q1 2026
+### Vision
+To be the leading digital platform for educational institutions, combining cutting-edge technology with user-centered design to create seamless experiences for students, parents, teachers, and administrators.
 
----
+## Product Development Requirements (PDR)
 
-## Product Vision
+### Functional Requirements
 
-### Mission Statement
+#### User Management
+- **Multi-role Authentication**: Support for 4 distinct user roles (Admin, Teacher, Parent, Student)
+- **Role-based Access Control**: Each role has specific permissions and accessible features
+- **User Profile Management**: Comprehensive profile system with role-specific attributes
+- **Session Management**: Secure authentication with proper token handling
 
-To provide an intuitive, efficient, and secure electronic contact book system that enhances administrative workflow and improves teacher-student communication in educational institutions.
+#### Mobile Application (Parent/Student Portal)
+- **Dashboard**: Quick access to 9 core services via icon-based navigation
+- **Schedule/Calendar**: Class schedules, events, and academic calendar
+- **Grades**: Academic performance tracking with detailed grade history
+- **Attendance**: Real-time attendance records with visual indicators
+- **Payments**: Fee tracking, payment methods, and receipt management
+- **Communication**: Direct messaging with teachers and school staff
+- **Notifications**: Push notifications for important updates
+- **News & Announcements**: School news and important notifications
+- **Teacher Directory**: Contact information for all teachers
+- **Leave Requests**: Student absence requests with approval workflow
+- **Academic Summary**: Consolidated academic performance reports
 
-### Core Values
+#### Web Application - Admin Portal
+- **Dashboard**: Comprehensive system statistics and metrics
+- **User Management**: CRUD operations for students, parents, teachers
+- **Class Management**: Create, update, and manage classes and schedules
+- **Payment Tracking**: Monitor all payments and financial transactions
+- **Attendance Analytics**: School-wide attendance reporting and analytics
+- **Notification Management**: Send notifications to all user groups
+- **Grade Distribution**: Visual charts and analytics for academic performance
 
-- **Accessibility**: WCAG 2.1 AA compliant design
-- **Efficiency**: Streamlined data management and retrieval
-- **Security**: Protected access with role-based permissions
-- **Usability**: Vietnamese-first interface design
-- **Reliability**: Robust data handling and backup systems
+#### Web Application - Teacher Portal
+- **Class Dashboard**: Overview of assigned classes and student lists
+- **Attendance Marking**: Daily attendance recording with batch operations
+- **Grade Entry**: Input and manage student grades with assignment tracking
+- **Parent Communication**: Send messages to parents of specific students
+- **Schedule View**: Personal teaching schedule and classroom assignments
+- **Student Performance**: Individual and class performance tracking
 
----
+### Non-Functional Requirements
 
-## Target Users
+#### Performance
+- **Response Time**: All critical operations must complete within 2 seconds
+- **Concurrent Users**: Support 100+ concurrent users with minimal performance degradation
+- **Mobile Performance**: App launch time under 5 seconds, smooth 60fps animations
+- **Database Optimization**: Sub-100ms query response time for common operations
 
-### Primary Users
+#### Security
+- **Authentication**: JWT-based secure authentication with refresh tokens
+- **Data Encryption**: All sensitive data encrypted at rest and in transit
+- **Input Validation**: Comprehensive validation for all user inputs
+- **Rate Limiting**: API rate limiting to prevent abuse
+- **Audit Logging**: Complete audit trail for all administrative actions
+- **Password Security**: bcrypt hashing with salt, minimum 12-character requirements
 
-#### 1. Teachers (Giáo viên)
-- **User Goals**:
-  - Track student attendance and grades efficiently
-  - Communicate with parents and administrators
-  - Generate academic reports
-- **Technical Proficiency**: Moderate to High
-- **Access Pattern**: Daily usage during academic periods
+#### Scalability
+- **Database**: Support for 10,000+ students and 500+ concurrent users
+- **Architecture**: Microservices-ready design for future scaling
+- **Storage**: Cloud-based storage with CDN for media files
+- **Load Balancing**: Horizontal scaling capability for web servers
 
-#### 2. Administrators (Quản trị viên)
-- **User Goals**:
-  - Manage school-wide academic records
-  - Oversee teacher activities and assignments
-  - Generate institutional reports
-- **Technical Proficiency**: High
-- **Access Pattern**: Daily administrative tasks, periodic reporting
+#### Usability
+- **Mobile First**: Optimized for mobile devices with responsive design
+- **Intuitive Navigation**: Consistent and predictable user interface
+- **Accessibility**: WCAG 2.1 AA compliant for all user interfaces
+- **Offline Support**: Critical features available without internet connection
+- **Multi-language**: Support for English and Vietnamese languages
 
-### Secondary Users
+## Technical Architecture
 
-#### 3. School Management
-- **User Goals**: Monitor academic performance trends
-- **Access Pattern**: Weekly reviews, policy decisions
-
-#### 4. Parents (Future)
-- **User Goals**: Track student progress and communicate
-- **Access Pattern**: Weekly check-ins, monthly reviews
-
----
-
-## Core Features
-
-### Current Implementation
-
-#### 1. Authentication System ✅
-- **Role-based Login**: Teacher/Admin selection
-- **Secure Access**: Password with visibility toggle
-- **Forgot Password**: Multi-step verification flow
-- **Multi-factor OTP**: Enhanced security
-- **Duration**: 2026-01-15
-
-#### 2. User Interface Design ✅
-- **Split-Screen Layout**: 50/50 branding and login panels
-- **Vietnamese Language**: Full UI localization
-- **Glassmorphism Effects**: Modern visual design
-- **Responsive Design**: Mobile-first approach
-- **Color Scheme**: Blue gradient (#0284C7 to #075985)
-
-#### 3. Interactive Components ✅
-- **Role Toggle**: Switch between Teacher/Admin views
-- **Form Validation**: Input with dynamic feedback
-- **Password Visibility**: Toggle between hidden/shown
-- **Animation Effects**: Smooth transitions and micro-interactions
-- **Duration**: 2026-01-15
-
-#### 4. Component Compatibility & Navigation ✅
-- **Centralized Navigation Types**: Single source of truth for React Navigation v7
-- **Type Safety**: Enhanced TypeScript navigation prop types
-- **Expo SDK 54**: Compatibility verified with latest Expo features
-- **Route Parameters**: Fixed paymentId and other navigation parameters
-- **Navigation Refactoring**: Removed duplicate type definitions
-- **Duration**: 2026-01-19 (Phase 03)
-
-### Planned Features
-
-#### 1. Contact Management
-- Student directory with search capabilities
-- Contact information hierarchy (personal → academic → emergency)
-- Bulk import/export functionality
-- Advanced filtering and sorting options
-
-#### 2. Academic Records
-- Grade tracking and calculation
-- Attendance monitoring with visual reports
-- Progress analytics and trend analysis
-- Report generation and export
-
-#### 3. Communication System
-- Built-in messaging (teacher-parent, teacher-admin)
-- Notification system for important updates
-- Announcement broadcasting
-- Meeting scheduling integration
-
-#### 4. Administrative Tools
-- User management and permissions
-- System configuration and customization
-- Data backup and recovery
-- Audit logging and compliance reporting
-
----
-
-## Technical Requirements
-
-### Architecture
-
-#### Frontend Stack
-- **Framework**: React Native (Web Target)
-- **UI Library**: Custom components with Tailwind CSS
-- **State Management**: React Context (future: Redux Toolkit)
-- **Routing**: React Router for web navigation
-- **Forms**: React Hook Form with validation
-
-#### Backend Requirements (Future)
-- **API**: RESTful architecture
-- **Database**: PostgreSQL with Prisma ORM
-- **Auth**: JWT tokens with refresh mechanism
-- **Real-time**: WebSocket for live updates
-
-### Performance Requirements
-
-- **Load Time**: < 2 seconds initial render
-- **Response Time**: < 200ms API responses
-- **Bundle Size**: < 500KB gzipped
-- **Offline Support**: Critical functionality cached
-
-### Security Requirements
-
-- **Data Encryption**: TLS 1.3 for all communications
-- **Password Storage**: bcrypt hashing with salt
-- **Session Management**: Secure, time-limited tokens
-- **Input Sanitization**: XSS and SQL injection prevention
-- **Audit Trails**: Complete activity logging
-
----
-
-## Design System
-
-### Color Palette (Updated)
-
-#### Primary Colors
-- **Primary Blue**: #0284C7 (Main brand color)
-- **Primary Dark**: #075985 (Gradient end, hover states)
-- **Secondary Light**: #E0F2FE (Background highlights)
-
-#### Brand Colors
-- **Success Green**: #10B981 (Grades, positive actions)
-- **Warning Orange**: #F59E0B (Warnings, pending items)
-- **Error Red**: #EF4444 (Errors, critical issues)
-
-#### Neutral Colors
-- **Text Primary**: #111827 (Headings, important text)
-- **Text Secondary**: #6B7280 (Labels, descriptions)
-- **Text Disabled**: #9CA3AF (Placeholders, inactive)
-- **Background**: #FFFFFF (Main content areas)
-- **Surface**: #F3F4F6 (Cards, panels)
-
-### Typography
-
-#### Font System
-- **Primary Font**: Inter (Full Vietnamese character support)
-- **Weights**: 300, 400, 500, 600, 700, 800
-- **Scale**: Material Design 3 inspired
-
-#### Type Hierarchy
-```markdown
-- Display (32px/800): Page titles
-- Headline (24px/600): Section headers
-- Body (16px/400): Main content
-- Label (14px/500): Form labels
-- Caption (12px/400): Helper text
+### System Architecture
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Load Balancer                          │
+└───────────────────────┬───────────────────────────────────┘
+                        │
+┌───────────────────────▼───────────────────────────────────┐
+│                   API Gateway                             │
+└───────────────────────┬───────────────────────────────────┘
+                        │
+    ┌─────────────────┬─────────────────┬─────────────────┐
+    │                 │                 │                 │
+┌───▼───┐         ┌───▼───┐         ┌───▼───┐         ┌───▼───┐
+│ Web   │         │ Mobile │         │ Admin │         │ Teacher│
+│ App   │         │ App    │         │ Portal│         │ Portal │
+│ (Next.js)│       │ (RN)   │         │ (Next.js)│      │ (Next.js)│
+└───────┘         └───────┘         └───────┘         └───────┘
+    │                 │                 │                 │
+    └─────────────────┼─────────────────┼─────────────────┘
+                        │
+                ┌───────▼───────┐
+                │   Database    │
+                │ (PostgreSQL)  │
+                └───────────────┘
 ```
 
-### Component Library
+### Technology Stack
 
-#### New Components (Login Redesign)
-1. **AuthBrandingPanel**: Left-side branding display
-2. **LoginForm**: Right-side authentication form
-3. **RoleToggle**: Teacher/Admin switch buttons
-4. **PasswordInput**: Toggleable password field
-5. **GlassCard**: Glassmorphism effect container
+#### Frontend
+- **Mobile**: React Native 0.76.9, Expo SDK 54, React Navigation 7.x, React Native Paper 5.x
+- **Web**: Next.js 15 (App Router), React 18, TypeScript 5, Tailwind CSS, shadcn/ui
+- **State Management**: Zustand for mobile, React Query for web
+- **Authentication**: Supabase Auth
 
-#### Component Principles
-- **Consistent**: Same patterns across all screens
-- **Accessible**: ARIA labels, keyboard navigation
-- **Responsive**: Adapts to all device sizes
-- **Themeable**: Easy to modify global styles
+#### Backend
+- **API**: Next.js API Routes with Edge Functions
+- **Database**: PostgreSQL with Supabase
+- **Real-time**: Supabase Realtime for live updates
+- **File Storage**: Supabase Storage
 
----
+#### Shared Infrastructure
+- **Monorepo**: Turborepo with pnpm workspaces
+- **TypeScript**: Shared types package across all applications
+- **Testing**: Jest, React Testing Library
+- **Build System**: TSC, webpack, Metro bundler
 
-## Implementation Status
+## Development Standards
 
-### Completed ✅
+### Code Quality
+- **TypeScript**: Strict typing enabled across all projects
+- **ESLint**: Consistent linting rules for all codebases
+- **Prettier**: Automatic code formatting
+- **Husky**: Git hooks for pre-commit checks
+- **Conventional Commits**: Semantic versioning and changelog generation
 
-#### Login Page Redesign
-- **Status**: 100% Complete
-- **Duration**: 2026-01-15
-- **Files Modified**:
-  - `apps/web/app/(auth)/layout.tsx` - Split-screen layout
-  - `apps/web/app/(auth)/login/page.tsx` - Complete redesign
-  - `apps/web/components/auth-branding-panel.tsx` - New branding component
+### Testing Strategy
+- **Unit Tests**: 80% coverage requirement for all business logic
+- **Integration Tests**: API endpoint testing with mock databases
+- **E2E Tests**: Cypress for critical user flows
+- **Mobile Testing**: Detox for automated mobile testing
+- **Accessibility**: axe-core for automated accessibility testing
 
-#### Key Features Implemented
-1. **Split-Screen Layout**
-   - Branding panel (left) with animated effects
-   - Login form (right) with glassmorphism
-   - Responsive collapse on mobile
+### Performance Monitoring
+- **Web Vitals**: Lighthouse integration for web performance
+- **Bundle Analysis**: Webpack Bundle Analyzer
+- **Mobile Performance**: React Native Performance Monitor
+- **APM**: Sentry for error tracking and performance monitoring
 
-2. **Vietnamese UI**
-   - Full Vietnamese language localization
-   - Cultural appropriateness maintained
-   - Vietnamese character support in Inter font
+## Project Phases
 
-3. **Modern Design**
-   - Blue gradient background (#0284C7 → #075985)
-   - Glassmorphism effects throughout
-   - Smooth animations and transitions
-   - Floating elements with subtle motion
+### Phase 01: React Native Boolean Type Compliance ✅
+**Status**: Completed
+**Date**: January 23, 2026
+**Description**: Comprehensive audit of React Native boolean type usage across all mobile components to ensure proper JavaScript expressions instead of string literals.
 
-4. **Interactive Elements**
-   - Role toggle buttons (Giáo viên/Quản trị viên)
-   - Password visibility toggle
-   - Form validation feedback
-   - Hover and focus states
+### Phase 02: ESLint Boolean Props Compliance ✅
+**Status**: Completed
+**Date**: January 23, 2026
+**Description**: Implementation of custom ESLint rule and standalone verification script for React Native boolean props compliance with automated checks.
 
-5. **Accessibility**
-   - WCAG 2.1 AA compliant
-   - High contrast ratios maintained
-   - Keyboard navigation support
-   - Screen reader friendly
+### Phase 03: New Architecture Compatibility
+**Status**: Pending
+**Estimated**: Q1 2026
+**Description**: Upgrade React Native to support New Architecture while maintaining Expo Go compatibility.
 
-#### Mobile App Entry Point Configuration
-- **Status**: 100% Complete
-- **Duration**: 2026-01-19
-- **Files Modified**:
-  - `apps/mobile/package.json` - Fixed main entry point
-  - `apps/mobile/app.json` - Updated asset configuration
-  - `apps/mobile/assets/` - Created minimal placeholder assets
+### Phase 03: Component Library Migration
+**Status**: Pending
+**Estimated**: Q2 2026
+**Description**: Migration from React Native Paper to modern component library with improved performance.
 
-#### Key Issues Fixed
-1. **Entry Point Conflict**
-   - Changed `"main"` from `"expo-router/entry"` to `"./App.tsx"`
-   - Verified custom React Navigation implementation works
-   - Eliminated ConfigError on Metro bundler startup
+### Phase 04: API Integration
+**Status**: Pending
+**Estimated**: Q3 2026
+**Description**: Replace mock data with real Supabase integration and implement proper data synchronization.
 
-2. **Asset Configuration**
-   - Removed non-existent asset references
-   - Configured Expo default asset handling
-   - Created minimal placeholder images (icon.png, splash.png)
-   - Set assetBundlePatterns to `"**/*"` for flexibility
+### Phase 05: Real Authentication
+**Status**: Pending
+**Estimated**: Q4 2026
+**Description**: Implement JWT-based authentication with role-based access control.
 
-3. **Verification**
-   - Metro bundler starts successfully
-   - App launches in Expo Go/dev client
-   - Navigation works correctly
-   - No asset not found errors
-
-#### React Native New Architecture Enablement
-- **Status**: 100% Complete
-- **Duration**: 2026-01-19
-- **Phase**: Phase 02: New Architecture
-- **Files Modified**:
-  - `apps/mobile/app.json` - Added `newArchEnabled: true` and expo-dev-client plugin
-  - `apps/mobile/babel.config.js` - Verified compatibility with New Architecture
-
-#### Key Implementation Details
-1. **New Architecture Configuration**
-   - Enabled `newArchEnabled: true` in app.json for bridgeless performance
-   - Added `expo-dev-client` plugin support for development builds
-   - Verified Babel configuration compatibility with Fabric/TurboModules
-
-2. **Performance Benefits**
-   - Bridgeless architecture for native module communication
-   - Fabric renderer for improved UI performance
-   - TurboModules for faster native module initialization
-   - Reduced memory footprint and improved startup time
-
-3. **Compatibility Verification**
-   - Babel config supports New Architecture syntax
-   - Existing components work with both old and new architecture
-   - No breaking changes to current implementation
-
-### In Progress 🔄
-
-1. Core database structure design
-2. API endpoint specifications
-3. User flow mapping
-
-### Planned ⏳
-
-1. Student management module
-2. Grade tracking system
-3. Communication features
-4. Admin dashboard
-
----
+### Phase 06: Production Deployment
+**Status**: Pending
+**Estimated**: Q1 2027
+**Description**: Deploy to production app stores and web hosting with proper CI/CD pipeline.
 
 ## Success Metrics
 
-### User Experience Metrics
+### User Adoption
+- 90% of target schools using the system within first year
+- 80% parent/user activation rate
+- 95% feature utilization rate
 
-#### Login Page
-- **Task Success Rate**: > 95% (User can complete login)
-- **Time to Login**: < 15 seconds (From page load to dashboard)
-- **Error Rate**: < 2% (Failed login attempts)
-- **User Satisfaction**: > 4.5/5 (Post-login survey)
+### Performance
+- 99.9% uptime guarantee
+- <100ms average response time
+- 4.8+ star app store rating
 
-#### General Application
-- **Daily Active Users**: Target 100% teaching staff
-- **Session Duration**: Average 45 minutes
-- **Feature Adoption**: > 80% within first month
-- **Support Tickets**: < 5% of user base
+### Technical Debt
+- <5% technical debt ratio
+- Automated testing coverage >80%
+- 0 critical security vulnerabilities
 
-### Technical Metrics
+## Risk Assessment
 
-#### Performance
-- **Page Load Time**: < 2 seconds
-- **API Response Time**: < 200ms
-- **Downtime**: < 0.1% monthly
-- **Error Rate**: < 0.1%
+### Technical Risks
+- **React Native Upgrade**: Potential breaking changes with major version updates
+- **Performance**: Database optimization challenges with large datasets
+- **Compatibility**: Cross-platform consistency across iOS/Android
 
-#### Security
-- **Security Incidents**: 0
-- **Compliance**: 100% WCAG 2.1 AA
-- **Backup Success Rate**: 100%
-- **Uptime**: 99.9%
+### Business Risks
+- **User Adoption**: Resistance from traditional school administrations
+- **Competition**: Established players in education technology market
+- **Regulatory**: Changes in educational data privacy regulations
 
----
-
-## Future Roadmap
-
-### Phase 1: Core Features (Q1 2026)
-- [ ] Student directory management
-- [ ] Basic attendance tracking
-- [ ] Simple grade entry system
-- [ ] User authentication expansion
-
-### Phase 2: Advanced Features (Q2 2026)
-- [ ] Advanced analytics and reporting
-- [ ] Parent portal access
-- [ ] Bulk operations support
-- [ ] Integration with external systems
-
-### Phase 3: Component Compatibility ✅ (Completed 2026-01-19)
-- [x] Expo SDK 54 and React Navigation 7.x compatibility
-- [x] Centralized navigation type system
-- [x] Type safety improvements across all components
-- [x] New Architecture verification
-- [x] Mobile app entry point configuration
-- [x] Component refactoring and optimization
-
-### Phase 4: Enterprise Features (Q4 2026)
-- [ ] Multi-school support
-- [ ] Advanced permissions system
-- [ ] Production API integration
-- [ ] Real-time notification system
-
-### Phase 4: Innovation (Q4 2026)
-- [ ] AI-powered insights
-- [ ] Predictive analytics
-- [ ] Advanced automation
-- [ ] VR/AR visualization features
+### Mitigation Strategies
+- Incremental feature rollouts with beta testing
+- Comprehensive documentation and training materials
+- Regular security audits and compliance updates
 
 ---
 
-## Unresolved Questions
-
-1. Should parent portal include full student data or limited access?
-2. What external systems need integration (LMS, payroll, etc.)?
-3. Should offline capabilities be prioritized over cloud features?
-4. Mobile app web or native development?
-
----
-
-## Changelog
-
-**v1.0 (2026-01-19)**
-- Initial project overview PDR created
-- Login page redesign milestone completed
-- Vietnamese UI specifications documented
-- WCAG 2.1 AA compliance requirements added
-- Glassmorphism design system established
-- Split-screen layout pattern defined
-- Phase 02: New Architecture implementation completed
-- React Native New Architecture enabled (Fabric/TurboModules)
-- Performance improvements with bridgeless architecture
-- Babel configuration verified for New Architecture compatibility
-- Mobile app entry point configuration fixed (package.json, app.json)
-- Custom React Navigation implementation verified working
-- Expo asset configuration updated to use default resources
-- System architecture documentation created
-- Deployment guide updated with mobile build process
-- **Phase 03: Component Compatibility completed**
-- Centralized navigation type system implemented (types.ts)
-- Expo SDK 54 and React Navigation 7.x compatibility verified
-- Enhanced type safety across all mobile components
-- Removed duplicate navigation type definitions
-- Fixed route parameter types (paymentId, etc.)
-- Authentication screens navigation props updated
-
----
+**Document Version**: 1.0.0
+**Last Updated**: January 23, 2026
+**Project Lead**: Development Team

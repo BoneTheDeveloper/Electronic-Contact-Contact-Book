@@ -1,981 +1,583 @@
-# Code Standards - EContact School Management
+# Code Standards - School Management System
 
-**Version**: 1.0
-**Last Updated**: 2026-01-19
-**Status**: React Native New Architecture Enabled
+This document outlines the coding standards and best practices for the School Management System project. All developers must adhere to these standards to ensure code quality, maintainability, and consistency across the codebase.
 
 ## Table of Contents
-
-1. [Overview](#overview)
+1. [General Principles](#general-principles)
 2. [TypeScript Standards](#typescript-standards)
 3. [React/React Native Standards](#reactreact-native-standards)
-4. [Project Structure](#project-structure)
-5. [Naming Conventions](#naming-conventions)
-6. [Code Style Guidelines](#code-style-guidelines)
-7. [Error Handling](#error-handling)
-8. [Testing Standards](#testing-standards)
-9. [Performance Guidelines](#performance-guidelines)
-10. [Security Best Practices](#security-best-practices)
-11. [Documentation Standards](#documentation-standards)
+4. [Component Architecture](#component-architecture)
+5. [State Management](#state-management)
+6. [API Integration](#api-integration)
+7. [Testing Standards](#testing-standards)
+8. [Git Workflow](#git-workflow)
+9. [Project Structure](#project-structure)
 
-## Overview
+## General Principles
 
-This document outlines the coding standards and best practices for the EContact school management system. These standards ensure code quality, maintainability, and consistency across both mobile and web applications.
+### YAGNI (You Ain't Gonna Need It)
+- Only implement features that are currently needed
+- Avoid over-engineering solutions
+- Focus on MVP first, then add enhancements
+
+### KISS (Keep It Simple, Stupid)
+- Prefer simple solutions over complex ones
+- Avoid unnecessary abstractions
+- Write code that's easy to understand
+
+### DRY (Don't Repeat Yourself)
+- Extract common functionality into reusable components
+- Create shared utilities and hooks
+- Avoid duplicating code across similar features
 
 ## TypeScript Standards
 
-### TypeScript Configuration
+### Strict Mode
+All TypeScript projects must have strict mode enabled:
 
-#### Mobile App (apps/mobile)
 ```json
-// tsconfig.json
 {
   "compilerOptions": {
-    "target": "es2020",
-    "lib": ["es2020", "dom"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx"
-  },
-  "include": ["src", "App.tsx"],
-  "exclude": ["node_modules"]
-}
-```
-
-#### Web App (apps/web)
-```json
-// tsconfig.json
-{
-  "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true
+  }
 }
 ```
 
 ### Type Definitions
+- Always type function parameters and return values
+- Use interfaces for object shapes
+- Prefer type aliases for unions and intersections
+- Avoid `any` type - use `unknown` or create proper types
 
-#### Strict Mode Enabled
+### Boolean Prop Compliance (Phase 01 & 02 Complete)
+All React Native boolean props MUST use proper JavaScript expressions:
+
 ```typescript
-// ✅ Always use strict mode
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'teacher' | 'parent' | 'student';
-}
+// ✅ Correct
+<ScrollView showsVerticalScrollIndicator={false} />
+<Pressable disabled={isLoading} />
+<TextInput secureTextEntry={!showPassword} />
 
-// ✅ Use interfaces for objects
-// ✅ Use types for unions/primitives
-// ✅ Explicit null checks
-const user: User | null = getUser();
-if (user) {
-  // ✅ Non-null assertion only when certain
-  console.log(user.name);
-}
+// ❌ Incorrect (string literals)
+<ScrollView showsVerticalScrollIndicator="false" />
+<Pressable disabled="true" />
+<TextInput secureTextEntry="false" ```
 ```
 
-#### Generic Types
+**Phase 02 Implementation**: Automated Compliance Checking
+- **Standalone Script**: `npm run check:boolean-props` - Executes `apps/mobile/scripts/check-boolean-props.js`
+- **ESLint Integration**: Custom rule `no-string-boolean-props` in `.eslintrc.js`
+- **Full Validation**: `npm run validate` - Runs lint + typecheck + boolean props check
+- **Comprehensive Coverage**: Scans all TSX files in `src/` directory for boolean prop violations
+
+### Function Signatures
 ```typescript
-// ✅ Define generic interfaces
-interface ApiResponse<T> {
-  data: T;
-  message: string;
-  status: number;
-}
+// ✅ Good
+const fetchUserData = async (userId: string): Promise<User> => {
+  // implementation
+};
 
-// ✅ Use generics for reusable components
-function useApi<T>(url: string): ApiResponse<T> {
-  // Implementation
-}
-
-// ❌ Avoid any type
-const data: any = fetchData();
+// ❌ Bad
+const fetchUserData = async (id) => {
+  // implementation
+};
 ```
 
 ## React/React Native Standards
 
-### Component Architecture
-
-#### Functional Components with Hooks
+### Component Structure
 ```typescript
-// ✅ Use function components
-const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdate }) => {
-  // ✅ Use state hooks
-  const [isEditing, setIsEditing] = useState(false);
-  const [userData, setUserData] = useState(user);
-
-  // ✅ Use effect hooks for side effects
-  useEffect(() => {
-    // Fetch data on mount
-  }, []);
-
-  // ✅ Use useCallback for event handlers
-  const handleSave = useCallback(() => {
-    onUpdate(userData);
-    setIsEditing(false);
-  }, [userData, onUpdate]);
-
-  return (
-    <View style={styles.container}>
-      {/* Component content */}
-    </View>
-  );
-};
-
-// ✅ Define prop types
-interface UserProfileProps {
-  user: User;
-  onUpdate: (user: User) => void;
+// Functional Components
+interface ComponentProps {
+  title: string;
+  isLoading?: boolean;
+  onAction?: () => void;
 }
 
-export default UserProfile;
-```
-
-#### Component Organization
-```typescript
-// ✅ Single file exports
-export default function Component() { /* ... */ }
-
-// ✅ Group related components
-// components/user/
-// ├── index.ts          (exports)
-// ├── UserProfile.tsx
-// ├── UserAvatar.tsx
-// └── UserCard.tsx
-
-// ✅ Use camelCase for component names
-const UserProfileCard: React.FC = () => { /* ... */ };
-const userCardStyles = StyleSheet.create({ /* ... */ });
-```
-
-### State Management
-
-#### Zustand Pattern (Mobile)
-```typescript
-// ✅ Create store interface
-interface UserStore {
-  user: User | null;
-  isLoading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-}
-
-// ✅ Create store with actions
-const useUserStore = create<UserStore>((set) => ({
-  user: null,
-  isLoading: false,
-  error: null,
-
-  login: async (email: string, password: string) => {
-    try {
-      set({ isLoading: true, error: null });
-      const user = await authService.login(email, password);
-      set({ user, isLoading: false });
-    } catch (error) {
-      set({ error: error.message, isLoading: false });
-    }
-  },
-
-  logout: () => set({ user: null, error: null }),
-}));
-
-// ✅ Use in components
-const UserProfile: React.FC = () => {
-  const user = useUserStore((state) => state.user);
-  const login = useUserStore((state) => state.login);
-
+const MyComponent: React.FC<ComponentProps> = ({ title, isLoading = false, onAction }) => {
   return (
     <View>
-      {user ? <Text>{user.name}</Text> : <Button onPress={() => login()}>Login</Button>}
+      <Text>{title}</Text>
+      {isLoading && <ActivityIndicator />}
+      <Button onPress={onAction} title="Action" disabled={isLoading} />
     </View>
   );
 };
+
+export default MyComponent;
 ```
 
-#### React Context (Web)
+### Prop Types
+- Always use TypeScript interfaces for component props
+- Provide default values for optional props
+- Use JSDoc comments for complex props
+- Group related props logically
+
+### React Native Best Practices
+1. **Boolean Props**: Always use expressions, never strings
+2. **Flatlist**: Use `ItemSeparatorComponent` for spacing
+3. **Styling**: Use StyleSheet.create for consistency
+4. **Images**: Use `require()` for local images, proper sizing
+5. **Navigation**: Use typed navigation parameters
+
+### Styling Standards
 ```typescript
-// ✅ Create context with typed provider
-interface AuthContextType {
-  user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// ✅ Create custom hook
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
-};
-
-// ✅ Provider component
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-
-  const login = useCallback(async (email: string, password: string) => {
-    // Login logic
-  }, []);
-
-  const logout = useCallback(() => {
-    setUser(null);
-  }, []);
-
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-```
-
-## Project Structure
-
-### Mobile App Structure
-```
-apps/mobile/
-├── assets/
-│   ├── icons/          # All icon files
-│   ├── images/         # Images and graphics
-│   └── README.md       # Asset documentation
-├── src/
-│   ├── components/    # Reusable components
-│   │   ├── common/     # Common UI components
-│   │   ├── forms/      # Form components
-│   │   └── layout/     # Layout components
-│   ├── screens/       # Screen components
-│   │   ├── auth/       # Authentication screens
-│   │   ├── dashboard/  # Dashboard screens
-│   │   ├── profile/    # Profile screens
-│   │   └── settings/   # Settings screens
-│   ├── navigation/    # Navigation configuration
-│   │   ├── Navigator.tsx
-│   │   ├── types.ts
-│   │   └── Stack.tsx
-│   ├── stores/         # Zustand stores
-│   │   ├── auth.ts
-│   │   ├── user.ts
-│   │   └── app.ts
-│   ├── mock-data/     # Mock data files
-│   │   ├── users.json
-│   │   ├── grades.json
-│   │   └── attendance.json
-│   ├── types/          # Type definitions
-│   │   ├── index.ts
-│   │   ├── user.ts
-│   │   └── api.ts
-│   ├── utils/          # Utility functions
-│   │   ├── api.ts
-│   │   ├── helpers.ts
-│   │   └── validation.ts
-│   ├── theme/          # Theme configuration
-│   │   ├── colors.ts
-│   │   ├── typography.ts
-│   │   └── index.ts
-│   ├── App.tsx        # Root component
-│   └── RootNavigator.tsx
-├── App.tsx            # Entry point
-├── package.json
-├── app.json           # Expo config
-└── tsconfig.json
-```
-
-### Web App Structure
-```
-apps/web/
-├── app/
-│   ├── (auth)/        # Authentication routes
-│   │   ├── login/page.tsx
-│   │   └── register/page.tsx
-│   ├── (admin)/       # Admin routes
-│   │   ├── dashboard/
-│   │   ├── users/
-│   │   └── classes/
-│   ├── (teacher)/     # Teacher routes
-│   │   ├── dashboard/
-│   │   ├── attendance/
-│   │   └── grades/
-│   └── api/           # API routes
-│       ├── auth/
-│       ├── users/
-│       └── classes/
-├── components/        # Reusable components
-│   ├── ui/           # Base UI components
-│   ├── forms/         # Form components
-│   ├── layout/        # Layout components
-│   └── charts/        # Chart components
-├── lib/              # Utilities and helpers
-│   ├── auth.ts
-│   ├── api.ts
-│   ├── utils.ts
-│   └── mock-data.ts
-├── types/            # Type definitions
-└── next.config.js    # Next.js configuration
-```
-
-### Shared Package Structure
-```
-packages/shared-types/
-├── index.ts          # Main exports
-├── types/
-│   ├── user.ts
-│   ├── class.ts
-│   ├── grade.ts
-│   ├── attendance.ts
-│   └── notification.ts
-└── constants/
-    └── index.ts      # Shared constants
-```
-
-## Naming Conventions
-
-### File Names
-```typescript
-// ✅ Use kebab-case for files
-user-profile.tsx
-class-list.tsx
-attendance-record.tsx
-
-// ✅ Use PascalCase for component files
-UserProfile.tsx
-ClassList.tsx
-AttendanceRecord.tsx
-
-// ✅ Use PascalCase for store files
-authStore.ts
-userStore.ts
-appStore.ts
-
-// ✅ Use kebab-case for screen files
-auth/login.tsx
-dashboard/home.tsx
-profile/settings.tsx
-```
-
-### Component Names
-```typescript
-// ✅ Use PascalCase for components
-const UserProfileCard: React.FC = () => { /* ... */ };
-const ClassScheduleList: React.FC = () => { /* ... */ };
-
-// ✅ Use descriptive names
-const UserLoginButton: React.FC = () => { /* ... */ };
-const GradeDistributionChart: React.FC = () => { /* ... */ };
-
-// ✅ Prefix with domain for clarity
-const UserProfileCard: React.FC = () => { /* ... */ };
-const StudentAttendanceList: React.FC = () => { /* ... */ };
-const TeacherGradeInput: React.FC = () => { /* ... */ };
-```
-
-### Variable Names
-```typescript
-// ✅ Use camelCase for variables
-const userProfile = { name: 'John' };
-const isLoggedIn = true;
-const userId = '123';
-
-// ✅ Use descriptive names
-const currentUser = getUser();
-const maxAttempts = 3;
-const isLoading = false;
-
-// ✅ Use constants for fixed values
-const API_BASE_URL = 'https://api.econtact.vn/v1';
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const DEBOUNCE_DELAY = 300; // ms
-```
-
-### Function Names
-```typescript
-// ✅ Use camelCase for functions
-const getUserProfile = () => { /* ... */ };
-const formatDate = (date: Date) => { /* ... */ };
-
-// ✅ Use action names for mutations
-const updateUserProfile = (data: Partial<User>) => { /* ... */ };
-const deleteAttendanceRecord = (id: string) => { /* ... */ };
-
-// ✅ Use hook names for custom hooks
-const useUserAuth = () => { /* ... */ };
-const useTheme = () => { /* ... */ };
-```
-
-## Code Style Guidelines
-
-### React Native Style Guidelines
-```typescript
-// ✅ Use StyleSheet.create for styles
+// ✅ Good
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 16,
+    backgroundColor: '#fff',
   },
-  header: {
-    backgroundColor: '#0284C7',
-    padding: 16,
-    borderRadius: 8,
-  },
-  text: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#0284C7',
   },
 });
 
-// ✅ Use styles with reference
-<Text style={styles.text}>Welcome</Text>
-
-// ✅ Use inline styles for dynamic values
-<Text style={[styles.text, { color: isActive ? '#10B981' : '#6B7280' }]}>
-  Status
-</Text>
+// ❌ Bad
+const styles = {
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#0284C7',
+    marginBottom: 10,
+  },
+};
 ```
 
-### Tailwind CSS Guidelines (Web)
-```typescript
-// ✅ Use Tailwind classes for styling
-<div className="bg-white rounded-lg shadow-md p-6">
-  <h1 className="text-2xl font-bold text-gray-800 mb-4">
-    Dashboard
-  </h1>
+## Component Architecture
 
-  {/* Responsive classes */}
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {/* Cards */}
-  </div>
-</div>
-
-// ✅ Use utility variants
-<button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-  Submit
-</button>
+### Component Hierarchy
+```
+App.tsx
+├── Navigation/
+│   ├── AuthNavigator.tsx
+│   ├── ParentTabs.tsx
+│   ├── StudentTabs.tsx
+│   └── TeacherTabs.tsx
+├── Screens/
+│   ├── auth/
+│   │   ├── LoginScreen.tsx
+│   │   └── CustomLoginScreen.tsx
+│   ├── parent/
+│   │   ├── Dashboard.tsx
+│   │   ├── Grades.tsx
+│   │   ├── Attendance.tsx
+│   │   └── ...
+│   ├── student/
+│   │   ├── Dashboard.tsx
+│   │   └── StudentScreens.tsx
+│   ├── teacher/
+│   │   ├── Dashboard.tsx
+│   │   ├── Attendance.tsx
+│   │   └── ...
+│   └── admin/
+│       ├── Dashboard.tsx
+│       ├── Users.tsx
+│       └── ...
+└── Components/
+    ├── common/
+    │   ├── Button.tsx
+    │   ├── Input.tsx
+    │   └── LoadingSpinner.tsx
+    └── custom/
+        ├── CustomCard.tsx
+        └── CustomList.tsx
 ```
 
-### React Hooks Rules
+### Component Guidelines
+1. **Single Responsibility**: Each component should do one thing well
+2. **Pure Functions**: Components should be predictable and side-effect free
+3. **Composition**: Prefer composition over inheritance
+4. **Performance**: Use `React.memo`, `useCallback`, and `useMemo` appropriately
+
+### Custom Hooks
 ```typescript
-// ✅ Use hooks at top level
-function UserProfile() {
-  const user = useUserStore((state) => state.user);
-  const [isEditing, setIsEditing] = useState(false);
+// ✅ Good
+const useAuth = () => {
+  const [user, setUser] = useState<User | null>(null);
 
-  // ✅ Hooks must be called in order
-  const debouncedValue = useDebounce(searchTerm, 300);
+  useEffect(() => {
+    // fetch user logic
+  }, []);
 
-  return <div>{/* ... */}</div>;
+  return { user, isLoading };
+};
+
+// ❌ Bad
+const useAuth = () => {
+  const user = useSelector(state => state.auth.user);
+  return user;
+};
+```
+
+## State Management
+
+### Zustand (Mobile App)
+```typescript
+// Store definition
+interface AuthState {
+  user: User | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
 }
 
-// ❌ Don't call hooks in conditions
-if (isAuthenticated) {
-  const user = useUser(); // ❌ Wrong!
-}
-
-// ❌ Don't call hooks in loops
-const items = list.map(item => {
-  const [state, setState] = useState(false); // ❌ Wrong!
-  return <Item key={item.id} />;
-});
-```
-
-## Error Handling
-
-### Error Boundaries
-```typescript
-// ✅ Create error boundary for React components
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log error to service
-    console.error('Error Boundary:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return <Text>Something went wrong.</Text>;
+const useAuthStore = create<AuthState>((set) => ({
+  user: null,
+  isLoading: false,
+  isAuthenticated: false,
+  login: async (email, password) => {
+    set({ isLoading: true });
+    try {
+      const user = await authService.login(email, password);
+      set({ user, isAuthenticated: true, isLoading: false });
+    } catch (error) {
+      set({ isLoading: false });
     }
-
-    return this.props.children;
-  }
-}
+  },
+  logout: () => {
+    set({ user: null, isAuthenticated: false });
+  },
+}));
 ```
 
-### API Error Handling
+### React Query (Web App)
 ```typescript
-// ✅ Centralized error handling
+// API service
+const useUsers = () => {
+  return useQuery({
+    queryKey: ['users'],
+    queryFn: () => api.get('/users'),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+// Mutation
+const useCreateUser = () => {
+  return useMutation({
+    mutationFn: (userData: User) => api.post('/users', userData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+};
+```
+
+### State Guidelines
+1. **Global State**: Use Zustand/React Query for shared state
+2. **Local State**: Use React hooks for component-level state
+3. **Immutability**: Never mutate state directly
+4. **Optimization**: Memoize expensive computations
+
+## API Integration
+
+### Supabase Integration
+```typescript
+// Client setup
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+// API service
+export const userService = {
+  getUsers: async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('role', 'student');
+
+    if (error) throw error;
+    return data;
+  },
+
+  createUser: async (userData: User) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert(userData)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+};
+```
+
+### Error Handling
+```typescript
+// Global error handler
 const handleApiError = (error: unknown) => {
-  if (error instanceof AxiosError) {
-    if (error.response?.status === 401) {
-      // Handle unauthorized
-      navigation.replace('/login');
-    } else if (error.response?.status === 429) {
-      // Handle rate limiting
-      showMessage('Too many requests. Please try again later.');
-    } else {
-      // Handle other errors
-      showMessage(error.response?.data.message || 'An error occurred');
-    }
+  if (error instanceof SupabaseError) {
+    console.error('Database error:', error.message);
+    toast.error('Failed to connect to database');
+  } else if (error instanceof Error) {
+    console.error('Network error:', error.message);
+    toast.error('Network error occurred');
   } else {
-    // Handle non-API errors
-    showMessage('Network error. Please check your connection.');
+    console.error('Unknown error:', error);
+    toast.error('An unexpected error occurred');
   }
 };
 
-// ✅ Use in API calls
-const fetchUserData = async () => {
+// Usage in components
+const handleCreateUser = async (userData: User) => {
   try {
-    const response = await api.get('/user/profile');
-    return response.data;
+    await userService.createUser(userData);
+    toast.success('User created successfully');
   } catch (error) {
     handleApiError(error);
-    throw error;
   }
 };
 ```
 
-### Input Validation
-```typescript
-// ✅ Create validation schema
-const userSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  role: z.enum(['admin', 'teacher', 'parent', 'student']),
-});
-
-// ✅ Validate on submit
-const handleSubmit = async (values: UserFormValues) => {
-  try {
-    const validatedData = userSchema.parse(values);
-    await updateUserProfile(validatedData);
-    // Success handling
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      // Handle validation errors
-      setErrors(error.errors.reduce((acc, err) => {
-        acc[err.path[0]] = err.message;
-        return acc;
-      }, {} as Record<string, string>));
-    }
-  }
-};
-```
+### API Guidelines
+1. **Consistency**: Use standardized API service modules
+2. **Error Handling**: Implement comprehensive error handling
+3. **Loading States**: Show loading indicators during API calls
+4. **Caching**: Use React Query for automatic caching and refetching
 
 ## Testing Standards
 
+### Testing Structure
+```
+tests/
+├── __tests__/
+│   ├── utils.test.ts
+│   └── validation.test.ts
+├── components/
+│   ├── Button.test.tsx
+│   └── LoginScreen.test.tsx
+├── services/
+│   └── api.test.ts
+└── mocks/
+    └── data.ts
+```
+
 ### Unit Testing
 ```typescript
-// ✅ Test utilities
-import { render, fireEvent, screen } from '@testing-library/react-native';
-import { UserProfileCard } from './UserProfileCard';
-
-describe('UserProfileCard', () => {
-  const mockUser = {
-    id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'student' as const,
-  };
-
-  it('displays user information', () => {
-    render(<UserProfileCard user={mockUser} />);
-
-    expect(screen.getByText('John Doe')).toBeTruthy();
-    expect(screen.getByText('john@example.com')).toBeTruthy();
+// Service test
+describe('userService', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it('calls onUpdate when edit button is pressed', () => {
-    const mockOnUpdate = jest.fn();
-    render(<UserProfileCard user={mockUser} onUpdate={mockOnUpdate} />);
+  describe('getUsers', () => {
+    it('should return users', async () => {
+      // Arrange
+      mockSupabaseGet.mockResolvedValue({ data: mockUsers, error: null });
 
-    fireEvent.press(screen.getByText('Edit'));
-    expect(mockOnUpdate).toHaveBeenCalledWith(mockUser);
+      // Act
+      const result = await userService.getUsers();
+
+      // Assert
+      expect(result).toEqual(mockUsers);
+      expect(mockSupabaseGet).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eq: ['role', 'student'],
+        })
+      );
+    });
   });
 });
 ```
 
-### Integration Testing
+### Component Testing
 ```typescript
-// ✅ Test API integration
-import { renderHook, act } from '@testing-library/react-hooks';
-import { useUserAuth } from './useUserAuth';
+// Component test
+describe('LoginScreen', () => {
+  it('should render correctly', () => {
+    render(<LoginScreen />);
+    expect(screen.getByText('Login')).toBeTruthy();
+    expect(screen.getByPlaceholderText('Email')).toBeTruthy();
+    expect(screen.getByPlaceholderText('Password')).toBeTruthy();
+  });
 
-describe('useUserAuth', () => {
-  it('logs in successfully', async () => {
-    const { result } = renderHook(() => useUserAuth());
+  it('should handle login submission', async () => {
+    const mockLogin = vi.fn().mockResolvedValueOnce({});
+    render(<LoginScreen onLogin={mockLogin} />);
 
-    await act(async () => {
-      await result.current.login('test@example.com', 'password');
+    fireEvent.change(screen.getByPlaceholderText('Email'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Password'), {
+      target: { value: 'password123' },
     });
 
-    expect(result.current.user).toBeDefined();
-    expect(result.current.error).toBeNull();
-  });
-});
-```
+    fireEvent.press(screen.getByText('Login'));
 
-### Testing Utilities
-```typescript
-// ✅ Mock data for tests
-export const mockUsers: User[] = [
-  {
-    id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'student',
-    createdAt: new Date(),
-  },
-  // More mock users
-];
-
-// ✅ Mock API service
-const mockApi = {
-  get: jest.fn(),
-  post: jest.fn(),
-  put: jest.fn(),
-  delete: jest.fn(),
-};
-
-beforeEach(() => {
-  jest.clearAllMocks();
-});
-```
-
-## React Native New Architecture Standards
-
-### New Architecture Compatibility
-```typescript
-// ✅ Use TurboModules for native performance
-import { TurboModuleRegistry } from 'react-native';
-
-const TurboSampleModule = TurboModuleRegistry.getEnforcing('SampleModule');
-
-// ✅ Use Fabric components for enhanced UI performance
-import { View } from 'react-native';
-
-const FabricOptimizedComponent = () => {
-  // Components automatically benefit from Fabric renderer
-  return <View style={styles.container} />;
-};
-
-// ✅ Use Bridgeless APIs when available
-const BridgelessFeature = () => {
-  // New Architecture provides direct native access
-  const nativeMethod = TurboSampleModule.bridgelessMethod();
-  return <Text>{nativeMethod}</Text>;
-};
-```
-
-### Performance Optimization with New Architecture
-```typescript
-// ✅ Leverage bridgeless communication
-const NativePerfComponent = () => {
-  // Direct native calls without JS bridge overhead
-  const perfData = TurboModuleRegistry.get('PerfModule').getMetrics();
-
-  return (
-    <View>
-      <Text>Performance: {perfData.bridgeTime}ms saved</Text>
-    </View>
-  );
-};
-
-// ✅ Use optimized event handlers
-const OptimizedInteraction = () => {
-  // New Architecture handles events more efficiently
-  const handlePress = useCallback(() => {
-    TurboModuleRegistry.get('Analytics').logEvent('button_press');
-  }, []);
-
-  return <Button onPress={handlePress} title="Click" />;
-};
-```
-
-### Memory Management
-```typescript
-// ✅ Proper cleanup for TurboModules
-useEffect(() => {
-  const module = TurboModuleRegistry.get('StreamingModule');
-
-  return () => {
-    // Clean up native resources
-    module?.dispose();
-  };
-}, []);
-
-// ✅ Avoid memory leaks with bridgeless architecture
-const MemoryEfficientComponent = () => {
-  // New Architecture has better garbage collection
-  const data = useRef(null).current;
-
-  useEffect(() => {
-    // Native modules don't hold JS references unnecessarily
-    return () => {
-      // Cleanup is more efficient
-    };
-  }, []);
-};
-```
-
-## Performance Guidelines
-
-### React Optimization
-```typescript
-// ✅ Use React.memo for expensive components
-const ExpensiveComponent: React.FC<{ data: HeavyData }> = React.memo(({ data }) => {
-  return <ExpensiveContent data={data} />;
-});
-
-// ✅ Use useCallback for stable function references
-const handleSave = useCallback(async () => {
-  await saveData();
-}, [dependency1, dependency2]);
-
-// ✅ Use useMemo for expensive computations
-const filteredData = useMemo(() => {
-  return data.filter(item => item.category === selectedCategory);
-}, [data, selectedCategory]);
-```
-
-### React Native Performance
-```typescript
-// ✅ Use FlatList for long lists
-<FlatList
-  data={items}
-  renderItem={({ item }) => <ListItem item={item} />}
-  keyExtractor={item => item.id}
-  initialNumToRender={10}
-  maxToRenderPerBatch={5}
-  windowSize={10}
-/>
-
-// ✅ Use Image component properly
-<Image
-  source={{ uri: imageUrl }}
-  style={styles.image}
-  resizeMode="contain"
-  // ✅ Add loading state
-  onLoad={() => setIsLoading(false)}
-  onError={() => setIsLoading(false)}
-/>
-
-// ✅ Use optimized lists
-const SectionList = ({ sections }) => (
-  <SectionList
-    sections={sections}
-    renderItem={({ item }) => <Item item={item} />}
-    renderSectionHeader={({ section }) => <Header title={section.title} />}
-    keyExtractor={item => item.id}
-  />
-);
-```
-
-### Bundle Optimization
-```typescript
-// ✅ Use dynamic imports for heavy components
-const HeavyChart = dynamic(() => import('./HeavyChart'), {
-  loading: () => <Skeleton />,
-  ssr: false,
-});
-
-// ✅ Use lazy loading for routes
-const LazyRoute = React.lazy(() => import('./LazyRoute'));
-
-// ✅ Use webpack bundle analyzer
-// npm run analyze
-```
-
-## Security Best Practices
-
-### Input Sanitization
-```typescript
-// ✅ Use DOMPurify for HTML content (web)
-import DOMPurify from 'dompurify';
-
-const sanitizeHtml = (html: string) => {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong'],
-  });
-};
-
-// ✅ Validate all user inputs
-const validateInput = (input: string): boolean => {
-  // Remove potentially dangerous characters
-  return !/<script|javascript:|data:text\/html|eval\(/i.test(input);
-};
-```
-
-### Secure Storage
-```typescript
-// ✅ Use secure storage for sensitive data
-const useSecureStorage = () => {
-  const setItem = async (key: string, value: string) => {
-    await SecureStore.setItemAsync(key, value, {
-      accessibleWhenLocked: false,
-      accessibleWhenPasscodeSet: true,
+    await waitFor(() => {
+      expect(mockLogin).toHaveBeenCalledWith('test@example.com', 'password123');
     });
-  };
-
-  const getItem = async (key: string): Promise<string | null> => {
-    return await SecureStore.getItemAsync(key);
-  };
-
-  return { setItem, getItem };
-};
-```
-
-### API Security
-```typescript
-// ✅ Add CSRF protection (web)
-const addCSRFToken = () => {
-  const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-  if (token) {
-    api.defaults.headers.common['X-CSRF-Token'] = token;
-  }
-};
-
-// ✅ Use HTTPS only
-const API_BASE_URL = process.env.NODE_ENV === 'production'
-  ? 'https://api.econtact.vn/v1'
-  : 'https://dev-api.econtact.vn/v1';
-
-// ✅ Secure sensitive headers
-api.interceptors.request.use(config => {
-  config.headers['X-Requested-With'] = 'XMLHttpRequest';
-  return config;
+  });
 });
 ```
 
-## Documentation Standards
+### Testing Guidelines
+1. **Coverage**: Aim for 80%+ test coverage
+2. **Mocking**: Use mocks for external dependencies
+3. **Assertions**: Test both success and error cases
+4. **Component Tests**: Test rendering, user interactions, and props
 
-### Code Comments
+## Git Workflow
+
+### Commit Convention
+Follow Conventional Commits:
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+Types:
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `style`: Code style changes
+- `refactor`: Code refactoring
+- `test`: Test-related changes
+- `chore`: Build process or auxiliary tool changes
+
+Examples:
+```bash
+feat(auth): add JWT token refresh mechanism
+fix(grades): display calculation error for letter grades
+docs(api): update user management API documentation
+style(buttons): fix padding consistency
+```
+
+### Branch Strategy
+- `main`: Production-ready code
+- `develop`: Integration branch for features
+- `feature/*`: Feature development branches
+- `fix/*`: Bug fix branches
+- `hotfix/*`: Emergency production fixes
+
+### Pull Requests
+1. **Description**: Clear description of changes
+2. **Testing**: Include test results
+3. **Documentation**: Update relevant docs
+4. **Review**: At least one reviewer required
+5. **CI/CD**: Must pass all checks
+
+## Project Structure
+
+### File Naming
+- Components: PascalCase (e.g., `UserProfile.tsx`)
+- Hooks: camelCase with `use` prefix (e.g., `useAuth.ts`)
+- Services: camelCase (e.g., `userService.ts`)
+- Utils: camelCase (e.g., `formatDate.ts`)
+- Types: PascalCase (e.g., `User.ts`)
+- Tests: Same as source files with `.test` suffix
+
+### Directory Structure
+```
+apps/
+├── mobile/
+│   ├── src/
+│   │   ├── screens/          # Screen components
+│   │   ├── components/       # Reusable components
+│   │   ├── navigation/       # Navigation setup
+│   │   ├── stores/          # Zustand stores
+│   │   ├── utils/           # Utility functions
+│   │   ├── types/           # TypeScript types
+│   │   └── mock-data/       # Mock data for development
+│   └── App.tsx
+│
+├── web/
+│   ├── app/
+│   │   ├── api/             # API routes
+│   │   ├── (auth)/          # Auth routes
+│   │   ├── (admin)/         # Admin routes
+│   │   ├── (teacher)/       # Teacher routes
+│   │   └── (student)/       # Student routes
+│   ├── components/          # Reusable components
+│   ├── lib/                # Utilities and config
+│   └── types/              # TypeScript types
+│
+└── shared-types/           # Shared TypeScript types
+```
+
+### Import Order
 ```typescript
-// ✅ Use JSDoc for functions
-/**
- * Fetches user profile data from the API
- * @param userId - The ID of the user to fetch
- * @returns Promise resolving to user data
- * @throws {ApiError} If API request fails
- */
-const fetchUserProfile = async (userId: string): Promise<User> => {
-  // Implementation
-};
+// 1. Node.js packages
+import React from 'react';
+import { View, Text } from 'react-native';
 
-// ✅ Use comments for complex logic
-// Calculate average grade weighted by credit hours
-const weightedAverage = grades.reduce((sum, grade) => {
-  return sum + (grade.score * grade.credits);
-}, 0) / totalCredits;
+// 2. Third-party packages
+import { create } from 'zustand';
+import { useQuery } from '@tanstack/react-query';
+
+// 3. Internal imports
+import { useAuthStore } from '../stores/auth';
+import { Button } from './Button';
+
+// 4. Relative imports (near bottom)
+import styles from './styles';
 ```
 
-### README Files
-```markdown
-# Component README
+## Security Guidelines
 
-## Overview
-This component displays the user profile with edit functionality.
+### Data Validation
+- Validate all user inputs
+- Sanitize data before storage
+- Use Zod or similar for runtime validation
 
-## Props
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| user | User | Yes | User data to display |
-| onUpdate | (user: User) => void | Yes | Called when user updates |
-| showActions | boolean | No | Whether to show action buttons |
+### Authentication
+- Never store sensitive data in localStorage
+- Use secure HTTP-only cookies for tokens
+- Implement proper token expiration
 
-## Usage
-```tsx
-<UserProfileCard
-  user={currentUser}
-  onUpdate={handleUserUpdate}
-  showActions={true}
-/>
-```
+### Environment Variables
+- Never commit secrets to git
+- Use environment variables for configuration
+- Document required environment variables
 
-## Testing
-Run tests with: `npm test`
+## Performance Optimization
 
-## Dependencies
-- React Native Paper
-- React Native Vector Icons
-```
+### React Native
+- Use `React.memo` for expensive components
+- Optimize images with `resizeMode` and `source`
+- Use `FlatList` for large datasets
+- Avoid inline functions in `useEffect` dependencies
 
-### API Documentation
-```typescript
-/**
- * @api {POST} /api/auth/login User Login
- * @description Authenticate user with email and password
- * @param {string} email - User email address
- * @param {string} password - User password
- * @returns {object} User object with token
- * @example
- * POST /api/auth/login
- * {
- *   "email": "user@example.com",
- *   "password": "password123"
- * }
- */
-```
+### Web App
+- Implement code splitting with Next.js
+- Use dynamic imports for heavy components
+- Optimize images with Next.js Image component
+- Implement proper caching strategies
 
-### Environment Variables Documentation
-```markdown
-# Environment Variables
+## Code Review Checklist
 
-## Required Variables
-- `NEXTAUTH_SECRET`: Secret key for NextAuth
-- `DATABASE_URL`: Database connection string
-- `API_BASE_URL`: Backend API base URL
+- [ ] Follows TypeScript strict mode
+- [ ] Boolean props use proper expressions
+- [ ] Error handling is comprehensive
+- [ ] Components follow naming conventions
+- [ ] Tests are included and passing
+- [ ] Documentation is updated
+- [ ] Performance considerations addressed
+- [ ] Security best practices followed
 
-## Optional Variables
-- `NODE_ENV`: Environment (development/production)
-- `LOG_LEVEL`: Logging level (error/warn/info/debug)
-```
+---
 
-## Conclusion
-
-These code standards ensure consistency, quality, and maintainability across the EContact project. All developers should follow these guidelines when writing code for the mobile and web applications. Regular code reviews should be conducted to ensure compliance with these standards.
-
-### Key Takeaways
-1. **TypeScript**: Always use strict mode and proper typing
-2. **Components**: Use functional components with hooks
-3. **State Management**: Choose appropriate state management for each use case
-4. **Performance**: Optimize for both web and mobile platforms
-5. **Security**: Always validate and sanitize user inputs
-6. **Testing**: Write comprehensive tests for all components
-7. **Documentation**: Keep code and documentation up to date
+**Document Version**: 1.0.0
+**Last Updated**: January 23, 2026
+**Enforced From**: January 23, 2026

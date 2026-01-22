@@ -1,670 +1,433 @@
-# Deployment Guide - EContact School Management
+# Deployment Guide - School Management System
 
-**Version**: 1.0
-**Last Updated**: 2026-01-19
-**Status**: Phase 03 - Component Compatibility Complete
-
-## Table of Contents
-
-1. [Overview](#overview)
-2. [Development Environment Setup](#development-environment-setup)
-3. [Mobile App Deployment](#mobile-app-deployment)
-4. [Web App Deployment](#web-app-deployment)
-5. [Production Deployment](#production-deployment)
-6. [Environment Variables](#environment-variables)
-7. [Troubleshooting](#troubleshooting)
-8. [Continuous Integration](#continuous-integration)
+This guide provides comprehensive instructions for deploying the School Management System to production environments for both mobile and web applications.
 
 ## Overview
 
-This guide provides comprehensive instructions for deploying the EContact school management system. The system consists of two main applications:
+The School Management System consists of two main applications that need to be deployed separately:
+1. **Mobile App** (React Native + Expo) - Deployed to App Store and Google Play
+2. **Web App** (Next.js) - Deployed to Vercel
 
-- **Mobile App**: React Native + Expo for parents and students
-- **Web App**: Next.js 15 for administrators and teachers
+## Prerequisites
 
-## Development Environment Setup
+### System Requirements
+- Node.js 18.0.0 or higher
+- pnpm 8.0.0 or higher
+- Expo CLI (for mobile deployment)
+- EAS CLI (for mobile builds)
+- Vercel CLI (for web deployment)
 
-### Prerequisites
+### Accounts Required
+- **Apple Developer Account** - For iOS App Store deployment
+- **Google Play Console Account** - For Android Play Store deployment
+- **Vercel Account** - For web application hosting
+- **Supabase Account** - For database and backend services
+- **GitHub Account** - For code repository and CI/CD
 
-```bash
-# Node.js (v18.0.0 or higher)
-node --version  # Should be >= 18.0.0
+## Environment Setup
 
-# pnpm (v8.0.0 or higher)
-pnpm --version  # Should be >= 8.0.0
+### 1. Environment Variables
+Create environment files for production:
 
-# Expo CLI (for mobile development)
-npm install -g @expo/cli
+#### Web App (.env.production)
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-production-anon-key
 
-# iOS Simulator / Android Emulator
-# - Xcode (for iOS)
-# - Android Studio (for Android)
+# Database
+DATABASE_URL=postgresql://user:password@host:port/database
+
+# Authentication
+JWT_SECRET=your-production-jwt-secret-at-least-32-characters
+JWT_EXPIRES_IN=7d
+
+# Email Service (optional)
+EMAIL_SERVER_HOST=smtp.example.com
+EMAIL_SERVER_PORT=587
+EMAIL_SERVER_USER=noreply@your-school.edu
+EMAIL_SERVER_PASSWORD=your-email-password
+
+# Analytics (optional)
+NEXT_PUBLIC_GA_TRACKING_ID=GA-XXXXXXXXXX
 ```
 
-### Project Installation
-
-```bash
-# Clone and install dependencies
-git clone <repository-url>
-cd electric_contact_book
-
-# Install all workspace dependencies
-pnpm install
-
-# Install mobile dependencies
-cd apps/mobile
-pnpm install
-
-# Install web dependencies
-cd ../web
-pnpm install
-
-# Return to root directory
-cd ../..
+#### Mobile App (app.config.js)
+```javascript
+export default {
+  expo: {
+    extra: {
+      supabaseUrl: 'https://your-project.supabase.co',
+      supabaseAnonKey: 'your-production-anon-key',
+      androidClientId: 'your-android-client-id',
+      iosClientId: 'your-ios-client-id',
+      authDomain: 'your-project.supabase.co',
+    },
+  },
+};
 ```
 
-### Development Setup Verification
+### 2. Supabase Production Setup
+1. Create a new Supabase project for production
+2. Run all migrations:
+   ```bash
+   supabase db push
+   ```
+3. Set up proper RLS (Row Level Security) policies
+4. Configure storage buckets with proper access controls
+5. Set up environment variables in your hosting platform
 
-```bash
-# Test mobile app startup
-cd apps/mobile
-npx expo start
-
-# Test web app startup
-cd ../web
-npm run dev
-```
+### 3. Vercel Configuration
+1. Connect your GitHub repository to Vercel
+2. Configure environment variables in Vercel dashboard
+3. Set up build command: `npm run build`
+4. Set output directory: `.next`
+5. Configure custom domains and redirects
 
 ## Mobile App Deployment
 
-### Development Build
+### iOS App Store Deployment
 
+#### 1. Development Build Setup
 ```bash
 cd apps/mobile
-
-# Start Expo development server
-npx expo start
-
-# For specific platforms
-npx expo start --android  # Android emulator
-npx expo start --ios     # iOS simulator
-npx expo start --web     # Web browser
+npx expo install --check
+npx expo login  # Sign in with Expo account
+npx expo build:ios --profile production
 ```
 
-### Prebuild Configuration
+#### 2. Apple Developer Account Setup
+1. Create Apple Developer account ($99/year)
+2. Create App ID for your app
+3. Create Provisioning Profile
+4. Create Certificate (Distribution or App Store)
+5. Configure Xcode with your credentials
 
-```bash
-cd apps/mobile
-
-# Generate native code
-npx expo prebuild
-
-# Clean build cache
-npx expo prebuild --clean
-```
-
-### Production Builds
-
-#### Using EAS Build
-
-```bash
-cd apps/mobile
-
-# Install EAS CLI
-npm install -g eas-cli
-
-# Login to EAS
-eas login
-
-# Build for iOS
-eas build --platform ios --profile production
-
-# Build for Android
-eas build --platform android --profile production
-
-# Build for both platforms
-eas build --platform all --profile production
-```
-
-#### Build Profiles
-
+#### 3. EAS Build Configuration
+Create `eas.json`:
 ```json
-// eas.json
 {
-  "cli": {
-    "version": ">= 8.11.0"
-  },
   "build": {
     "ios": {
-      "development": {
-        "developmentClient": true,
-        "distribution": "development",
-        "iosSimulator": true,
-        "teamId": "your-team-id"
-      },
-      "production": {
-        "distribution": "app-store",
-        "teamId": "your-team-id"
+      "team": "YOUR_APPLE_TEAM_ID",
+      "distribution": "app-store",
+      "release": {
+        "channel": "production",
+        "automatic": true
       }
     },
     "android": {
-      "development": {
-        "developmentClient": true,
-        "distribution": "internal"
-      },
-      "production": {
-        "gradleCommand": ":app:assembleRelease"
+      "distribution": "store",
+      "release": {
+        "channel": "production"
       }
     }
   }
 }
 ```
 
-### App Store Deployment
-
-#### iOS App Store
-
-1. **Upload to App Store Connect**
-   ```bash
-   eas build --platform ios --profile production
-   ```
-
-2. **Submit for Review**
-   - Log in to App Store Connect
-   - Locate the build under "TestFlight" or "App Store"
-   - Complete submission process
-   - Add metadata, screenshots, and privacy info
-
-3. **Release Checklist**
-   - App Store review notes
-   - Privacy policy URL
-   - Age rating justification
-   - App preview video
-   - App screenshots (multiple sizes)
-
-#### Google Play Store
-
-1. **Upload to Google Play Console**
-   ```bash
-   eas build --platform android --profile production
-   ```
-
-2. **Generate Signed APK/AAB**
-   ```bash
-   # Locally for testing
-   eas build --platform android --profile preview --local
-   ```
-
-3. **Store Listing Requirements**
-   - App title and description
-   - Feature graphic
-   - App screenshots (4-10 images)
-   - Icon and feature graphic
-   - Privacy policy compliance
-
-### OTA Updates
-
+#### 4. Build and Upload
 ```bash
-cd apps/mobile
+# Build for iOS
+npx eas build --platform ios --profile production
 
-# Push update to Expo
-eas update --branch production --message "Bug fix update"
+# Build for Android
+npx eas build --platform android --profile production
+```
 
-# Push development update
-eas update --branch development --message "Development build"
+#### 5. Submit to App Store
+1. Download the iOS IPA from EAS
+2. Upload to App Store Connect
+3. Fill out app information
+4. Submit for review
+
+### Android Play Store Deployment
+
+#### 1. Google Play Console Setup
+1. Create Google Play Console account
+2. Create new app listing
+3. Set up app content and store details
+4. Configure pricing and distribution
+
+#### 2. Firebase Project Setup
+1. Create Firebase project
+2. Add Android app to Firebase
+3. Download `google-services.json`
+4. Place in `android/app/google-services.json`
+
+#### 3. Android Build Configuration
+Update `android/build.gradle`:
+```gradle
+buildscript {
+    ext {
+        googleServicesVersion = "4.3.10"
+    }
+}
+
+dependencies {
+    classpath 'com.google.gms:google-services:4.3.10'
+}
+```
+
+#### 4. Build and Upload
+```bash
+# Build for Android
+npx eas build --platform android --profile production
+
+# Download APK/AAB from EAS
+# Upload to Google Play Console
+```
+
+### 5. OTA Updates
+```bash
+# Push update to production
+npx eas update --branch production --message "Production update"
+
+# Check update status
+npx eas update:status
 ```
 
 ## Web App Deployment
 
-### Development Build
+### Vercel Deployment
 
+#### 1. Connect Repository
 ```bash
-cd apps/web
+# Install Vercel CLI
+npm i -g vercel
 
-# Start development server
-npm run dev
+# Login to Vercel
+vercel login
 
-# Build for production
-npm run build
+# Link project
+vercel
 
-# Start production server
-npm start
+# Set production environment
+vercel --prod
 ```
 
-### Static Export
-
-```bash
-# Enable static export in next.config.js
-const nextConfig = {
-  output: 'export',
-  trailingSlash: true,
-  images: {
-    unoptimized: true
-  }
-}
-
-# Build and export
-npm run build
-```
-
-### Deployment Platforms
-
-#### Vercel Deployment
-
-1. **Connect GitHub Repository**
-   - Link repo to Vercel
-   - Configure automatic deployments
-
-2. **Environment Variables**
-   ```bash
-   # Vercel dashboard
-   # Settings → Environment Variables
-   ```
-   - `NEXTAUTH_SECRET`
-   - `DATABASE_URL`
-   - `API_BASE_URL`
-
-3. **Deploy**
-   ```bash
-   # Manual deploy
-   npx vercel --prod
-
-   # Preview deployment
-   npx vercel
-   ```
-
-#### Other Deployment Options
-
-**Netlify**
-```bash
-# Install Netlify CLI
-npm install -g netlify-cli
-
-# Deploy
-netlify deploy --prod
-```
-
-**GitHub Pages**
-```bash
-# Build and deploy to gh-pages branch
-npm run build
-npx gh-pages -d out
-```
-
-## Phase 03: Component Compatibility Notes (2026-01-19)
-
-### Navigation Type System
-The mobile app now uses a centralized navigation type system for enhanced type safety:
-
-#### Key Files
-- `apps/mobile/src/navigation/types.ts` - Centralized type definitions
-- `apps/mobile/src/navigation/index.ts` - Unified type exports
-
-#### Compatibility Requirements
-- **Expo SDK 54+**: Latest Expo features supported
-- **React Navigation 7.x**: Full compatibility with proper typing
-- **TypeScript Strict Mode**: Enhanced type safety enabled
-- **New Architecture**: React Native New Architecture verified
-
-#### Type Safety Features
-- Single source of truth for all navigation types
-- Removed duplicate type definitions across components
-- Enhanced route parameter typing (paymentId, etc.)
-- Proper navigation prop types for all screens
-
-#### Build Considerations
-- Metro bundler configured for React Navigation 7.x
-- Babel setup verified for New Architecture
-- TypeScript strict mode enabled for type safety
-- Development builds required (Expo Go no longer supported for SDK 54+)
-
-## Production Deployment
-
-### Environment Variables
-
-#### Mobile App (.env)
-```bash
-# apps/mobile/.env
-EXPO_PUBLIC_API_URL=https://api.econtact.vn/v1
-EXPO_PUBLIC_AUTH_URL=https://auth.econtact.vn
-```
-
-#### Web App (.env.local)
-```bash
-# apps/web/.env.local
-NEXTAUTH_URL=https://econtact.vn
-NEXTAUTH_SECRET=your-secret-key
-DATABASE_URL=postgresql://user:pass@host/db
-API_BASE_URL=https://api.econtact.vn/v1
-```
-
-### CDN Configuration
-
-**Vercel (Recommended)**
-- Automatic image optimization
-- Global CDN distribution
-- Edge functions support
-- Automatic SSL certificates
-
-**Custom CDN**
-```nginx
-# nginx.conf
-server {
-  listen 443 ssl http2;
-  server_name econtact.vn;
-
-  ssl_certificate /path/to/cert.pem;
-  ssl_certificate_key /path/to/key.pem;
-
-  location / {
-    proxy_pass http://your-web-app;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-  }
+#### 2. Configuration
+Create `vercel.json`:
+```json
+{
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key"
+  },
+  "crons": [
+    {
+      "path": "/api/cleanup-attendance",
+      "schedule": "0 2 * * *"
+    }
+  ]
 }
 ```
 
-### Database Migration (Future)
-
+#### 3. Deploy
 ```bash
-# When implementing real database
-# apps/web/migrate-database.sh
-npm run db:migrate
-npm run db:seed
+# Deploy to production
+vercel --prod
+
+# Deploy preview deployments
+vercel
+
+# View deployment history
+vercel ls
 ```
 
-## Environment Variables
+#### 4. Environment Variables Setup
+In Vercel dashboard:
+1. Go to your project
+2. Settings → Environment Variables
+3. Add all production environment variables
+4. Set to "Encrypted" for sensitive values
 
-### Mobile App Variables
+### Alternative Deployment Options
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `EXPO_PUBLIC_API_URL` | Base API URL | `https://api.econtact.vn/v1` |
-| `EXPO_PUBLIC_AUTH_URL` | Authentication service URL | `https://auth.econtact.vn` |
-| `EXPO_PUBLIC_VERSION` | App version | `1.0.0` |
+#### Docker Deployment
+Create `Dockerfile`:
+```dockerfile
+FROM node:18-alpine
 
-### Web App Variables
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NEXTAUTH_URL` | Application base URL | `https://econtact.vn` |
-| `NEXTAUTH_SECRET` | NextAuth secret key | `your-256-bit-secret` |
-| `DATABASE_URL` | Database connection string | `postgresql://...` |
-| `API_BASE_URL` | Backend API URL | `https://api.econtact.vn/v1` |
+COPY . .
+RUN npm run build
 
-## Troubleshooting
-
-### Common Mobile App Issues
-
-**Metro Bundler Not Starting**
-```bash
-# Clear Metro cache
-npx expo start --clear
-
-# Reset node modules
-rm -rf node_modules
-pnpm install
+EXPOSE 3000
+CMD ["npm", "start"]
 ```
 
-**Entry Point Configuration Error**
+Build and deploy:
 ```bash
-# Verify package.json main field
-cat apps/mobile/package.json | grep main
-
-# Should output: "main": "./App.tsx"
+docker build -t school-management-web .
+docker run -p 3000:3000 -e DATABASE_URL=your-db-url school-management-web
 ```
 
-**Asset Not Found Error**
-```bash
-# Verify app.json asset configuration
-cat apps/mobile/app.json
+## CI/CD Pipeline Setup
 
-# Assets should be configured correctly
-# or using Expo defaults
-```
+### GitHub Actions Configuration
 
-**New Architecture Compatibility Issues**
-```bash
-# Verify New Architecture configuration
-cat apps/mobile/app.json | grep newArchEnabled
-
-# Should output: "newArchEnabled": true
-
-# Check Babel configuration
-cat apps/mobile/babel.config.js
-
-# Should include necessary plugins for New Architecture
-```
-
-**New Architecture Build Issues**
-```bash
-# Clean and rebuild with New Architecture
-npx expo prebuild --clean
-npx expo start --clear
-
-# Check for specific New Architecture errors
-# in Metro bundler logs
-```
-
-**Build Issues**
-```bash
-# Clean build
-eas build --platform all --profile production --clear-cache
-
-# Check build logs
-eas build:logs --platform ios --profile production
-```
-
-### Common Web App Issues
-
-**Port Already in Use**
-```bash
-# Find process
-netstat -ano | findstr :3000
-
-# Kill process
-taskkill /PID <PID> /F
-```
-
-**Build Errors**
-```bash
-# Clean .next directory
-rm -rf .next
-npm run build
-```
-
-**Static Export Issues**
-```bash
-# Verify next.config.js
-# output: 'export' should be enabled
-```
-
-### Production Deployment Issues
-
-**SSL Certificate Problems**
-```bash
-# Check certificate
-openssl s_client -connect econtact.vn:443
-
-# Renew certificate
-certbot --renew --nginx
-```
-
-**Database Connection Issues**
-```bash
-# Test database connection
-npm run db:test
-
-# Check environment variables
-cat apps/web/.env.local
-```
-
-## Continuous Integration
-
-### GitHub Actions Workflow
-
+Create `.github/workflows/deploy.yml`:
 ```yaml
-# .github/workflows/ci.yml
-name: CI/CD Pipeline
+name: Deploy to Production
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
       - run: pnpm install
-      - run: pnpm run test
-      - run: pnpm run lint
+      - run: pnpm test
+      - run: pnpm typecheck
+      - run: pnpm lint
 
-  mobile-build:
-    runs-on: macos-latest
+  deploy-web:
     needs: test
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-      - run: pnpm install
-      - run: cd apps/mobile && pnpm install
-      - run: cd apps/mobile && eas build --platform ios --profile preview
-      # New Architecture builds may require additional configuration
-      - run: cd apps/mobile && eas build --platform ios --profile production --new-arch-only
-
-  web-build:
     runs-on: ubuntu-latest
-    needs: test
+    if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
       - run: pnpm install
-      - run: cd apps/web && npm run build
-      - run: npx vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
+      - run: pnpm build
+      - uses: vercel/action@v1
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+
+  deploy-mobile:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
+      - run: pnpm install
+      - uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 ```
 
-### Deployment Strategies
+### Environment Variables for CI/CD
+Set these secrets in your GitHub repository settings:
+- `VERCEL_TOKEN` - Vercel deployment token
+- `EXPO_TOKEN` - Expo build token
+- `APPLE_ID` - Apple Developer account ID
+- `APPLE_PASSWORD` - Apple Developer account password
+- `GOOGLE_PLAY_SERVICE_ACCOUNT_KEY` - Google Play service account JSON
 
-**Blue-Green Deployment**
-1. Deploy to staging environment
-2. Run integration tests
-3. Deploy to production
-4. Verify health checks
-5. Switch traffic
+## Post-Deployment Checklist
 
-**Canary Releases**
-1. Deploy to 5% of users
-2. Monitor performance metrics
-3. Gradually increase traffic
-4. Rollback if issues detected
+### Mobile App
+- [ ] Test all features on physical devices
+- [ ] Check app store listing and screenshots
+- [ ] Verify push notifications work
+- [ ] Test payment integration (if applicable)
+- [ ] Check app performance and crash reports
+- [ ] Submit to app review (Apple/Google)
 
-### Monitoring and Logging
+### Web App
+- [ ] Test all user flows in production
+- [ ] Verify all API endpoints work
+- [ ] Check SSL certificate is active
+- [ ] Test responsive design on all devices
+- [ ] Verify email integrations
+- [ ] Set up monitoring and error tracking
 
-**Error Tracking**
-```bash
-# Sentry integration (future)
-npm install @sentry/nextjs
-npm install @sentry/react-native
+### Common Issues and Solutions
 
-# Configure in App.tsx
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-});
-```
+#### iOS App Store Rejection
+- **Common**: Missing privacy policy
+  - Solution: Add privacy policy URL in app store connect
+- **Common**: Guideline violations
+  - Solution: Review Apple App Store Review Guidelines
+- **Common**: Bugs or crashes
+  - Solution: Test thoroughly, use TestFlight
 
-**Performance Monitoring**
-```bash
-# Lighthouse CI
-npm install -g @lhci/cli
+#### Android Play Store Rejection
+- **Common**: Security vulnerabilities
+  - Solution: Keep dependencies updated, scan for vulnerabilities
+- **Common**: Content policy violations
+  - Solution: Review Google Play policies
+- **Common**: APK signing issues
+  - Solution: Ensure proper signing configuration
 
-# Run CI tests
-lhci autorun
-```
+#### Vercel Deployment Issues
+- **Common**: Build errors
+  - Solution: Check build logs, ensure all environment variables are set
+- **Common: Runtime errors**
+  - Solution: Verify database connections, check API routes
+- **Common: Performance issues**
+  - Solution: Enable caching, optimize images
 
-## Security Considerations
+## Monitoring and Maintenance
 
-### Production Security Checklist
+### App Store Monitoring
+- Monitor app store reviews
+- Track download and usage statistics
+- Respond to user feedback
+- Update app regularly
 
-1. **Environment Variables**
-   - Store secrets in secure vaults
-   - Rotate regularly
-   - Never commit to git
+### Web App Monitoring
+- Set up Vercel analytics
+- Use Sentry for error tracking
+- Monitor Uptime with UptimeRobot
+- Set up log aggregation
 
-2. **SSL/TLS**
-   - Use Let's Encrypt certificates
-   - Enable HSTS headers
-   - Configure OCSP stapling
+### Database Maintenance
+- Regular backups
+- Performance monitoring
+- Security audits
+- Schema updates
 
-3. **Authentication**
-   - JWT tokens with expiration
-   - Refresh token rotation
-   - Secure cookie settings
+## Cost Optimization
 
-4. **Rate Limiting**
-   - Implement API rate limits
-   - DDoS protection
-   - Web Application Firewall (WAF)
+### Mobile App
+- Use EAS free tier for small projects
+- Monitor build minutes
+- Optimize app size to reduce download costs
 
-5. **Database Security**
-   - Use SSL connections
-   - Regular backups
-   - Encrypted at rest
+### Web App
+- Use Vercel Hobby/Pro plan based on traffic
+- Enable Vercel Analytics for insights
+- Optimize images to reduce bandwidth
+- Use caching to reduce database queries
 
-## Backup and Recovery
+## Scaling Considerations
 
-### Database Backups
+### Horizontal Scaling
+- Load balancer for multiple web servers
+- Database read replicas
+- CDN for static assets
+- Auto-scaling groups
 
-```bash
-# Daily backup schedule
-0 2 * * * pg_dump $DATABASE_URL > backup_$(date +\%Y\%m\%d).sql
+### Vertical Scaling
+- Increase server resources
+- Optimize database queries
+- Implement caching layer
+- Use edge computing
 
-# Upload to cloud storage
-aws s3 cp backup_$(date +\%Y\%m\%d).sql s3://econtact-backups/
-```
+---
 
-### Application Backups
-
-```bash
-# Backup source code
-tar -czf econtact_backup_$(date +\%Y\%m\%d).tar.gz apps/ packages/ docs/
-
-# GitHub repository as backup
-git push origin main
-```
-
-## Maintenance
-
-### Regular Tasks
-
-**Daily**
-- Check build status
-- Monitor error rates
-- Review user feedback
-
-**Weekly**
-- Run security scans
-- Update dependencies
-- Review performance metrics
-
-**Monthly**
-- Database optimization
-- Certificate renewal
-- Feature roadmap review
-
-### Dependency Updates
-
-```bash
-# Update all packages
-npm update
-
-# Security audit
-npm audit fix
-
-# Check for outdated packages
-npm outdated
-```
-
-## Conclusion
-
-This deployment guide covers the complete process for setting up, building, and deploying the EContact school management system. The recent mobile app entry point configuration fix and React Native New Architecture enablement ensures smooth development and production workflows with enhanced performance. Always follow security best practices and maintain regular backups for production deployments.
+**Deployment Guide Version**: 1.0.0
+**Last Updated**: January 23, 2026
+**Maintenance Schedule**: Quarterly reviews
