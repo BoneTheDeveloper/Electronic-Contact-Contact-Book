@@ -15,18 +15,30 @@
     "android": {
       "package": "com.schoolmanagement.econtact"
     },
+    "plugins": [
+      "expo-dev-client",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "2.0.21",
+            "newArchEnabled": false
+          },
+          "ios": {
+            "newArchEnabled": false
+          }
+        }
+      ]
+    ],
     "jsEngine": "hermes",
+    "newArchEnabled": false,
     "experiments": {
       "typedRoutes": false
     },
-    "newArchEnabled": false,
-    "plugins": [
-      [
-        "expo-dev-client",
-        {
-          "newArchEnabled": false
-        }
-      ]
-    ]
+    "extra": {
+      "eas": {
+        "projectId": "34d17c6d-8e17-4a4c-a2d7-f38d943667f3"
+      }
+    }
   }
 }
