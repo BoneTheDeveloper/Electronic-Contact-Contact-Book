@@ -384,7 +384,7 @@ TurboModules: ['NativeStatusBarManager', 'NativeDeviceInfo', ...]
 - Memory usage measurement may not be available on all platforms
 
 ### Navigation Testing
-- Dynamic navigation uses `@ts-ignore` for type safety
+- Dynamic navigation uses `@ts-expect-error` for type safety
 - Test routes should exist in navigation structure
 - Params must match route definition
 

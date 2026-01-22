@@ -85,10 +85,10 @@ export const measureNavigation = async (
   return measurePerformance(
     `Navigate to ${route}`,
     async () => {
-      // @ts-ignore - Dynamic navigation for testing
+      // @ts-expect-error - Dynamic navigation for testing
       navigation.navigate(route, params);
       // Wait for transition to complete
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise<void>((resolve) => setTimeout(resolve, 100));
     },
     300, // Target: 300ms
     500 // Max: 500ms
@@ -131,7 +131,7 @@ export const measureScrollPerformance = (
  */
 export const measureMemoryUsage = (): PerformanceMetrics | null => {
   try {
-    // @ts-ignore - NativeModules.MemoryUsage not in types
+    // @ts-expect-error - NativeModules.MemoryUsage not in types
     const memoryUsage = global.nativeMemoryUsage?.() || { jsHeapSizeLimit: 0, usedJSHeapSize: 0 };
 
     const usedMB = memoryUsage.usedJSHeapSize / (1024 * 1024);
@@ -263,7 +263,7 @@ export const runPerformanceTests = async (
  */
 export const measureAppStartup = (): PerformanceMetrics => {
   // This should be called from App.tsx componentDidMount/useEffect
-  const startTime = (global as any).__APP_START_TIME__ || getTimestamp();
+  const startTime = (globalThis as any).__APP_START_TIME__ || getTimestamp();
   const endTime = getTimestamp();
   const duration = endTime - startTime;
 
@@ -282,7 +282,7 @@ export const measureAppStartup = (): PerformanceMetrics => {
  */
 export const initStartupMeasurement = () => {
   if (__DEV__) {
-    (global as any).__APP_START_TIME__ = getTimestamp();
+    (globalThis as any).__APP_START_TIME__ = getTimestamp();
   }
 };
 
