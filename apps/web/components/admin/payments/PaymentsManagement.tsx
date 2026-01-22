@@ -1,12 +1,18 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { DollarSign, TrendingUp, AlertCircle, FileText } from 'lucide-react'
+import { DollarSign, TrendingUp, AlertCircle, FileText, Plus, Download } from 'lucide-react'
 import { StatCard, DataTable, StatusBadge, FilterBar } from '@/components/admin/shared'
 import type { Column } from '@/components/admin/shared'
 import { FeeItemsTable } from './FeeItemsTable'
 import { FeeAssignmentWizard } from './FeeAssignmentWizard'
 import { QuickAccessCard } from './QuickAccessCard'
+import { AddFeeItemModal } from './modals/AddFeeItemModal'
+import { EditFeeItemModal } from './modals/EditFeeItemModal'
+import { PaymentConfirmModal } from './modals/PaymentConfirmModal'
+import { InvoiceDetailModal } from './modals/InvoiceDetailModal'
+import { SendReminderModal } from './modals/SendReminderModal'
+import { ExportReportModal } from './modals/ExportReportModal'
 
 interface Invoice {
   id: string
@@ -33,6 +39,16 @@ interface ApiResponse<T> {
   total?: number
 }
 
+interface FeeItem {
+  id: string
+  name: string
+  code: string
+  type: 'mandatory' | 'voluntary'
+  amount: number
+  semester: '1' | '2' | 'all'
+  status: 'active' | 'inactive'
+}
+
 export function PaymentsManagement() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [stats, setStats] = useState<PaymentStats>({
@@ -50,6 +66,20 @@ export function PaymentsManagement() {
   })
   const [activeTab, setActiveTab] = useState<'fees' | 'assignment' | 'invoices'>('fees')
   const [refreshKey, setRefreshKey] = useState(0)
+
+  // Modal states
+  const [addFeeItemModalOpen, setAddFeeItemModalOpen] = useState(false)
+  const [editFeeItemModalOpen, setEditFeeItemModalOpen] = useState(false)
+  const [selectedFeeItem, setSelectedFeeItem] = useState<FeeItem | null>(null)
+  const [paymentConfirmModalOpen, setPaymentConfirmModalOpen] = useState(false)
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null)
+  const [invoiceDetailModalOpen, setInvoiceDetailModalOpen] = useState(false)
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState('')
+  const [sendReminderModalOpen, setSendReminderModalOpen] = useState(false)
+  const [exportReportModalOpen, setExportReportModalOpen] = useState(false)
+
+  // Current user (mock - should come from auth context)
+  const currentUser = { role: 'admin', id: 'admin@school.edu', name: 'Admin User' }
 
   // Use ref to track previous filter values
   const prevFiltersRef = useRef<string>('')
@@ -170,10 +200,31 @@ export function PaymentsManagement() {
     {
       key: 'actions',
       label: 'Thao tác',
-      render: () => (
-        <button className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600">
-          <FileText className="h-4 w-4" />
-        </button>
+      render: (_value, row) => (
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => {
+              setSelectedInvoiceId(row.id)
+              setInvoiceDetailModalOpen(true)
+            }}
+            className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
+            title="Xem chi tiết"
+          >
+            <FileText className="h-4 w-4" />
+          </button>
+          {row.status !== 'paid' && (
+            <button
+              onClick={() => {
+                setSelectedInvoice(row)
+                setPaymentConfirmModalOpen(true)
+              }}
+              className="rounded-lg p-2 text-green-500 transition-colors hover:bg-green-50 hover:text-green-600"
+              title="Xác nhận thanh toán"
+            >
+              <DollarSign className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       ),
     },
   ], [formatCurrency])
@@ -255,8 +306,11 @@ export function PaymentsManagement() {
                   <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">Fee Item Library</p>
                 </div>
               </div>
-              <button className="px-5 py-2.5 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1] flex items-center gap-2 shadow-lg shadow-blue-100 transition-all">
-                <FileText className="w-4 h-4" />
+              <button
+                onClick={() => setAddFeeItemModalOpen(true)}
+                className="px-5 py-2.5 bg-[#0284C7] text-white rounded-xl font-bold text-sm hover:bg-[#0369a1] flex items-center gap-2 shadow-lg shadow-blue-100 transition-all"
+              >
+                <Plus className="w-4 h-4" />
                 Thêm khoản thu mới
               </button>
             </div>
@@ -358,9 +412,19 @@ export function PaymentsManagement() {
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-bold text-slate-800">Theo dõi Học phí</h3>
-              <span className="text-sm text-slate-500">
-                {invoices.length} hóa đơn
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-500">
+                  {invoices.length} hóa đơn
+                </span>
+                <button
+                  onClick={() => setExportReportModalOpen(true)}
+                  className="px-4 py-2 bg-[#0284C7] text-white rounded-lg font-bold text-sm hover:bg-[#0369a1] flex items-center gap-2 transition-all"
+                  title="Xuất báo cáo"
+                >
+                  <Download className="w-4 h-4" />
+                  Xuất báo cáo
+                </button>
+              </div>
             </div>
             <DataTable
               data={invoices}
@@ -371,6 +435,85 @@ export function PaymentsManagement() {
           </div>
         </div>
       )}
+
+      {/* Modals */}
+      <AddFeeItemModal
+        isOpen={addFeeItemModalOpen}
+        onClose={() => setAddFeeItemModalOpen(false)}
+        onSuccess={() => {
+          setAddFeeItemModalOpen(false)
+          setRefreshKey(k => k + 1)
+        }}
+      />
+
+      {selectedFeeItem && (
+        <EditFeeItemModal
+          isOpen={editFeeItemModalOpen}
+          onClose={() => {
+            setEditFeeItemModalOpen(false)
+            setSelectedFeeItem(null)
+          }}
+          onSuccess={() => {
+            setEditFeeItemModalOpen(false)
+            setSelectedFeeItem(null)
+            setRefreshKey(k => k + 1)
+          }}
+          feeItem={selectedFeeItem}
+        />
+      )}
+
+      {selectedInvoice && (
+        <PaymentConfirmModal
+          isOpen={paymentConfirmModalOpen}
+          onClose={() => {
+            setPaymentConfirmModalOpen(false)
+            setSelectedInvoice(null)
+          }}
+          onSuccess={() => {
+            setPaymentConfirmModalOpen(false)
+            setSelectedInvoice(null)
+            setRefreshKey(k => k + 1)
+          }}
+          invoice={selectedInvoice}
+          currentUser={currentUser}
+        />
+      )}
+
+      <InvoiceDetailModal
+        isOpen={invoiceDetailModalOpen}
+        onClose={() => {
+          setInvoiceDetailModalOpen(false)
+          setSelectedInvoiceId('')
+        }}
+        invoiceId={selectedInvoiceId}
+      />
+
+      <SendReminderModal
+        isOpen={sendReminderModalOpen}
+        onClose={() => setSendReminderModalOpen(false)}
+        onSuccess={() => {
+          setSendReminderModalOpen(false)
+          setRefreshKey(k => k + 1)
+        }}
+        recipients={invoices
+          .filter(inv => inv.status === 'pending' || inv.status === 'overdue')
+          .map(inv => ({
+            studentName: inv.studentName,
+            parentEmail: `parent_${inv.studentId}@example.com`,
+            parentPhone: '09xxxxxxxx',
+            amount: inv.amount,
+            dueDate: inv.dueDate,
+          }))}
+        currentUser={currentUser}
+      />
+
+      <ExportReportModal
+        isOpen={exportReportModalOpen}
+        onClose={() => setExportReportModalOpen(false)}
+        onSuccess={() => {
+          setExportReportModalOpen(false)
+        }}
+      />
     </div>
   )
 }

@@ -34,6 +34,15 @@ export function FeeAssignmentWizard({ onComplete }: FeeAssignmentWizardProps) {
   const [gradeData, setGradeData] = useState<Record<string, GradeData>>({})
   const [feeItems, setFeeItems] = useState<FeeItem[]>([])
 
+  // Step 3: Timeline configuration state
+  const [startDate, setStartDate] = useState('2025-09-01')
+  const [dueDate, setDueDate] = useState('2025-10-15')
+  const [reminderDays, setReminderDays] = useState(7)
+  const [reminderFrequency, setReminderFrequency] = useState<'once' | 'daily' | 'weekly'>('weekly')
+
+  // Step 4: Terms confirmation
+  const [termsAccepted, setTermsAccepted] = useState(false)
+
   useEffect(() => {
     // Fetch grade data
     fetch('/api/grades/data')
@@ -109,6 +118,11 @@ export function FeeAssignmentWizard({ onComplete }: FeeAssignmentWizardProps) {
   }
 
   const handleGenerateInvoices = async () => {
+    if (!termsAccepted) {
+      alert('Vui lòng xác nhận điều khoản trước khi xuất phiếu thu!')
+      return
+    }
+
     try {
       const response = await fetch('/api/fee-assignments', {
         method: 'POST',
@@ -118,10 +132,10 @@ export function FeeAssignmentWizard({ onComplete }: FeeAssignmentWizardProps) {
           targetGrades: selectedGrades,
           targetClasses: selectedClasses,
           feeItems: selectedFees,
-          startDate: '2025-09-01',
-          dueDate: '2025-10-15',
-          reminderDays: 7,
-          reminderFrequency: 'weekly'
+          startDate,
+          dueDate,
+          reminderDays,
+          reminderFrequency
         })
       })
 
@@ -132,6 +146,11 @@ export function FeeAssignmentWizard({ onComplete }: FeeAssignmentWizardProps) {
         setSelectedGrades([])
         setSelectedFees([])
         setInvoiceName('')
+        setStartDate('2025-09-01')
+        setDueDate('2025-10-15')
+        setReminderDays(7)
+        setReminderFrequency('weekly')
+        setTermsAccepted(false)
         onComplete?.()
         alert('Đã tạo phiếu thu thành công!')
       }
@@ -219,15 +238,35 @@ export function FeeAssignmentWizard({ onComplete }: FeeAssignmentWizardProps) {
           />
         )}
         {currentStep === 3 && (
-          <Step3TimelineConfiguration />
+          <Step3TimelineConfiguration
+            invoiceName={invoiceName}
+            selectedClasses={selectedClasses}
+            selectedFees={selectedFees}
+            feeItems={feeItems}
+            totalAmount={totalAmount}
+            startDate={startDate}
+            dueDate={dueDate}
+            reminderDays={reminderDays}
+            reminderFrequency={reminderFrequency}
+            onStartDateChange={setStartDate}
+            onDueDateChange={setDueDate}
+            onReminderDaysChange={setReminderDays}
+            onReminderFrequencyChange={setReminderFrequency}
+          />
         )}
         {currentStep === 4 && (
           <Step4Review
+            invoiceName={invoiceName}
             selectedClasses={selectedClasses}
             selectedFees={selectedFees}
-            invoiceName={invoiceName}
             feeItems={feeItems}
             totalAmount={totalAmount}
+            startDate={startDate}
+            dueDate={dueDate}
+            reminderDays={reminderDays}
+            reminderFrequency={reminderFrequency}
+            termsAccepted={termsAccepted}
+            onTermsChange={setTermsAccepted}
           />
         )}
       </div>
@@ -264,7 +303,8 @@ export function FeeAssignmentWizard({ onComplete }: FeeAssignmentWizardProps) {
           </button>
           <button
             onClick={handleGenerateInvoices}
-            className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold text-sm hover:from-green-600 hover:to-emerald-600"
+            disabled={!termsAccepted}
+            className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold text-sm hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Phê duyệt & Xuất phiếu
           </button>
@@ -372,7 +412,27 @@ function Step2FeeSelection({ selectedFees, invoiceName, feeItems, onNameChange, 
 }
 
 // Step 3: Timeline Configuration
-function Step3TimelineConfiguration() {
+function Step3TimelineConfiguration({
+  invoiceName,
+  selectedClasses,
+  selectedFees,
+  feeItems,
+  totalAmount,
+  startDate,
+  dueDate,
+  reminderDays,
+  reminderFrequency,
+  onStartDateChange,
+  onDueDateChange,
+  onReminderDaysChange,
+  onReminderFrequencyChange,
+}: any) {
+  const formatCurrency = (amount: number) => new Intl.NumberFormat('vi-VN').format(amount)
+
+  // Calculate total students (assuming 40 students per class)
+  const totalStudents = selectedClasses.length * 40
+  const grandTotal = totalAmount * totalStudents
+
   return (
     <div className="grid grid-cols-2 gap-8">
       <div className="space-y-6">
@@ -381,11 +441,22 @@ function Step3TimelineConfiguration() {
           <div className="space-y-4">
             <div>
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Ngày bắt đầu</label>
-              <input type="date" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none" defaultValue="2025-09-01" />
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => onStartDateChange(e.target.value)}
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-[#0284C7]"
+              />
             </div>
             <div>
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Ngày hết hạn</label>
-              <input type="date" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none" defaultValue="2025-10-15" />
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => onDueDateChange(e.target.value)}
+                min={startDate}
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-[#0284C7]"
+              />
             </div>
           </div>
         </div>
@@ -395,19 +466,27 @@ function Step3TimelineConfiguration() {
           <div className="space-y-4">
             <div>
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Nhắc trước hạn (ngày)</label>
-              <select className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none">
+              <select
+                value={reminderDays}
+                onChange={(e) => onReminderDaysChange(Number(e.target.value))}
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-[#0284C7]"
+              >
                 <option value="3">3 ngày trước</option>
                 <option value="5">5 ngày trước</option>
-                <option value="7" selected>7 ngày trước</option>
+                <option value="7">7 ngày trước</option>
                 <option value="10">10 ngày trước</option>
                 <option value="14">14 ngày trước</option>
               </select>
             </div>
             <div>
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Tần suất nhắc</label>
-              <select className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none">
+              <select
+                value={reminderFrequency}
+                onChange={(e) => onReminderFrequencyChange(e.target.value)}
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-[#0284C7]"
+              >
                 <option value="once">Nhắc 1 lần</option>
-                <option value="daily" selected>Hàng ngày</option>
+                <option value="daily">Hàng ngày</option>
                 <option value="weekly">Hàng tuần</option>
               </select>
             </div>
@@ -420,19 +499,33 @@ function Step3TimelineConfiguration() {
         <div className="space-y-4">
           <div className="flex justify-between items-center pb-3 border-b border-white/10">
             <span className="text-xs text-slate-400 uppercase tracking-wider">Tên phiếu thu</span>
-            <span className="text-lg font-black text-blue-300">Học phí HK1 - 2025</span>
+            <span className="text-lg font-black text-blue-300">{invoiceName || 'Chưa đặt tên'}</span>
           </div>
           <div className="flex justify-between items-center pb-3 border-b border-white/10">
             <span className="text-xs text-slate-400 uppercase tracking-wider">Số lớp</span>
-            <span className="text-lg font-black">6</span>
+            <span className="text-lg font-black">{selectedClasses.length}</span>
           </div>
           <div className="flex justify-between items-center pb-3 border-b border-white/10">
             <span className="text-xs text-slate-400 uppercase tracking-wider">Số học sinh</span>
-            <span className="text-lg font-black">240</span>
+            <span className="text-lg font-black">{totalStudents}</span>
+          </div>
+          <div className="flex justify-between items-center pb-3 border-b border-white/10">
+            <span className="text-xs text-slate-400 uppercase tracking-wider">Số khoản thu</span>
+            <span className="text-lg font-black">{selectedFees.length}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-xs text-slate-400 uppercase tracking-wider">Tổng tiền</span>
-            <span className="text-xl font-black text-green-400">600,000,000 ₫</span>
+            <span className="text-xl font-black text-green-400">{formatCurrency(grandTotal)} ₫</span>
+          </div>
+        </div>
+
+        {/* Date Range Summary */}
+        <div className="mt-6 pt-6 border-t border-white/10">
+          <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">Thời gian thu</p>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="px-2 py-1 bg-white/10 rounded-lg">{new Date(startDate).toLocaleDateString('vi-VN')}</span>
+            <span className="text-slate-400">→</span>
+            <span className="px-2 py-1 bg-white/10 rounded-lg">{new Date(dueDate).toLocaleDateString('vi-VN')}</span>
           </div>
         </div>
       </div>
@@ -441,7 +534,28 @@ function Step3TimelineConfiguration() {
 }
 
 // Step 4: Review
-function Step4Review({ selectedClasses, selectedFees, invoiceName, feeItems, totalAmount }: any) {
+function Step4Review({
+  invoiceName,
+  selectedClasses,
+  selectedFees,
+  feeItems,
+  totalAmount,
+  startDate,
+  dueDate,
+  reminderDays,
+  reminderFrequency,
+  termsAccepted,
+  onTermsChange,
+}: any) {
+  const formatCurrency = (amount: number) => new Intl.NumberFormat('vi-VN').format(amount)
+
+  // Calculate total students (assuming 40 students per class)
+  const totalStudents = selectedClasses.length * 40
+  const grandTotal = totalAmount * totalStudents
+
+  // Get selected fee items details
+  const selectedFeeItems = feeItems.filter((f: FeeItem) => selectedFees.includes(f.id))
+
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
@@ -455,6 +569,7 @@ function Step4Review({ selectedClasses, selectedFees, invoiceName, feeItems, tot
         </div>
       </div>
 
+      {/* Summary Cards */}
       <div className="grid grid-cols-4 gap-3 mb-5">
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white text-center">
           <p className="text-[10px] font-bold text-blue-100 uppercase tracking-wider">Số lớp</p>
@@ -462,7 +577,7 @@ function Step4Review({ selectedClasses, selectedFees, invoiceName, feeItems, tot
         </div>
         <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white text-center">
           <p className="text-[10px] font-bold text-purple-100 uppercase tracking-wider">Học sinh</p>
-          <p className="text-xl font-black">{selectedClasses.length * 40}</p>
+          <p className="text-xl font-black">{totalStudents}</p>
         </div>
         <div className="bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl p-4 text-white text-center">
           <p className="text-[10px] font-bold text-amber-100 uppercase tracking-wider">Khoản thu</p>
@@ -470,8 +585,83 @@ function Step4Review({ selectedClasses, selectedFees, invoiceName, feeItems, tot
         </div>
         <div className="bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl p-4 text-white text-center">
           <p className="text-[10px] font-bold text-emerald-100 uppercase tracking-wider">Tổng tiền</p>
-          <p className="text-sm font-black">{new Intl.NumberFormat('vi-VN').format(totalAmount)} ₫</p>
+          <p className="text-sm font-black">{formatCurrency(grandTotal)} ₫</p>
         </div>
+      </div>
+
+      {/* Detailed Information */}
+      <div className="grid grid-cols-2 gap-4 mb-5">
+        {/* Timeline */}
+        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">Thời gian thu</p>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-xs text-slate-500">Ngày bắt đầu</span>
+              <span className="text-xs font-bold text-slate-800">{new Date(startDate).toLocaleDateString('vi-VN')}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-xs text-slate-500">Ngày hết hạn</span>
+              <span className="text-xs font-bold text-slate-800">{new Date(dueDate).toLocaleDateString('vi-VN')}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-xs text-slate-500">Nhắc trước hạn</span>
+              <span className="text-xs font-bold text-slate-800">{reminderDays} ngày</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-xs text-slate-500">Tần suất nhắc</span>
+              <span className="text-xs font-bold text-slate-800">
+                {reminderFrequency === 'once' ? '1 lần' : reminderFrequency === 'daily' ? 'Hàng ngày' : 'Hàng tuần'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Fee Items List */}
+        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">Danh sách khoản thu</p>
+          <div className="space-y-2 max-h-32 overflow-y-auto">
+            {selectedFeeItems.map((item: FeeItem, index: number) => (
+              <div key={item.id} className="flex justify-between items-center text-xs">
+                <div>
+                  <p className="font-bold text-slate-800">{item.name}</p>
+                  <p className="text-[10px] text-slate-400 font-mono">{item.code}</p>
+                </div>
+                <span className="font-bold text-slate-800">{formatCurrency(item.amount)} ₫</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Classes Preview */}
+      <div className="mb-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Lớp được chọn ({selectedClasses.length})</p>
+        <div className="flex flex-wrap gap-2">
+          {selectedClasses.map((cls: string) => (
+            <span key={cls} className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-black rounded-lg">
+              {cls}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Terms Confirmation */}
+      <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={(e) => onTermsChange(e.target.checked)}
+            className="w-5 h-5 mt-0.5 rounded border-amber-300 text-amber-500 focus:ring-amber-500"
+          />
+          <div className="flex-1">
+            <p className="text-sm font-bold text-amber-900">Xác nhận điều khoản xuất phiếu thu</p>
+            <p className="text-xs text-amber-700 mt-1">
+              Tôi xác nhận rằng thông tin trên là chính xác và đồng ý xuất phiếu thu cho {totalStudents} học sinh với tổng số tiền {formatCurrency(grandTotal)} ₫.
+              Hệ thống sẽ tự động tạo hóa đơn cho từng học sinh và gửi nhắc nhở theo lịch đã cấu hình.
+            </p>
+          </div>
+        </label>
       </div>
     </div>
   )

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { Users, Shield, UserCheck, Users2 } from 'lucide-react'
-import { StatCard, DataTable, StatusBadge, FilterBar } from '@/components/admin/shared'
+import { Users, Shield, UserCheck, Users2, Plus, Upload, MoreVertical } from 'lucide-react'
+import { StatCard, DataTable, StatusBadge, FilterBar, PrimaryButton } from '@/components/admin/shared'
 import type { Column } from '@/components/admin/shared'
 import type { User } from '@/lib/mock-data'
+import { AddUserModal, UserActionsModal, LinkParentModal, ImportExcelModal } from './modals'
 
 interface UserStats {
   total: number
@@ -24,12 +25,29 @@ interface ApiResponse<T> {
 export function UsersManagement() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+
+  // Modal states
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showActionsModal, setShowActionsModal] = useState(false)
+  const [showLinkParentModal, setShowLinkParentModal] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+
+  // Mock current user (would come from auth context)
+  const currentUser = { role: 'admin' as const }
+
   const [filters, setFilters] = useState({
     search: '',
     role: '',
     status: '',
     class: '',
   })
+
+  // Refresh callback pattern
+  const handleRefresh = useCallback(() => {
+    setRefreshTrigger(prev => prev + 1)
+  }, [])
 
   // Use ref to track previous filter values
   const prevFiltersRef = useRef<string>('')
@@ -67,7 +85,7 @@ export function UsersManagement() {
     }
 
     fetchUsers()
-  }, [filters])
+  }, [filters, refreshTrigger])
 
   // Calculate statistics - memoized
   const stats = useMemo((): UserStats => {
@@ -99,6 +117,18 @@ export function UsersManagement() {
     setFilters(prev => ({ ...prev, [key]: value }))
   }, [])
 
+  // Open user actions modal
+  const handleUserActions = useCallback((user: User) => {
+    setSelectedUser(user)
+    setShowActionsModal(true)
+  }, [])
+
+  // Open link parent modal
+  const handleLinkParent = useCallback((user: User) => {
+    setSelectedUser(user)
+    setShowLinkParentModal(true)
+  }, [])
+
   // Table columns - memoized
   const columns = useMemo<Column<User>[]>(() => [
     {
@@ -122,13 +152,14 @@ export function UsersManagement() {
       key: 'role',
       label: 'Vai trò',
       render: (value) => {
-        const roleConfig = {
+        const roleConfig: Record<string, { label: string; color: string }> = {
           admin: { label: 'Admin', color: 'bg-purple-100 text-purple-700' },
           teacher: { label: 'Giáo viên', color: 'bg-blue-100 text-blue-700' },
           parent: { label: 'Phụ huynh', color: 'bg-green-100 text-green-700' },
           student: { label: 'Học sinh', color: 'bg-orange-100 text-orange-700' },
         }
-        const config = roleConfig[value as keyof typeof roleConfig] || { label: value, color: 'bg-gray-100 text-gray-700' }
+        // Safe type assertion with fallback
+        const config = roleConfig[value ?? ''] ?? { label: value ?? 'Unknown', color: 'bg-gray-100 text-gray-700' }
         return (
           <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase ${config.color}`}>
             <Shield className="h-3 w-3" />
@@ -163,7 +194,20 @@ export function UsersManagement() {
       label: 'Đăng nhập cuối',
       render: () => <span className="text-xs text-slate-500">2 giờ trước</span>,
     },
-  ], [])
+    {
+      key: 'actions',
+      label: '',
+      render: (_value, row) => (
+        <button
+          onClick={() => handleUserActions(row)}
+          className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+          aria-label="Thao tác"
+        >
+          <MoreVertical className="h-4 w-4" />
+        </button>
+      ),
+    },
+  ], [handleUserActions])
 
   // Static filter options - memoized
   const roleFilterOptions = useMemo(() => [
@@ -202,6 +246,25 @@ export function UsersManagement() {
 
   return (
     <div className="space-y-6">
+      {/* Action Bar */}
+      <div className="flex items-center justify-end gap-3">
+        <PrimaryButton
+          onClick={() => setShowImportModal(true)}
+          size="small"
+          className="!bg-white !text-[#0284C7] border-2 border-[#0284C7] hover:!bg-slate-50"
+        >
+          <Upload className="mr-2 h-4 w-4" />
+          Nhập Excel
+        </PrimaryButton>
+        <PrimaryButton
+          onClick={() => setShowAddModal(true)}
+          size="small"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Thêm người dùng
+        </PrimaryButton>
+      </div>
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
         <StatCard
@@ -258,6 +321,55 @@ export function UsersManagement() {
           emptyMessage="Không tìm thấy người dùng"
         />
       </div>
+
+      {/* Modals */}
+      <AddUserModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={handleRefresh}
+      />
+
+      {selectedUser && (
+        <>
+          <UserActionsModal
+            isOpen={showActionsModal}
+            onClose={() => {
+              setShowActionsModal(false)
+              setSelectedUser(null)
+            }}
+            onSuccess={handleRefresh}
+            user={{
+              id: selectedUser.id,
+              name: selectedUser.name,
+              role: selectedUser.role,
+              status: selectedUser.status,
+              email: selectedUser.email,
+            }}
+            currentUser={currentUser}
+          />
+
+          <LinkParentModal
+            isOpen={showLinkParentModal}
+            onClose={() => {
+              setShowLinkParentModal(false)
+              setSelectedUser(null)
+            }}
+            onSuccess={handleRefresh}
+            student={{
+              id: selectedUser.id,
+              name: selectedUser.name,
+              code: selectedUser.id, // Using ID as code for now
+            }}
+          />
+        </>
+      )}
+
+      <ImportExcelModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={handleRefresh}
+        importType="students"
+      />
     </div>
   )
 }

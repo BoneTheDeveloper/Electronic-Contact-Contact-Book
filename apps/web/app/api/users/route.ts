@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { type User } from '@/lib/mock-data'
+import { getCurrentUser, sanitizeSearch, sanitizeInput, checkRateLimit } from '@/lib/security-utils'
 
 // Mock data
 const mockUsers: User[] = [
@@ -14,6 +15,24 @@ const mockUsers: User[] = [
 ]
 
 export async function GET(request: Request) {
+  // TODO: Add real authentication middleware before production
+  // const { user } = await getCurrentUser(request)
+  // if (!user || user.role !== 'admin') {
+  //   return NextResponse.json(
+  //     { success: false, error: 'Unauthorized' },
+  //     { status: 401 }
+  //   )
+  // }
+
+  // TODO: Add real rate limiting before production
+  // const rateLimit = await checkRateLimit(request, { windowMs: 60000, maxRequests: 100 })
+  // if (!rateLimit.allowed) {
+  //   return NextResponse.json(
+  //     { error: rateLimit.error },
+  //     { status: 429 }
+  //   )
+  // }
+
   const { searchParams } = new URL(request.url)
   const role = searchParams.get('role')
   const status = searchParams.get('status')
@@ -32,9 +51,11 @@ export async function GET(request: Request) {
     filteredUsers = filteredUsers.filter(u => u.classId === classId)
   }
   if (search) {
+    // Sanitize search input to prevent injection attacks
+    const sanitized = sanitizeSearch(search)
     filteredUsers = filteredUsers.filter(u =>
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase())
+      u.name.toLowerCase().includes(sanitized.toLowerCase()) ||
+      u.email.toLowerCase().includes(sanitized.toLowerCase())
     )
   }
 
@@ -46,10 +67,42 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  // TODO: Add real authentication middleware before production
+  // const { user } = await getCurrentUser(request)
+  // if (!user || user.role !== 'admin') {
+  //   return NextResponse.json(
+  //     { success: false, error: 'Unauthorized' },
+  //     { status: 401 }
+  //   )
+  // }
+
+  // TODO: Add real rate limiting before production
+  // const rateLimit = await checkRateLimit(request, { windowMs: 60000, maxRequests: 10 })
+  // if (!rateLimit.allowed) {
+  //   return NextResponse.json(
+  //     { error: rateLimit.error },
+  //     { status: 429 }
+  //   )
+  // }
+
   const body = await request.json()
+
+  // Sanitize user input
+  const sanitizedName = sanitizeInput(body.name || '')
+  const sanitizedEmail = sanitizeInput(body.email || '')
+
+  if (!sanitizedName || !sanitizedEmail) {
+    return NextResponse.json(
+      { success: false, error: 'Tên và email không được để trống' },
+      { status: 400 }
+    )
+  }
+
   const newUser: User = {
     id: Date.now().toString(),
     ...body,
+    name: sanitizedName,
+    email: sanitizedEmail,
     status: 'active',
   }
   mockUsers.push(newUser)
