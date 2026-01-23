@@ -71,9 +71,9 @@ const Icon: React.FC<IconProps> = ({
       case 'account-check':
         return (
           <>
-            <Circle cx="9" cy="7" r="4" stroke={color} strokeWidth={2} fill="none" />
-            <Path d="M3 21v-2a4 4 0 0 1 4-4h4" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            <Polyline points="16 11 18 13 23 8" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <Circle cx="9" cy="7" r="4" stroke={color} strokeWidth={2.5} fill="none" />
+            <Path d="M3 21v-2a4 4 0 0 1 4-4h4" stroke={color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <Polyline points="15 10 17 12 22 7" stroke={color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" fill="none" />
           </>
         );
 
