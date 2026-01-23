@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   // Set output file tracing root to avoid lockfile warnings
   outputFileTracingRoot: process.cwd(),
   // Disable ESLint during production build

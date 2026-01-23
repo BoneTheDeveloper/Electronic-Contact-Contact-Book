@@ -33,22 +33,24 @@ export const getParentChildren = async (
       students!inner(
         id,
         student_code,
-        profiles!inner(
+        profiles!students_id_fkey(
           full_name,
-          avatar_url
-        )
-      ),
-      enrollments!inner(
-        class_id,
-        classes!inner(
-          name,
-          grade_id
+          avatar_url,
+          status
+        ),
+        enrollments!inner(
+          class_id,
+          status,
+          classes!inner(
+            name,
+            grade_id
+          )
         )
       )
     `)
     .eq('guardian_id', parentId)
-    .eq('students.profiles.status', 'active')
-    .eq('enrollments.status', 'active');
+    .eq('students.profiles!students_id_fkey.status', 'active')
+    .eq('students.enrollments.status', 'active');
 
   if (error) {
     console.error('[QUERIES] Error fetching children:', error);
@@ -71,14 +73,14 @@ export const getParentChildren = async (
 
   return Array.from(uniqueChildren.values()).map((item: any) => ({
     id: item.students.id,
-    name: item.students.profiles.full_name,
+    name: item.students.full_name,
     rollNumber: item.students.student_code,
-    classId: item.enrollments?.class_id || '',
+    classId: item.students.enrollments?.[0]?.class_id || '',
     section: '',
-    grade: parseInt(item.enrollments?.classes?.grade_id || '0', 10),
+    grade: parseInt(item.students.enrollments?.[0]?.classes?.grade_id || '0', 10),
     studentCode: item.students.student_code,
     isPrimary: item.is_primary,
-    avatarUrl: item.students.profiles.avatar_url,
+    avatarUrl: item.students.avatar_url,
   }));
 };
 

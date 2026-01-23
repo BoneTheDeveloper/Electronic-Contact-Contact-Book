@@ -1,7 +1,7 @@
 /**
  * Student Dashboard Screen
- * Updated with service icon grid matching wireframe design
- * Shows 9 service icons for navigation with SVG icons
+ * Wireframe-matched design with simplified layout
+ * Shows 9 service icons in 3x3 grid for navigation
  */
 
 import React from 'react';
@@ -26,7 +26,7 @@ interface ServiceIcon {
   route: string;
 }
 
-// Service icons for student (same as parent, except Study Materials instead of Teacher Directory)
+// Service icons for student (9 features in 3x3 grid)
 const STUDENT_SERVICE_ICONS: ServiceIcon[] = [
   { id: '1', label: 'Thời khóa\nbiểu', icon: 'calendar', color: '#F97316', route: 'StudentSchedule' },
   { id: '2', label: 'Bảng điểm\nmôn học', icon: 'check-circle', color: '#0284C7', route: 'StudentGrades' },
@@ -39,38 +39,13 @@ const STUDENT_SERVICE_ICONS: ServiceIcon[] = [
   { id: '9', label: 'Học\nphí', icon: 'cash', color: '#F59E0B', route: 'StudentPayment' },
 ];
 
-interface Assignment {
-  id: string;
-  subject: string;
-  title: string;
-  dueDate: string;
-  priority: 'high' | 'medium' | 'low';
-}
-
-const MOCK_ASSIGNMENTS: Assignment[] = [
-  {
-    id: '1',
-    subject: 'Toán',
-    title: 'Bài tập chương 5: Bài 45-50',
-    dueDate: '2026-01-15',
-    priority: 'high',
-  },
-  {
-    id: '2',
-    subject: 'Văn',
-    title: 'Viết bài văn kể chuyện',
-    dueDate: '2026-01-16',
-    priority: 'medium',
-  },
-];
-
 interface DashboardScreenProps {
   navigation?: NativeStackNavigationProp<any>;
 }
 
 export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const { user } = useAuthStore();
-  const { studentData, grades, attendancePercentage } = useStudentStore();
+  const { studentData } = useStudentStore();
 
   const getInitials = (name?: string) => {
     if (!name) return 'SV';
@@ -90,7 +65,7 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
         key={item.id}
         style={[styles.iconContainer, { width: containerWidth, marginBottom: VERTICAL_GAP }]}
         onPress={() => navigation?.navigate(item.route as never)}
-        activeOpacity={0.7}
+        activeOpacity={0.92}
       >
         <View style={styles.iconBox}>
           <Icon name={item.icon as any} size={32} color={item.color} />
@@ -98,33 +73,6 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
         <Text style={styles.iconLabel}>{item.label}</Text>
       </TouchableOpacity>
     );
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(date.getTime() - now.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays <= 3) return `Còn ${diffDays} ngày`;
-    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return '#EF4444';
-      case 'medium': return '#F59E0B';
-      case 'low': return '#10B981';
-      default: return '#6B7280';
-    }
-  };
-
-  const getPriorityLabel = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'Quan trọng';
-      case 'medium': return 'Trung bình';
-      case 'low': return 'Thường';
-      default: return priority;
-    }
   };
 
   return (
@@ -139,7 +87,6 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
               </Text>
             </View>
             <View style={styles.userDetails}>
-              <Text style={styles.greeting}>Xin chào,</Text>
               <Text style={styles.userName}>{studentData?.name || user?.name}</Text>
               {studentData && (
                 <Text style={styles.userClass}>
@@ -159,7 +106,7 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
         </View>
       </View>
 
-      {/* Service Icons Grid */}
+      {/* Service Icons Grid - 3x3 layout */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}
@@ -167,62 +114,6 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
       >
         <View style={styles.iconsGrid}>
           {STUDENT_SERVICE_ICONS.map(renderServiceIcon)}
-        </View>
-
-        {/* Quick Stats Section */}
-        <View style={styles.statsSection}>
-          <Text style={styles.sectionTitle}>Tổng quan</Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>
-                {grades.length > 0
-                  ? (grades.reduce((sum, g) => sum + (g.score / g.maxScore) * 100, 0) / grades.length).toFixed(1)
-                  : '-'}
-              </Text>
-              <Text style={styles.statLabel}>Điểm TB</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{attendancePercentage}%</Text>
-              <Text style={styles.statLabel}>Đi học</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Upcoming Assignments Section */}
-        <View style={styles.assignmentsSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Bài tập sắp tới</Text>
-            <TouchableOpacity onPress={() => navigation?.navigate('StudentGrades' as never)}>
-              <Text style={styles.seeAll}>Xem tất cả</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.assignmentsCard}>
-            {MOCK_ASSIGNMENTS.map((assignment, index) => (
-              <View
-                key={assignment.id}
-                style={[styles.assignmentItem, index === MOCK_ASSIGNMENTS.length - 1 ? styles.assignmentItemLast : {}]}
-              >
-                <View style={styles.assignmentHeader}>
-                  <View style={[styles.subjectTag, { backgroundColor: '#E0F2FE' }]}>
-                    <Text style={[styles.subjectTagText, { color: colors.primary }]}>
-                      {assignment.subject}
-                    </Text>
-                  </View>
-                  <View
-                    style={[styles.priorityTag, { backgroundColor: `${getPriorityColor(assignment.priority)}20` }]}
-                  >
-                    <Text
-                      style={[styles.priorityTagText, { color: getPriorityColor(assignment.priority) }]}
-                    >
-                      {getPriorityLabel(assignment.priority)}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={styles.assignmentTitle}>{assignment.title}</Text>
-                <Text style={styles.assignmentDue}>Hạn: {formatDate(assignment.dueDate)}</Text>
-              </View>
-            ))}
-          </View>
         </View>
       </ScrollView>
     </View>
@@ -232,7 +123,7 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F8FAFC',
   },
   header: {
     paddingTop: 64,
@@ -268,19 +159,13 @@ const styles = StyleSheet.create({
   userDetails: {
     marginLeft: 16,
   },
-  greeting: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 12,
-    fontWeight: '600',
-  },
   userName: {
     color: '#FFFFFF',
     fontSize: 20,
     fontWeight: '800',
-    marginTop: 4,
   },
   userClass: {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(224, 242, 254, 0.9)',
     fontSize: 11,
     marginTop: 2,
     fontWeight: '600',
@@ -288,9 +173,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   notificationButton: {
-    position: 'relative',
-  },
-  notificationIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -321,14 +203,13 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     paddingTop: 40,
-    paddingBottom: 96,
+    paddingBottom: 128,
     paddingHorizontal: 24,
   },
   iconsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 32,
   },
   iconContainer: {
     alignItems: 'center',
@@ -357,112 +238,5 @@ const styles = StyleSheet.create({
     marginTop: 12,
     lineHeight: 14,
     letterSpacing: 0.5,
-  },
-  statsSection: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    color: '#1F2937',
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 16,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    marginHorizontal: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  statValue: {
-    color: '#1F2937',
-    fontSize: 24,
-    fontWeight: '800',
-  },
-  statLabel: {
-    color: '#6B7280',
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  assignmentsSection: {
-    marginBottom: 16,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  seeAll: {
-    color: '#0284C7',
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  assignmentsCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  assignmentItem: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-    paddingVertical: 12,
-  },
-  assignmentItemLast: {
-    borderBottomWidth: 0,
-  },
-  assignmentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  subjectTag: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  subjectTagText: {
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  priorityTag: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  priorityTagText: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  assignmentTitle: {
-    color: '#1F2937',
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  assignmentDue: {
-    color: '#6B7280',
-    fontSize: 12,
   },
 });
