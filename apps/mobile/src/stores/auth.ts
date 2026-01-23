@@ -153,6 +153,10 @@ export const useAuthStore = create<AuthState>()(
 
           log('LOGIN_STEP_1', `Found email: ${userEmail}`);
 
+          // Step 1.5: Clear any existing session before new login
+          log('LOGIN_STEP_1.5', 'Clearing existing session...');
+          await supabase.auth.signOut({ scope: 'global' });
+
           // Step 2: Authenticate with Supabase Auth
           log('LOGIN_STEP_2', 'Authenticating with Supabase Auth...');
           const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
