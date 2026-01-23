@@ -21,7 +21,7 @@ import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 interface BiometricAuthScreenProps {
-  navigation: NativeStackNavigationProp<any>;
+  navigation?: NativeStackNavigationProp<any>;
 }
 
 const BackIcon = () => (
@@ -166,7 +166,7 @@ export const BiometricAuthScreen: React.FC<BiometricAuthScreenProps> = ({ naviga
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation?.goBack()} style={styles.backButton}>
           <BackIcon />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>

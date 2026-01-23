@@ -30,7 +30,7 @@ import { colors } from '../../theme';
 import type { AuthStackNavigationProp } from '../../navigation/types';
 
 interface LoginScreenProps {
-  navigation: AuthStackNavigationProp;
+  navigation?: AuthStackNavigationProp;
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {

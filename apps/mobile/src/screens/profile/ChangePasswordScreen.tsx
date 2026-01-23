@@ -22,7 +22,7 @@ import Svg, { Path, Circle, Line } from 'react-native-svg';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 interface ChangePasswordScreenProps {
-  navigation: NativeStackNavigationProp<any>;
+  navigation?: NativeStackNavigationProp<any>;
 }
 
 const BackIcon = () => (
@@ -132,7 +132,7 @@ export const ChangePasswordScreen: React.FC<ChangePasswordScreenProps> = ({ navi
 
       // Clear form and go back
       setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      navigation.goBack();
+      navigation?.goBack();
     } catch (error) {
       console.error('Change password error:', error);
       Alert.alert('Lỗi', 'Không thể đổi mật khẩu. Vui lòng thử lại.');
@@ -183,7 +183,7 @@ export const ChangePasswordScreen: React.FC<ChangePasswordScreenProps> = ({ navi
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation?.goBack()} style={styles.backButton}>
           <BackIcon />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>

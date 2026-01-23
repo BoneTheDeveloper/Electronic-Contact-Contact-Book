@@ -36,14 +36,14 @@ const RootNavigator: React.FC = () => {
     >
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated ? (
-          <Stack.Screen name="Auth" component={AuthNavigator} />
+          <Stack.Screen name="Auth" component={AuthNavigator as any} />
         ) : user?.role === 'parent' ? (
-          <Stack.Screen name="Parent" component={ParentTabs} />
+          <Stack.Screen name="Parent" component={ParentTabs as any} />
         ) : user?.role === 'student' ? (
-          <Stack.Screen name="Student" component={StudentTabs} />
+          <Stack.Screen name="Student" component={StudentTabs as any} />
         ) : (
           // Fallback to auth if role is not parent or student
-          <Stack.Screen name="Auth" component={AuthNavigator} />
+          <Stack.Screen name="Auth" component={AuthNavigator as any} />
         )}
       </Stack.Navigator>
     </NavigationContainer>

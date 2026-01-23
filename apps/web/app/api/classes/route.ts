@@ -10,7 +10,7 @@ export async function GET(request: Request) {
 
     let filteredClasses = classes
     if (grade) {
-      filteredClasses = filteredClasses.filter(c => c.grade === grade)
+      filteredClasses = filteredClasses.filter((c: { grade: string | null }) => c.grade === grade)
     }
 
     return NextResponse.json({

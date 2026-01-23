@@ -5,8 +5,8 @@ import LoginPage from '../page'
 
 // Mock server action
 vi.mock('@/lib/auth', () => ({
-  login: vi.fn((formData: FormData) => {
-    return new Promise((resolve) => {
+  login: vi.fn((_formData: FormData) => {
+    return new Promise((_resolve, _reject) => {
       setTimeout(() => {
         throw new Error('Redirect: /teacher/dashboard')
       }, 100)
@@ -29,7 +29,6 @@ describe('Login Page - Flow Tests', () => {
     render(<LoginPage />)
 
     const passwordInput = screen.getByPlaceholderText('••••••••')
-    const toggleButton = screen.getByRole('button', { name: '' }).querySelector('button[type="button"]')?.parentElement?.querySelector('button')
 
     expect(passwordInput).toHaveAttribute('type', 'password')
 
@@ -64,7 +63,6 @@ describe('Login Page - Flow Tests', () => {
   })
 
   it('should show validation error for empty identifier', async () => {
-    const user = userEvent.setup()
     render(<LoginPage />)
 
     const submitButton = screen.getByRole('button', { name: /đăng nhập/i })
@@ -90,9 +88,19 @@ describe('Login Page - Flow Tests', () => {
     const user = userEvent.setup()
     render(<LoginPage />)
 
-    const identifierInput = screen.getByPlaceholderText('TC001')
-    const passwordInput = screen.getByPlaceholderText('••••••••')
+    // Wait for form to be rendered after Suspense resolves
+    await waitFor(() => {
+      const submitButton = screen.queryByRole('button', { name: /đăng nhập/i })
+      expect(submitButton).toBeInTheDocument()
+    })
+
+    // Use container.querySelector to find inputs by name attribute
+    const identifierInput = document.querySelector('input[name="identifier"]') as HTMLInputElement
+    const passwordInput = document.querySelector('input[name="password"]') as HTMLInputElement
     const submitButton = screen.getByRole('button', { name: /đăng nhập/i })
+
+    expect(identifierInput).toBeInTheDocument()
+    expect(passwordInput).toBeInTheDocument()
 
     await user.type(identifierInput, 'TC001')
     await user.type(passwordInput, 'password123')
@@ -107,12 +115,28 @@ describe('Login Page - Flow Tests', () => {
     const user = userEvent.setup()
     render(<LoginPage />)
 
+    // Wait for form to be rendered after Suspense resolves
+    await waitFor(() => {
+      const submitButton = screen.queryByRole('button', { name: /đăng nhập/i })
+      expect(submitButton).toBeInTheDocument()
+    })
+
     const adminButton = screen.getByRole('button', { name: /quản trị viên/i })
     await user.click(adminButton)
 
-    const identifierInput = screen.getByPlaceholderText('AD001')
-    const passwordInput = screen.getByPlaceholderText('••••••••')
+    // Wait for label to update after role change
+    await waitFor(() => {
+      const label = screen.queryByText(/mã quản trị viên/i)
+      expect(label).toBeInTheDocument()
+    })
+
+    // Use container.querySelector to find inputs by name attribute
+    const identifierInput = document.querySelector('input[name="identifier"]') as HTMLInputElement
+    const passwordInput = document.querySelector('input[name="password"]') as HTMLInputElement
     const submitButton = screen.getByRole('button', { name: /đăng nhập/i })
+
+    expect(identifierInput).toBeInTheDocument()
+    expect(passwordInput).toBeInTheDocument()
 
     await user.type(identifierInput, 'AD001')
     await user.type(passwordInput, 'password123')
@@ -127,8 +151,18 @@ describe('Login Page - Flow Tests', () => {
     const user = userEvent.setup()
     render(<LoginPage />)
 
-    const identifierInput = screen.getByPlaceholderText('TC001')
-    const passwordInput = screen.getByPlaceholderText('••••••••')
+    // Wait for form to be rendered after Suspense resolves
+    await waitFor(() => {
+      const submitButton = screen.queryByRole('button', { name: /đăng nhập/i })
+      expect(submitButton).toBeInTheDocument()
+    })
+
+    // Use container.querySelector to find inputs by name attribute
+    const identifierInput = document.querySelector('input[name="identifier"]') as HTMLInputElement
+    const passwordInput = document.querySelector('input[name="password"]') as HTMLInputElement
+
+    expect(identifierInput).toBeInTheDocument()
+    expect(passwordInput).toBeInTheDocument()
 
     await user.type(identifierInput, 'teacher@school.edu')
     await user.type(passwordInput, 'password123')

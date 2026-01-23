@@ -10,10 +10,10 @@ export async function GET(request: NextRequest) {
     const feeItems = await getFeeItems()
 
     // Enrich assignments with fee item details
-    const enrichedAssignments = assignments.map(assignment => ({
+    const enrichedAssignments = assignments.map((assignment: any) => ({
       ...assignment,
-      feeItemDetails: assignment.feeItems.map(feeId => {
-        const fee = feeItems.find(f => f.id === feeId)
+      feeItemDetails: assignment.feeItems.map((feeId: string) => {
+        const fee = feeItems.find((f: { id: string }) => f.id === feeId)
         return fee || { id: feeId, name: 'Unknown', amount: 0 }
       })
     }))
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     // Validate fee items exist
     const allFeeItems = await getFeeItems()
-    const validFeeItems = feeItems.filter((id: string) => allFeeItems.some(f => f.id === id))
+    const validFeeItems = feeItems.filter((id: string) => allFeeItems.some((f: { id: string }) => f.id === id))
     if (validFeeItems.length === 0) {
       return NextResponse.json(
         { success: false, error: 'No valid fee items provided' },
@@ -106,8 +106,8 @@ export async function POST(request: NextRequest) {
     // Calculate total students and amount
     const totalStudents = targetClasses.length * 35 // Average 35 students per class
     const feeItemsTotal = allFeeItems
-      .filter(f => validFeeItems.includes(f.id))
-      .reduce((sum, f) => sum + f.amount, 0)
+      .filter((f: { id: string }) => validFeeItems.includes(f.id))
+      .reduce((sum: number, f: { amount: number }) => sum + f.amount, 0)
     const totalAmount = feeItemsTotal * totalStudents
 
     // Insert into Supabase

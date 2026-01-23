@@ -22,7 +22,7 @@ import Svg, { Path } from 'react-native-svg';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 interface UpdateProfileScreenProps {
-  navigation: NativeStackNavigationProp<any>;
+  navigation?: NativeStackNavigationProp<any>;
 }
 
 const BackIcon = () => (
@@ -86,7 +86,7 @@ export const UpdateProfileScreen: React.FC<UpdateProfileScreenProps> = ({ naviga
         message: 'Cập nhật thông tin thành công!',
       });
 
-      navigation.goBack();
+      navigation?.goBack();
     } catch (error) {
       console.error('Update profile error:', error);
       Alert.alert('Lỗi', 'Không thể cập nhật thông tin. Vui lòng thử lại.');
@@ -125,7 +125,7 @@ export const UpdateProfileScreen: React.FC<UpdateProfileScreenProps> = ({ naviga
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation?.goBack()} style={styles.backButton}>
           <BackIcon />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>

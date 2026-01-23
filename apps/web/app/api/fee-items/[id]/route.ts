@@ -6,7 +6,7 @@ import type { FeeItem } from '@/lib/types'
 // Helper function to get fee item by ID
 async function getFeeItemById(id: string): Promise<FeeItem | undefined> {
   const items = await getFeeItems()
-  return items.find(item => item.id === id)
+  return items.find((item: FeeItem) => item.id === id)
 }
 
 // GET /api/fee-items/[id] - Get a specific fee item

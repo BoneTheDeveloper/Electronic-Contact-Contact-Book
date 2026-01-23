@@ -19,7 +19,7 @@ import Svg, { Path } from 'react-native-svg';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 interface FAQScreenProps {
-  navigation: NativeStackNavigationProp<any>;
+  navigation?: NativeStackNavigationProp<any>;
 }
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -145,7 +145,7 @@ export const FAQScreen: React.FC<FAQScreenProps> = ({ navigation }) => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation?.goBack()} style={styles.backButton}>
           <BackIcon />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
@@ -236,7 +236,7 @@ export const FAQScreen: React.FC<FAQScreenProps> = ({ navigation }) => {
           </Text>
           <TouchableOpacity
             style={[styles.contactButton, { backgroundColor: colors.primary }]}
-            onPress={() => navigation.navigate('Support' as never)}
+            onPress={() => navigation?.navigate('Support' as never)}
             activeOpacity={0.8}
           >
             <Text style={styles.contactButtonText}>

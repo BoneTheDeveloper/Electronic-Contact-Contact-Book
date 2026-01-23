@@ -669,6 +669,10 @@ export interface Database {
           is_read: boolean
           read_at: string | null
           created_at: string
+          priority: 'low' | 'normal' | 'high' | 'emergency'
+          scheduled_for: string | null
+          expires_at: string | null
+          category: 'announcement' | 'emergency' | 'reminder' | 'system'
         }
         Insert: {
           id?: string
@@ -682,6 +686,10 @@ export interface Database {
           is_read?: boolean
           read_at?: string | null
           created_at?: string
+          priority?: 'low' | 'normal' | 'high' | 'emergency'
+          scheduled_for?: string | null
+          expires_at?: string | null
+          category?: 'announcement' | 'emergency' | 'reminder' | 'system'
         }
         Update: {
           id?: string
@@ -694,6 +702,147 @@ export interface Database {
           related_id?: string | null
           is_read?: boolean
           read_at?: string | null
+          created_at?: string
+          priority?: 'low' | 'normal' | 'high' | 'emergency'
+          scheduled_for?: string | null
+          expires_at?: string | null
+          category?: 'announcement' | 'emergency' | 'reminder' | 'system'
+        }
+      }
+      notification_recipients: {
+        Row: {
+          id: string
+          notification_id: string
+          recipient_id: string
+          role: 'admin' | 'teacher' | 'parent' | 'student'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          notification_id: string
+          recipient_id: string
+          role: 'admin' | 'teacher' | 'parent' | 'student'
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          notification_id?: string
+          recipient_id?: string
+          role?: 'admin' | 'teacher' | 'parent' | 'student'
+          created_at?: string
+        }
+      }
+      notification_logs: {
+        Row: {
+          id: string
+          notification_id: string
+          recipient_id: string
+          channel: 'websocket' | 'email' | 'in_app' | 'push'
+          status: 'pending' | 'sent' | 'delivered' | 'failed' | 'bounced'
+          sent_at: string | null
+          delivered_at: string | null
+          failed_at: string | null
+          error_message: string | null
+          retry_count: number
+          external_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          notification_id: string
+          recipient_id: string
+          channel: 'websocket' | 'email' | 'in_app' | 'push'
+          status: 'pending' | 'sent' | 'delivered' | 'failed' | 'bounced'
+          sent_at?: string | null
+          delivered_at?: string | null
+          failed_at?: string | null
+          error_message?: string | null
+          retry_count?: number
+          external_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          notification_id?: string
+          recipient_id?: string
+          channel?: 'websocket' | 'email' | 'in_app' | 'push'
+          status?: 'pending' | 'sent' | 'delivered' | 'failed' | 'bounced'
+          sent_at?: string | null
+          delivered_at?: string | null
+          failed_at?: string | null
+          error_message?: string | null
+          retry_count?: number
+          external_id?: string | null
+          created_at?: string
+        }
+      }
+      user_sessions: {
+        Row: {
+          id: string
+          user_id: string
+          session_token: string
+          is_active: boolean
+          last_active: string
+          device_type: 'web' | 'mobile_ios' | 'mobile_android' | 'desktop' | null
+          device_id: string | null
+          user_agent: string | null
+          ip_address: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          terminated_at: string | null
+          termination_reason: 'new_login' | 'timeout' | 'manual' | 'admin' | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          session_token: string
+          is_active?: boolean
+          last_active?: string
+          device_type?: 'web' | 'mobile_ios' | 'mobile_android' | 'desktop' | null
+          device_id?: string | null
+          user_agent?: string | null
+          ip_address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          terminated_at?: string | null
+          termination_reason?: 'new_login' | 'timeout' | 'manual' | 'admin' | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          session_token?: string
+          is_active?: boolean
+          last_active?: string
+          device_type?: 'web' | 'mobile_ios' | 'mobile_android' | 'desktop' | null
+          device_id?: string | null
+          user_agent?: string | null
+          ip_address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          terminated_at?: string | null
+          termination_reason?: 'new_login' | 'timeout' | 'manual' | 'admin' | null
+        }
+      }
+      student_guardians: {
+        Row: {
+          student_id: string
+          guardian_id: string
+          is_primary: boolean
+          created_at: string
+        }
+        Insert: {
+          student_id: string
+          guardian_id: string
+          is_primary?: boolean
+          created_at?: string
+        }
+        Update: {
+          student_id?: string
+          guardian_id?: string
+          is_primary?: boolean
           created_at?: string
         }
       }
@@ -907,6 +1056,25 @@ export interface Database {
           overdue_invoices: number
           collection_rate: number
         }
+      }
+      get_notification_recipients: {
+        Args: {
+          p_target_role: string
+          p_target_grade_ids?: string[] | null
+          p_target_class_ids?: string[] | null
+          p_specific_user_ids?: string[] | null
+        }
+        Returns: {
+          user_id: string
+          role: string
+        }[]
+      }
+      terminate_user_sessions: {
+        Args: {
+          p_user_id: string
+          p_reason?: string
+        }
+        Returns: void
       }
     }
   }

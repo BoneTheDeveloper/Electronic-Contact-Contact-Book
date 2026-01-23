@@ -1,4 +1,5 @@
 export { AddUserModal } from './AddUserModal'
 export { UserActionsModal } from './UserActionsModal'
 export { LinkParentModal } from './LinkParentModal'
+export { LinkStudentModal } from './LinkStudentModal'
 export { ImportExcelModal } from './ImportExcelModal'

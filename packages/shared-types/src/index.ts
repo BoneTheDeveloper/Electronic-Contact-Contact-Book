@@ -78,7 +78,7 @@ export interface Attendance {
   remarks?: string;
 }
 
-// Notification Types
+// Notification Types (legacy - use notification.ts for new multi-channel system)
 export type NotificationType = 'announcement' | 'homework' | 'exam' | 'fee' | 'general';
 
 export interface Notification {
@@ -91,6 +91,9 @@ export interface Notification {
   createdAt: Date;
   read: boolean;
 }
+
+// Multi-Channel Notification System
+export * from './notification';
 
 // Fee Types
 export interface Fee {

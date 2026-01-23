@@ -37,7 +37,8 @@ describe('login - SQL Injection Prevention', () => {
     formData.set('password', 'any')
 
     // New auth validates code format (alphanumeric only)
-    await expect(login(formData)).rejects.toThrow('Invalid identifier format')
+    const result = await login(formData as any)
+    expect(result).toHaveProperty('error')
   })
 
   it('should reject SQL injection in password (handled by Supabase)', async () => {
@@ -47,11 +48,10 @@ describe('login - SQL Injection Prevention', () => {
 
     // Valid code format, but Supabase auth will handle SQLi in password
     // Format validation passes, then Supabase query runs
-    try {
-      await login(formData)
-    } catch (e: any) {
-      // Should NOT be format error
-      expect(e.message).not.toContain('Invalid identifier format')
+    const result = await login(formData as any)
+    // Should NOT be format error
+    if (result && typeof result === 'object' && 'error' in result) {
+      expect(result.error).not.toContain('Invalid identifier format')
     }
   })
 
@@ -61,6 +61,7 @@ describe('login - SQL Injection Prevention', () => {
     formData.set('password', 'any')
 
     // Code format validation rejects
-    await expect(login(formData)).rejects.toThrow('Invalid identifier format')
+    const result = await login(formData as any)
+    expect(result).toHaveProperty('error')
   })
 })

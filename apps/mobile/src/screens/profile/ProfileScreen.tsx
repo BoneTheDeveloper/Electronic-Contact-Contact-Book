@@ -20,7 +20,7 @@ import Svg, { Path, Circle, Polyline, Line, Rect } from 'react-native-svg';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 interface ProfileScreenProps {
-  navigation: NativeStackNavigationProp<any>;
+  navigation?: NativeStackNavigationProp<any>;
 }
 
 interface MenuItem {
@@ -236,7 +236,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             <TouchableOpacity
               key={item.id}
               style={[styles.menuItem, index !== MENU_ITEMS.length - 1 ? styles.menuItemBorder : {}]}
-              onPress={() => navigation.navigate(item.route as never)}
+              onPress={() => navigation?.navigate(item.route as never)}
               activeOpacity={0.7}
             >
               <View style={[styles.menuIcon, { backgroundColor: `${item.color}15` }]}>

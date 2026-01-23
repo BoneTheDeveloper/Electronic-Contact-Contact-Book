@@ -52,22 +52,18 @@ export function LinkParentModal({ isOpen, onClose, onSuccess, student }: LinkPar
     const timer = setTimeout(async () => {
       setSearching(true)
       try {
-        // TODO: API - GET /api/parents?search={query}
-        console.log('[LinkParentModal] Searching parents:', searchQuery)
+        const response = await fetch(`/api/student-guardians?search=${encodeURIComponent(searchQuery)}&type=parents`)
+        const result = await response.json()
 
-        // Mock search results
-        const mockResults: Parent[] = [
-          { id: 'p1', code: 'PH20260001', name: 'Nguyễn Văn A', phone: '0123456789', email: 'parent1@example.com' },
-          { id: 'p2', code: 'PH20260002', name: 'Trần Thị B', phone: '0987654321', email: 'parent2@example.com' },
-        ].filter(p =>
-          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.phone.includes(searchQuery) ||
-          p.code.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-
-        setSearchResults(mockResults)
+        if (result.success) {
+          setSearchResults(result.data)
+        } else {
+          console.error('[LinkParentModal] Search failed:', result.error)
+          setSearchResults([])
+        }
       } catch (error) {
         console.error('[LinkParentModal] Search failed:', error)
+        setSearchResults([])
       } finally {
         setSearching(false)
       }
@@ -85,21 +81,26 @@ export function LinkParentModal({ isOpen, onClose, onSuccess, student }: LinkPar
     setLoading(true)
 
     try {
-      // TODO: API - POST /api/users/:studentId/parents
-      const payload = {
-        parentId: selectedParent.id,
-        relationship,
-        isPrimary,
+      const response = await fetch('/api/student-guardians', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: student.id,
+          parentId: selectedParent.id,
+          relationship,
+          isPrimary,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        alert(`Đã liên kết ${selectedParent.name} với ${student.name}`)
+        onSuccess?.()
+        handleClose()
+      } else {
+        alert(result.error || 'Liên kết thất bại. Vui lòng thử lại.')
       }
-
-      console.log('[LinkParentModal] Linking parent:', payload)
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      alert(`Đã liên kết ${selectedParent.name} với ${student.name}`)
-      onSuccess?.()
-      handleClose()
     } catch (error) {
       console.error('[LinkParentModal] Link failed:', error)
       alert('Liên kết thất bại. Vui lòng thử lại.')

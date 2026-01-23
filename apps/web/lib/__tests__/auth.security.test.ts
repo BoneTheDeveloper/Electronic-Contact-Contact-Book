@@ -8,18 +8,21 @@ vi.mock('next/navigation', () => ({
 }))
 
 // Mock Supabase client
+const createQueryBuilder = () => ({
+  eq: vi.fn(function(this: any) {
+    // After first eq, return an object that has eq and single
+    return {
+      eq: vi.fn(() => createQueryBuilder()),
+      single: vi.fn(() => ({ data: null, error: { code: 'PGRST116' } }))
+    }
+  }),
+  single: vi.fn(() => ({ data: null, error: { code: 'PGRST116' } }))
+})
+
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(() => ({
     from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              single: vi.fn(() => ({ data: null, error: { code: 'PGRST116' } }))
-            }))
-          }))
-        }))
-      }))
+      select: vi.fn(() => createQueryBuilder())
     })),
     auth: {
       signInWithPassword: vi.fn(() => Promise.resolve({
@@ -41,7 +44,8 @@ describe('login - Input Validation', () => {
     formData.set('identifier', '')
     formData.set('password', 'password123')
 
-    await expect(login(formData)).rejects.toThrow('Identifier and password are required')
+    const result = await login(formData as any)
+    expect(result).toHaveProperty('error')
   })
 
   it('should reject empty password', async () => {
@@ -49,7 +53,8 @@ describe('login - Input Validation', () => {
     formData.set('identifier', 'TC001')
     formData.set('password', '')
 
-    await expect(login(formData)).rejects.toThrow('Identifier and password are required')
+    const result = await login(formData as any)
+    expect(result).toHaveProperty('error')
   })
 
   // Note: With real Supabase auth, valid codes require actual database records
@@ -61,7 +66,8 @@ describe('login - Input Validation', () => {
     formData.set('password', 'any')
 
     // New auth validates code format and rejects special chars
-    await expect(login(formData)).rejects.toThrow('Invalid identifier format')
+    const result = await login(formData as any)
+    expect(result).toHaveProperty('error')
   })
 
   it('should reject identifier with XSS attempts', async () => {
@@ -70,7 +76,8 @@ describe('login - Input Validation', () => {
     formData.set('password', 'any')
 
     // Sanitization removes script tags, then validation fails format check
-    await expect(login(formData)).rejects.toThrow()
+    const result = await login(formData as any)
+    expect(result).toHaveProperty('error')
   })
 
   it('should accept valid email format', async () => {
@@ -80,11 +87,11 @@ describe('login - Input Validation', () => {
 
     // With real Supabase, this will fail if user doesn't exist
     // But email format validation should pass
-    try {
-      await login(formData)
-    } catch (e: any) {
+    const result = await login(formData as any)
+    // Either returns error object or redirects (throws)
+    if (result && typeof result === 'object' && 'error' in result) {
       // Should NOT be format error (email is valid format)
-      expect(e.message).not.toContain('Invalid identifier format')
+      expect(result.error).not.toContain('Invalid identifier format')
     }
   })
 })

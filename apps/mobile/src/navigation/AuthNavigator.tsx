@@ -25,10 +25,10 @@ const AuthNavigator: React.FC = () => {
         contentStyle: { backgroundColor: '#F8FAFC' },
       }}
     >
-      <Stack.Screen name="Login" component={CustomLoginScreen} />
+      <Stack.Screen name="Login" component={CustomLoginScreen as any} />
       <Stack.Screen
         name="DebugLogs"
-        component={DebugLogsScreen}
+        component={DebugLogsScreen as any}
         options={{
           headerShown: true,
           title: 'Debug Logs',

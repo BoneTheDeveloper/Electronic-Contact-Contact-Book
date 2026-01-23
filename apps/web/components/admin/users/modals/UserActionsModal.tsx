@@ -8,6 +8,8 @@ interface UserActionsModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess?: () => void
+  onLinkParent?: () => void
+  onLinkStudent?: () => void
   user: {
     id: string
     name: string
@@ -21,7 +23,7 @@ interface UserActionsModalProps {
   }
 }
 
-export function UserActionsModal({ isOpen, onClose, onSuccess, user, currentUser }: UserActionsModalProps) {
+export function UserActionsModal({ isOpen, onClose, onSuccess, onLinkParent, onLinkStudent, user, currentUser }: UserActionsModalProps) {
   const [loading, setLoading] = useState(false)
 
   // Permission check: only admins can access sensitive actions
@@ -105,8 +107,13 @@ export function UserActionsModal({ isOpen, onClose, onSuccess, user, currentUser
   const handleLinkParent = () => {
     // Close this modal and let parent open LinkParentModal
     onClose()
-    // The parent component should handle opening LinkParentModal
-    if (onSuccess) onSuccess()
+    if (onLinkParent) onLinkParent()
+  }
+
+  const handleLinkStudent = () => {
+    // Close this modal and let parent open LinkStudentModal
+    onClose()
+    if (onLinkStudent) onLinkStudent()
   }
 
   const handleDelete = async () => {
@@ -264,6 +271,26 @@ export function UserActionsModal({ isOpen, onClose, onSuccess, user, currentUser
                 <div className="text-left">
                   <p className="text-sm font-black text-slate-800">Liên kết Phụ huynh</p>
                   <p className="text-xs text-slate-400">Gán phụ huynh cho học sinh</p>
+                </div>
+              </button>
+            )}
+
+            {/* Link Student - only show for parents */}
+            {user.role === 'parent' && (
+              <button
+                onClick={handleLinkStudent}
+                className="w-full p-4 border border-slate-200 rounded-xl flex items-center gap-4 hover:bg-slate-50 transition-all"
+              >
+                <div className="w-10 h-10 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-black text-slate-800">Liên kết Học sinh</p>
+                  <p className="text-xs text-slate-400">Gán học sinh cho phụ huynh</p>
                 </div>
               </button>
             )}

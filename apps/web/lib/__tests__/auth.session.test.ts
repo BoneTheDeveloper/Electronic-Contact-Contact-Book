@@ -49,7 +49,7 @@ describe('Session Management', () => {
     formData.set('password', 'any')
 
     try {
-      await login(formData)
+      await login(null, formData as any)
     } catch {
       const cookieOptions = mockCookies.set.mock.calls[0]?.[2]
       expect(cookieOptions?.maxAge).toBe(60 * 60 * 24 * 7) // 1 week
@@ -63,7 +63,7 @@ describe('Session Management', () => {
     formData.set('password', 'any')
 
     try {
-      await login(formData)
+      await login(null, formData as any)
     } catch {
       const cookieOptions = mockCookies.set.mock.calls[0]?.[2]
       expect(cookieOptions?.path).toBe('/')
@@ -76,10 +76,10 @@ describe('Session Management', () => {
     await expect(requireAuth()).rejects.toThrow('Redirect: /login')
   })
 
-  it('requireAuth should redirect with custom error message', async () => {
+  it('requireAuth should redirect to clean login URL', async () => {
     mockCookies.get.mockReturnValue(undefined)
 
-    await expect(requireAuth('Custom error')).rejects.toThrow('error=Custom+error')
+    await expect(requireAuth()).rejects.toThrow('Redirect: /login')
   })
 
   it('requireRole should reject unauthorized roles', async () => {

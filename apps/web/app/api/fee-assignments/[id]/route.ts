@@ -4,7 +4,7 @@ import { getFeeAssignments, getFeeItems } from '@/lib/supabase/queries'
 // Helper function to get fee assignment by ID
 async function getFeeAssignmentById(id: string) {
   const assignments = await getFeeAssignments()
-  return assignments.find(a => a.id === id)
+  return assignments.find((a: { id: string }) => a.id === id)
 }
 
 // GET /api/fee-assignments/[id] - Get a specific fee assignment
@@ -27,8 +27,8 @@ export async function GET(
     const allFeeItems = await getFeeItems()
     const enrichedAssignment = {
       ...assignment,
-      feeItemDetails: assignment.feeItems.map(feeId => {
-        const fee = allFeeItems.find(f => f.id === feeId)
+      feeItemDetails: assignment.feeItems.map((feeId: string) => {
+        const fee = allFeeItems.find((f: { id: string }) => f.id === feeId)
         return fee || { id: feeId, name: 'Unknown', amount: 0 }
       })
     }

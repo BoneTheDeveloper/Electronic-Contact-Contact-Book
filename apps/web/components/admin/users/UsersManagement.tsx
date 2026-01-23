@@ -5,7 +5,7 @@ import { Users, Shield, UserCheck, Users2, MoreVertical } from 'lucide-react'
 import { StatCard, DataTable, StatusBadge } from '@/components/admin/shared'
 import type { Column } from '@/components/admin/shared'
 import type { User } from '@/lib/types'
-import { AddUserModal, UserActionsModal, LinkParentModal, ImportExcelModal } from './modals'
+import { AddUserModal, UserActionsModal, LinkParentModal, LinkStudentModal, ImportExcelModal } from './modals'
 
 interface UserStats {
   total: number
@@ -23,19 +23,64 @@ interface ApiResponse<T> {
 }
 
 interface UsersManagementProps {
+  initialUsers: User[]
+  initialStats: UserStats
+  initialClassOptions: Array<{ value: string; label: string }>
+  refreshTrigger?: number
   onAddUser?: () => void
   onImportExcel?: () => void
 }
 
-export function UsersManagement({ onAddUser, onImportExcel }: UsersManagementProps) {
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
-  const [refreshTrigger, setRefreshTrigger] = useState(0)
+export function UsersManagement({
+  initialUsers,
+  initialStats,
+  initialClassOptions,
+  refreshTrigger: externalRefreshTrigger = 0,
+  onAddUser,
+  onImportExcel
+}: UsersManagementProps) {
+  const [users, setUsers] = useState<User[]>(initialUsers)
+  const [stats, setStats] = useState<UserStats>(initialStats)
+  const [classOptions, setClassOptions] = useState(initialClassOptions)
+  const [loading, setLoading] = useState(false)
+  const [internalRefreshTrigger, setInternalRefreshTrigger] = useState(0)
+
+  // Combine external and internal refresh triggers
+  useEffect(() => {
+    if (externalRefreshTrigger > 0 && externalRefreshTrigger !== internalRefreshTrigger) {
+      setInternalRefreshTrigger(externalRefreshTrigger)
+      // Refetch data when external trigger changes
+      const refetchUsers = async () => {
+        setLoading(true)
+        try {
+          const response = await fetch('/api/users?')
+          const result: ApiResponse<User> = await response.json()
+          if (result.success) {
+            setUsers(result.data)
+            const newStats = {
+              total: result.data.length,
+              admin: result.data.filter(u => u.role === 'admin').length,
+              teachers: result.data.filter(u => u.role === 'teacher').length,
+              parents: result.data.filter(u => u.role === 'parent').length,
+              students: result.data.filter(u => u.role === 'student').length,
+            }
+            setStats(newStats)
+          }
+        } catch (error) {
+          console.error('Failed to refresh users:', error)
+        } finally {
+          setLoading(false)
+        }
+      }
+      refetchUsers()
+    }
+  }, [externalRefreshTrigger, internalRefreshTrigger])
 
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false)
   const [showActionsModal, setShowActionsModal] = useState(false)
   const [showLinkParentModal, setShowLinkParentModal] = useState(false)
+  const [showLinkStudentModal, setShowLinkStudentModal] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
@@ -51,15 +96,21 @@ export function UsersManagement({ onAddUser, onImportExcel }: UsersManagementPro
 
   // Refresh callback pattern
   const handleRefresh = useCallback(() => {
-    setRefreshTrigger(prev => prev + 1)
+    setInternalRefreshTrigger(prev => prev + 1)
   }, [])
 
   // Use ref to track previous filter values
   const prevFiltersRef = useRef<string>('')
 
-  // Fetch users from API
+  // Fetch users from API - only when filters change, skip initial render
   useEffect(() => {
     const filterString = JSON.stringify(filters)
+
+    // Skip initial fetch - we already have server data
+    if (prevFiltersRef.current === '') {
+      prevFiltersRef.current = filterString
+      return
+    }
 
     // Only fetch if filters actually changed
     if (filterString === prevFiltersRef.current) {
@@ -81,6 +132,15 @@ export function UsersManagement({ onAddUser, onImportExcel }: UsersManagementPro
         const result: ApiResponse<User> = await response.json()
         if (result.success) {
           setUsers(result.data)
+          // Update stats when data changes
+          const newStats = {
+            total: result.data.length,
+            admin: result.data.filter(u => u.role === 'admin').length,
+            teachers: result.data.filter(u => u.role === 'teacher').length,
+            parents: result.data.filter(u => u.role === 'parent').length,
+            students: result.data.filter(u => u.role === 'student').length,
+          }
+          setStats(newStats)
         }
       } catch (error) {
         console.error('Failed to fetch users:', error)
@@ -90,27 +150,7 @@ export function UsersManagement({ onAddUser, onImportExcel }: UsersManagementPro
     }
 
     fetchUsers()
-  }, [filters, refreshTrigger])
-
-  // Calculate statistics - memoized
-  const stats = useMemo((): UserStats => {
-    return {
-      total: users.length,
-      admin: users.filter(u => u.role === 'admin').length,
-      teachers: users.filter(u => u.role === 'teacher').length,
-      parents: users.filter(u => u.role === 'parent').length,
-      students: users.filter(u => u.role === 'student').length,
-    }
-  }, [users])
-
-  // Get unique classes - memoized
-  const classOptions = useMemo(() => {
-    return users
-      .map(u => u.classId)
-      .filter(Boolean)
-      .filter((value, index, self) => self.indexOf(value) === index)
-      .map(c => ({ value: c as string, label: `Lớp ${c}` }))
-  }, [users])
+  }, [filters, internalRefreshTrigger])
 
   // Clear filters - memoized
   const handleClearFilters = useCallback(() => {
@@ -134,7 +174,13 @@ export function UsersManagement({ onAddUser, onImportExcel }: UsersManagementPro
     setShowLinkParentModal(true)
   }, [])
 
-  // Handle add user from header button
+  // Open link student modal
+  const handleLinkStudent = useCallback((user: User) => {
+    setSelectedUser(user)
+    setShowLinkStudentModal(true)
+  }, [])
+
+  // Handle add user
   const handleAddUserClick = useCallback(() => {
     if (onAddUser) {
       onAddUser()
@@ -143,7 +189,7 @@ export function UsersManagement({ onAddUser, onImportExcel }: UsersManagementPro
     }
   }, [onAddUser])
 
-  // Handle import excel from header button
+  // Handle import excel
   const handleImportExcelClick = useCallback(() => {
     if (onImportExcel) {
       onImportExcel()
@@ -384,6 +430,14 @@ export function UsersManagement({ onAddUser, onImportExcel }: UsersManagementPro
               setSelectedUser(null)
             }}
             onSuccess={handleRefresh}
+            onLinkParent={() => {
+              setShowActionsModal(false)
+              setShowLinkParentModal(true)
+            }}
+            onLinkStudent={() => {
+              setShowActionsModal(false)
+              setShowLinkStudentModal(true)
+            }}
             user={{
               id: selectedUser.id,
               name: selectedUser.name,
@@ -402,6 +456,20 @@ export function UsersManagement({ onAddUser, onImportExcel }: UsersManagementPro
             }}
             onSuccess={handleRefresh}
             student={{
+              id: selectedUser.id,
+              name: selectedUser.name,
+              code: selectedUser.id, // Using ID as code for now
+            }}
+          />
+
+          <LinkStudentModal
+            isOpen={showLinkStudentModal}
+            onClose={() => {
+              setShowLinkStudentModal(false)
+              setSelectedUser(null)
+            }}
+            onSuccess={handleRefresh}
+            parent={{
               id: selectedUser.id,
               name: selectedUser.name,
               code: selectedUser.id, // Using ID as code for now

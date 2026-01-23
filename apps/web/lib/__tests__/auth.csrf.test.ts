@@ -40,7 +40,7 @@ describe('login - CSRF Protection', () => {
     formData.set('password', 'any')
 
     try {
-      await login(formData)
+      await login(null, formData as any)
     } catch {
       const cookieOptions = mockCookies.set.mock.calls[0]?.[2]
       expect(cookieOptions?.httpOnly).toBe(true)
@@ -53,7 +53,7 @@ describe('login - CSRF Protection', () => {
     formData.set('password', 'any')
 
     try {
-      await login(formData)
+      await login(null, formData as any)
     } catch {
       const cookieOptions = mockCookies.set.mock.calls[0]?.[2]
       expect(cookieOptions?.sameSite).toBe('lax')
@@ -68,7 +68,7 @@ describe('login - CSRF Protection', () => {
     formData.set('password', 'any')
 
     try {
-      await login(formData)
+      await login(null, formData as any)
     } catch {
       const cookieOptions = mockCookies.set.mock.calls[0]?.[2]
       expect(cookieOptions?.secure).toBe(true)

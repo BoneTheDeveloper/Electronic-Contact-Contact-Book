@@ -12,12 +12,13 @@
 
 'use server';
 
-import { cookies } from 'next/headers';
+import { cookies, headers as nextHeaders } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { User, UserRole } from '@school-management/shared-types';
 import { createClient } from '@/lib/supabase/server';
 
 const AUTH_COOKIE_NAME = 'auth';
+const SESSION_COOKIE_NAME = 'session_id';
 const AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 1 week
 
 /**
@@ -124,6 +125,96 @@ async function getUserProfile(userId: string): Promise<User | null> {
 }
 
 /**
+ * Generate random session token
+ */
+function generateSessionToken(): string {
+  return Array.from(crypto.getRandomValues(new Uint8Array(32)))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+/**
+ * Get user agent from request headers
+ */
+async function getUserAgent(): Promise<string> {
+  const headersList = await nextHeaders();
+  return headersList.get('user-agent') || 'Unknown';
+}
+
+/**
+ * Parse user agent to extract device info
+ */
+function parseUserAgent(userAgent: string): {
+  type: 'web' | 'mobile_ios' | 'mobile_android' | 'desktop'
+  id: string
+} {
+  const ua = userAgent.toLowerCase();
+
+  // Simple device detection
+  if (ua.includes('iphone') || ua.includes('ipad')) {
+    return { type: 'mobile_ios', id: 'ios-device' };
+  }
+  if (ua.includes('android')) {
+    return { type: 'mobile_android', id: 'android-device' };
+  }
+  if (ua.includes('mobile')) {
+    return { type: 'web', id: 'mobile-web' };
+  }
+
+  // Generate simple fingerprint from user agent
+  const id = Buffer.from(userAgent).toString('base64').slice(0, 16);
+
+  return { type: 'desktop', id };
+}
+
+/**
+ * Get client IP address
+ */
+async function getClientIP(): Promise<string | null> {
+  const headersList = await nextHeaders();
+
+  // Check various headers for IP
+  const ip = headersList.get('x-forwarded-for')?.split(',')[0]
+    || headersList.get('x-real-ip')
+    || headersList.get('cf-connecting-ip')
+    || null;
+
+  return ip;
+}
+
+/**
+ * Terminate all active sessions for a user
+ */
+async function terminateUserSessions(
+  userId: string,
+  reason: string = 'new_login'
+): Promise<void> {
+  const supabase = await createClient();
+
+  await supabase.rpc('terminate_user_sessions', {
+    p_user_id: userId,
+    p_reason: reason
+  } as any);
+}
+
+/**
+ * Broadcast session termination via Realtime
+ */
+async function broadcastSessionTermination(
+  userId: string,
+  reason: string
+): Promise<void> {
+  const supabase = await createClient();
+
+  await supabase.channel(`user:${userId}:session`)
+    .send({
+      type: 'broadcast',
+      event: 'session_terminated',
+      payload: { reason, timestamp: new Date().toISOString() }
+    });
+}
+
+/**
  * Sanitize user input to prevent XSS
  * Removes HTML tags and javascript: protocols
  */
@@ -144,32 +235,34 @@ function isValidCode(code: string): boolean {
 }
 
 /**
- * Login with identifier and password
+ * Login state for useFormState
  */
-export async function login(formData: FormData) {
-  const identifier = formData.get('identifier') as string;
-  const email = formData.get('email') as string; // Legacy support
-  const password = formData.get('password') as string;
+export type LoginState = {
+  error?: string;
+  success?: boolean;
+}
 
-  const loginIdentifier = identifier || email;
-
-  if (!loginIdentifier || !password) {
-    throw new Error('Identifier and password are required');
+/**
+ * Internal login implementation - shared by both public APIs
+ */
+async function loginImpl(identifier: string, password: string): Promise<LoginState | void> {
+  if (!identifier || !password) {
+    return { error: 'Vui lòng nhập tài khoản và mật khẩu' };
   }
 
   // Sanitize input to prevent XSS
-  const sanitizedId = sanitizeInput(loginIdentifier);
+  const sanitizedId = sanitizeInput(identifier);
 
   // Validate code format for security
   if (!isValidCode(sanitizedId) && !sanitizedId.includes('@')) {
-    throw new Error('Invalid identifier format');
+    return { error: 'Định dạng tài khoản không hợp lệ' };
   }
 
   // Find user email from identifier
   const userEmail = await findUserEmailByIdentifier(sanitizedId);
 
   if (!userEmail) {
-    throw new Error('Invalid credentials');
+    return { error: 'Sai tài khoản hoặc mật khẩu' };
   }
 
   // Authenticate with Supabase
@@ -180,22 +273,66 @@ export async function login(formData: FormData) {
   });
 
   if (authError || !authData.user) {
-    throw new Error('Invalid credentials');
+    return { error: 'Sai tài khoản hoặc mật khẩu' };
   }
 
   // Get user profile
   const user = await getUserProfile(authData.user.id);
 
   if (!user) {
-    throw new Error('User profile not found');
+    return { error: 'Không tìm thấy thông tin người dùng' };
   }
 
-  // Set auth cookie
+  // === Session management ===
+  const sessionToken = authData.session?.access_token || generateSessionToken();
+
+  // Get device info
+  const userAgent = await getUserAgent();
+  const deviceInfo = parseUserAgent(userAgent);
+  const ipAddress = await getClientIP();
+
+  // Terminate existing sessions
+  await terminateUserSessions(user.id, 'new_login');
+
+  // Broadcast logout to old sessions
+  await broadcastSessionTermination(user.id, 'new_login');
+
+  // Create new session
+  const { data: newSession, error: sessionError } = await supabase
+    .from('user_sessions')
+    // @ts-expect-error - user_sessions table exists in DB but not in generated types
+    .insert({
+      user_id: user.id,
+      session_token: sessionToken,
+      is_active: true,
+      device_type: deviceInfo.type,
+      device_id: deviceInfo.id,
+      user_agent: userAgent,
+      ip_address: ipAddress,
+    })
+    .select('id')
+    .single();
+
+  if (sessionError) {
+    console.error('Failed to create session:', sessionError);
+    // Continue anyway - auth is valid
+  }
+
+  // Set auth cookies
   const cookieStore = await cookies();
   cookieStore.set(AUTH_COOKIE_NAME, JSON.stringify(user), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
+    maxAge: AUTH_COOKIE_MAX_AGE,
+    path: '/',
+    priority: 'high',
+  });
+
+  cookieStore.set(SESSION_COOKIE_NAME, (newSession as any)?.id || '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
     maxAge: AUTH_COOKIE_MAX_AGE,
     path: '/',
     priority: 'high',
@@ -213,19 +350,80 @@ export async function login(formData: FormData) {
 }
 
 /**
+ * Login with identifier and password
+ * For backward compatibility with tests
+ */
+export async function login(formData: FormData): Promise<LoginState | void>;
+
+/**
+ * Login with identifier and password
+ * For useFormState hook
+ */
+export async function login(prevState: LoginState | null, formData: FormData): Promise<LoginState | void>;
+
+/**
+ * Login implementation with overload support
+ */
+export async function login(arg1: FormData | LoginState | null, arg2?: FormData): Promise<LoginState | void> {
+  // Handle useFormState signature: login(prevState, formData)
+  if (arg2 instanceof FormData) {
+    const formData = arg2;
+    const identifier = formData.get('identifier') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    return loginImpl(identifier || email, password);
+  }
+
+  // Handle direct/test signature: login(formData)
+  if (arg1 instanceof FormData) {
+    const formData = arg1;
+    const identifier = formData.get('identifier') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    return loginImpl(identifier || email, password);
+  }
+
+  // Should not reach here
+  return { error: 'Invalid login call' };
+}
+
+/**
  * Logout and clear session
  */
 export async function logout() {
-  const supabase = await createClient();
+  const cookieStore = await cookies();
+  const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const authCookie = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+
+  if (authCookie) {
+    try {
+      const user = JSON.parse(authCookie);
+
+      // Deactivate session in database
+      if (sessionId) {
+        const supabase = await createClient();
+        await supabase
+          .from('user_sessions')
+          // @ts-expect-error - user_sessions table exists in DB but not in generated types
+          .update({
+            is_active: false,
+            terminated_at: new Date().toISOString(),
+            termination_reason: 'manual'
+          })
+          .eq('id', sessionId);
+      }
+    } catch {
+      // Ignore errors during logout
+    }
+  }
 
   // Sign out from Supabase
+  const supabase = await createClient();
   await supabase.auth.signOut();
 
-  // Clear auth cookie
-  // NOTE: Cookie deletion allowed here during POST (Server Action)
-  // but NOT in getUser() during GET (page rendering)
-  const cookieStore = await cookies();
+  // Clear cookies
   cookieStore.delete(AUTH_COOKIE_NAME);
+  cookieStore.delete(SESSION_COOKIE_NAME);
 
   redirect('/login');
 }
@@ -251,10 +449,12 @@ export async function getUser(): Promise<User | null> {
 
     // Verify session is still valid with Supabase
     const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session }, error } = await supabase.auth.getSession();
 
-    if (!session) {
-      // Session expired - return null, let requireAuth handle redirect
+    // Handle auth errors (invalid/refresh tokens)
+    if (error || !session) {
+      console.debug('[Auth] Session invalid or error:', error?.message || 'No session')
+      // Session expired or error - return null, let requireAuth handle redirect
       return null;
     }
 
@@ -267,19 +467,12 @@ export async function getUser(): Promise<User | null> {
 
 /**
  * Require authentication - redirect to login if not authenticated
- * Includes error message in redirect for better UX
  */
-export async function requireAuth(errorMessage?: string): Promise<User> {
+export async function requireAuth(): Promise<User> {
   const user = await getUser();
 
   if (!user) {
-    const params = new URLSearchParams();
-    if (errorMessage) {
-      params.set('error', errorMessage);
-    } else {
-      params.set('error', 'Please login to continue');
-    }
-    redirect(`/login?${params.toString()}`);
+    redirect('/login');
   }
 
   return user;

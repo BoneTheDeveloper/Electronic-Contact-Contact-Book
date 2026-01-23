@@ -2,7 +2,9 @@
 // ==================== SUPABASE DATA LAYER ====================
 // Real Supabase queries replacing all mock data functions
 // Uses server client for server components (async)
+// Performance: React cache() + Next.js fetch caching
 
+import { cache } from 'react'
 import { createClient as createServerClient } from './server'
 import { Database } from '@/types/supabase'
 import type {
@@ -91,10 +93,10 @@ function handleQueryError(error: { message?: string; code?: string }, context: s
 // ==================== USER MANAGEMENT ====================
 
 /**
- * Get all users with their profiles
+ * Get all users with their profiles (cached)
  * Replaces: getUsers()
  */
-export async function getUsers(): Promise<User[]> {
+export const getUsers = cache(async (): Promise<User[]> => {
   const supabase = await getSupabase()
 
   const { data, error } = await supabase
@@ -112,7 +114,7 @@ export async function getUsers(): Promise<User[]> {
     status: p.status as User['status'],
     avatar: p.avatar_url || undefined
   }))
-}
+})
 
 /**
  * Get user by ID
@@ -231,41 +233,74 @@ export async function deleteUser(id: string): Promise<void> {
 // ==================== DASHBOARD STATS ====================
 
 /**
- * Get dashboard statistics
+ * Get dashboard statistics (cached, optimized with DB aggregations)
  * Replaces: getDashboardStats()
  */
-export async function getDashboardStats(): Promise<DashboardStats> {
+export const getDashboardStats = cache(async (): Promise<DashboardStats> => {
   const supabase = await getSupabase()
 
   // Get counts in parallel
-  const [studentsResult, parentsResult, teachersResult, invoicesResult] = await Promise.all([
+  const [studentsResult, parentsResult, teachersResult] = await Promise.all([
     supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'student'),
     supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'parent'),
     supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'teacher'),
-    supabase.from('invoices').select('id, status, amount')
   ])
 
-  // Calculate attendance from today's records
+  // Calculate attendance using DB aggregation (instead of fetching all rows)
   const today = new Date().toISOString().split('T')[0]
-  const { data: attendanceData } = await supabase
-    .from('attendance')
-    .select('status')
-    .eq('date', today)
 
-  const totalAttendance = attendanceData?.length || 0
-  const presentCount = attendanceData?.filter((a) => a.status === 'present').length || 0
-  const attendanceRate = totalAttendance > 0
-    ? Math.round((presentCount / totalAttendance) * 100)
+  // Use RPC or aggregated queries for better performance
+  const [{ count: totalAttendance }, { count: presentCount }] = await Promise.all([
+    supabase
+      .from('attendance')
+      .select('id', { count: 'exact', head: true })
+      .eq('date', today),
+    supabase
+      .from('attendance')
+      .select('id', { count: 'exact', head: true })
+      .eq('date', today)
+      .eq('status', 'present')
+  ])
+
+  const attendanceRate = (totalAttendance || 0) > 0
+    ? Math.round(((presentCount || 0) / (totalAttendance || 1)) * 100)
     : 100
 
-  // Calculate payment stats
-  const invoices = invoicesResult.data || []
-  const totalAmount = invoices.reduce((sum: number, inv) => sum + inv.total_amount, 0)
-  const collectedAmount = invoices
-    .filter((inv) => inv.status === 'paid')
-    .reduce((sum: number, inv) => sum + inv.paid_amount, 0)
-  const pendingCount = invoices.filter((inv) => ['pending', 'partial'].includes(inv.status)).length
-  const overdueCount = invoices.filter((inv) => inv.status === 'overdue').length
+  // Calculate payment stats using DB aggregation (SUM + COUNT)
+  const [
+    { data: totalAmountData },
+    { data: collectedAmountData },
+    { count: pendingCount },
+    { count: overdueCount }
+  ] = await Promise.all([
+    // SUM of all invoice amounts
+    supabase
+      .from('invoices')
+      .select('total_amount')
+      .eq('status', 'paid'), // Only count paid invoices for revenue
+    // SUM of collected amounts
+    supabase
+      .from('invoices')
+      .select('paid_amount')
+      .eq('status', 'paid'),
+    // COUNT of pending/partial invoices
+    supabase
+      .from('invoices')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['pending', 'partial']),
+    // COUNT of overdue invoices
+    supabase
+      .from('invoices')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'overdue')
+  ])
+
+  // Calculate totals from aggregated data
+  const collectedAmount = (collectedAmountData || [])
+    .reduce((sum: number, inv) => sum + (inv.paid_amount || 0), 0)
+  const totalAmount = (totalAmountData || [])
+    .reduce((sum: number, inv) => sum + (inv.total_amount || 0), 0)
+
   const collectionRate = totalAmount > 0 ? Math.round((collectedAmount / totalAmount) * 100) : 0
 
   return {
@@ -275,15 +310,15 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     attendance: `${attendanceRate}%`,
     feesCollected: `${collectionRate}%`,
     revenue: collectedAmount,
-    pendingPayments: pendingCount + overdueCount
+    pendingPayments: (pendingCount || 0) + (overdueCount || 0)
   }
-}
+})
 
 /**
- * Get teacher-specific statistics
+ * Get teacher-specific statistics (cached)
  * Replaces: getTeacherStats(teacherId)
  */
-export async function getTeacherStats(teacherId: string): Promise<TeacherStats> {
+export const getTeacherStats = cache(async (teacherId: string): Promise<TeacherStats> => {
   const supabase = await getSupabase()
 
   // Get homeroom class count
@@ -377,7 +412,7 @@ export async function getTeacherStats(teacherId: string): Promise<TeacherStats> 
     leaveRequests: leaveRequests || 0,
     todaySchedule
   }
-}
+})
 
 // ==================== STUDENTS ====================
 
@@ -446,10 +481,10 @@ export async function getStudents(): Promise<Student[]> {
 // ==================== CLASSES ====================
 
 /**
- * Get all classes
+ * Get all classes (cached)
  * Replaces: getClasses()
  */
-export async function getClasses(): Promise<Class[]> {
+export const getClasses = cache(async (): Promise<Class[]> => {
   const supabase = await getSupabase()
 
   const { data, error } = await supabase
@@ -475,7 +510,7 @@ export async function getClasses(): Promise<Class[]> {
     studentCount: c.current_students,
     room: c.room || ''
   }))
-}
+})
 
 /**
  * Get class by ID
@@ -549,10 +584,10 @@ export async function getStudentsByClass(classId: string): Promise<Student[]> {
 // ==================== PAYMENTS & INVOICES ====================
 
 /**
- * Get all invoices
+ * Get all invoices (cached)
  * Replaces: getInvoices()
  */
-export async function getInvoices(): Promise<Invoice[]> {
+export const getInvoices = cache(async (): Promise<Invoice[]> => {
   const supabase = await getSupabase()
 
   const { data, error } = await supabase
@@ -571,7 +606,7 @@ export async function getInvoices(): Promise<Invoice[]> {
     dueDate: inv.due_date,
     paidDate: inv.paid_date || undefined
   }))
-}
+})
 
 /**
  * Get invoice by ID
@@ -605,10 +640,10 @@ export async function getInvoiceById(id: string): Promise<Invoice | null> {
 }
 
 /**
- * Get fee assignments
+ * Get fee assignments (cached)
  * Replaces: getFeeAssignments()
  */
-export async function getFeeAssignments(): Promise<FeeAssignment[]> {
+export const getFeeAssignments = cache(async (): Promise<FeeAssignment[]> => {
   const supabase = await getSupabase()
 
   const { data, error } = await supabase
@@ -633,16 +668,16 @@ export async function getFeeAssignments(): Promise<FeeAssignment[]> {
     status: fa.status as FeeAssignment['status'],
     createdAt: fa.created_at
   }))
-}
+})
 
 /**
- * Get fee items
+ * Get fee items (cached)
  * Replaces: getFeeItems(filters)
  */
-export async function getFeeItems(filters?: {
+export const getFeeItems = cache(async (filters?: {
   semester?: string
   type?: 'mandatory' | 'voluntary'
-}): Promise<FeeItem[]> {
+}): Promise<FeeItem[]> => {
   const supabase = await getSupabase()
 
   let query = supabase
@@ -671,19 +706,19 @@ export async function getFeeItems(filters?: {
     semester: fi.semester as FeeItem['semester'],
     status: fi.status as FeeItem['status']
   }))
-}
+})
 
 /**
- * Get payment statistics
+ * Get payment statistics (cached)
  * Replaces: getPaymentStats()
  */
-export async function getPaymentStats(): Promise<{
+export const getPaymentStats = cache(async (): Promise<{
   totalAmount: number
   collectedAmount: number
   pendingCount: number
   overdueCount: number
   collectionRate: number
-}> {
+}> => {
   const supabase = await getSupabase()
 
   const { data: invoices } = await supabase
@@ -707,7 +742,7 @@ export async function getPaymentStats(): Promise<{
     overdueCount,
     collectionRate
   }
-}
+})
 
 // ==================== ATTENDANCE ====================
 
@@ -818,10 +853,10 @@ export async function getClassStudents(classId: string): Promise<AttendanceRecor
 // ==================== ACADEMICS ====================
 
 /**
- * Get assessments for a teacher
+ * Get assessments for a teacher (cached)
  * Replaces: getAssessments(teacherId)
  */
-export async function getAssessments(teacherId: string): Promise<Assessment[]> {
+export const getAssessments = cache(async (teacherId: string): Promise<Assessment[]> => {
   const supabase = await getSupabase()
 
   const { data, error } = await supabase
@@ -878,7 +913,7 @@ export async function getAssessments(teacherId: string): Promise<Assessment[]> {
       status: 'published' as const
     }
   })
-}
+})
 
 /**
  * Get grade entry sheet for a class
@@ -919,10 +954,10 @@ export async function getGradeEntrySheet(
 // ==================== TEACHER DATA ====================
 
 /**
- * Get teacher's classes
+ * Get teacher's classes (cached)
  * Replaces: getTeacherClasses(teacherId)
  */
-export async function getTeacherClasses(teacherId?: string): Promise<TeacherClass[]> {
+export const getTeacherClasses = cache(async (teacherId?: string): Promise<TeacherClass[]> => {
   const supabase = await getSupabase()
 
   let query = supabase
@@ -961,16 +996,16 @@ export async function getTeacherClasses(teacherId?: string): Promise<TeacherClas
   })
 
   return Array.from(classMap.values())
-}
+})
 
 /**
- * Get teacher schedule
+ * Get teacher schedule (cached)
  * Replaces: getTeacherSchedule(teacherId, date)
  */
-export async function getTeacherSchedule(
+export const getTeacherSchedule = cache(async (
   teacherId?: string,
   date?: string
-): Promise<TeacherScheduleItem[]> {
+): Promise<TeacherScheduleItem[]> => {
   if (!teacherId) return []
 
   const supabase = await getSupabase()
@@ -1002,18 +1037,18 @@ export async function getTeacherSchedule(
     room: s.room || '',
     date: targetDate.toISOString().split('T')[0]
   }))
-}
+})
 
 // ==================== LEAVE REQUESTS ====================
 
 /**
- * Get leave requests for a class
+ * Get leave requests for a class (cached)
  * Replaces: getLeaveRequests(classId, status)
  */
-export async function getLeaveRequests(
+export const getLeaveRequests = cache(async (
   classId: string,
   status?: 'pending' | 'approved' | 'rejected'
-): Promise<LeaveRequest[]> {
+): Promise<LeaveRequest[]> => {
   const supabase = await getSupabase()
 
   let query = supabase
@@ -1050,15 +1085,15 @@ export async function getLeaveRequests(
     status: lr.status as LeaveRequest['status'],
     submittedDate: lr.created_at
   }))
-}
+})
 
 // ==================== NOTIFICATIONS ====================
 
 /**
- * Get notifications
+ * Get notifications (cached)
  * Replaces: getNotifications()
  */
-export async function getNotifications(): Promise<Notification[]> {
+export const getNotifications = cache(async (): Promise<Notification[]> => {
   const supabase = await getSupabase()
 
   const { data, error } = await supabase
@@ -1077,7 +1112,7 @@ export async function getNotifications(): Promise<Notification[]> {
     targetRole: 'all' as const, // Would need to map from recipient
     createdAt: n.created_at
   }))
-}
+})
 
 // ==================== FEE STATS ====================
 
@@ -1213,10 +1248,10 @@ export async function getConversationMessages(conversationId: string): Promise<M
 }
 
 /**
- * Get regular assessments for teacher
+ * Get regular assessments for teacher (cached)
  * Replaces: getRegularAssessments()
  */
-export async function getRegularAssessments(teacherId?: string): Promise<RegularAssessment[]> {
+export const getRegularAssessments = cache(async (teacherId?: string): Promise<RegularAssessment[]> => {
   const supabase = await getSupabase()
 
   if (!teacherId) return []
@@ -1249,7 +1284,7 @@ export async function getRegularAssessments(teacherId?: string): Promise<Regular
   })) || []
 
   return students
-}
+})
 
 /**
  * Get conduct ratings

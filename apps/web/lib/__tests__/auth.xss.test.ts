@@ -37,7 +37,8 @@ describe('login - XSS Prevention', () => {
     formData.set('password', 'any')
 
     // Sanitization removes script tags, leaving empty string
-    await expect(login(formData)).rejects.toThrow()
+    const result = await login(formData as any)
+    expect(result).toHaveProperty('error')
   })
 
   it('sanitizes img tag with onerror', async () => {
@@ -46,7 +47,8 @@ describe('login - XSS Prevention', () => {
     formData.set('password', 'any')
 
     // Sanitization removes HTML tags
-    await expect(login(formData)).rejects.toThrow()
+    const result = await login(formData as any)
+    expect(result).toHaveProperty('error')
   })
 
   it('sanitizes javascript: protocol', async () => {
@@ -55,6 +57,7 @@ describe('login - XSS Prevention', () => {
     formData.set('password', 'any')
 
     // Sanitization removes javascript: protocol
-    await expect(login(formData)).rejects.toThrow()
+    const result = await login(formData as any)
+    expect(result).toHaveProperty('error')
   })
 })

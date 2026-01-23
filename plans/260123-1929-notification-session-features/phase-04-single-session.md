@@ -1,11 +1,11 @@
 ---
 title: "Phase 04: Single Session Management"
 description: "Enforce single active session per account with graceful termination"
-status: pending
+status: completed
 priority: P1
 effort: 5h
 tags: [security, session, auth, middleware, realtime, supabase]
----
+completed_at: "2025-01-23"
 
 ## Context
 

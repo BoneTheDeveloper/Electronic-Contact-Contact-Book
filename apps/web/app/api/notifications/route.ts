@@ -1,89 +1,159 @@
-import { NextResponse } from 'next/server'
-import type { Notification } from '@/lib/types'
+/**
+ * Notification API Routes (Admin)
+ * GET /api/notifications - List all notifications (admin only)
+ * POST /api/notifications - Create new notification (admin only)
+ * DELETE /api/notifications?id={id} - Delete notification (admin only)
+ */
 
-// Mock data
-const mockNotifications: Notification[] = [
-  {
-    id: '1',
-    title: 'Họp phụ huynh',
-    message: 'Họp phụ huynh cuối kỳ sẽ diễn ra vào ngày 20/10/2025',
-    type: 'info',
-    targetRole: 'parent',
-    createdAt: '2025-10-10',
-  },
-  {
-    id: '2',
-    title: 'Nghỉ lễ',
-    message: 'Nhà trường đóng cửa từ 30/10 đến 02/11 dịp lễ',
-    type: 'warning',
-    targetRole: 'all',
-    createdAt: '2025-10-08',
-  },
-  {
-    id: '3',
-    title: 'Kết quả học kỳ',
-    message: 'Kết quả học kỳ I đã được cập nhật',
-    type: 'success',
-    targetRole: 'student',
-    createdAt: '2025-10-05',
-  },
-  {
-    id: '4',
-    title: 'Thông báo thu học phí',
-    message: 'Deadline nộp học phí kỳ II là 15/10/2025',
-    type: 'error',
-    targetRole: 'parent',
-    createdAt: '2025-10-01',
-  },
-]
+import { NextResponse } from 'next/server';
+import { requireRole } from '@/lib/auth';
+import {
+  createNotification,
+  getNotifications,
+} from '@/lib/services/notification-service';
+import { createClient } from '@/lib/supabase/server';
 
-export async function GET() {
-  return NextResponse.json({
-    success: true,
-    data: mockNotifications,
-    total: mockNotifications.length,
-  })
+/**
+ * GET /api/notifications - List notifications (admin only)
+ */
+export async function GET(request: Request) {
+  try {
+    const user = await requireRole('admin');
+
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+
+    const result = await getNotifications({ page, limit });
+
+    return NextResponse.json({
+      success: true,
+      data: result.data,
+      total: result.total,
+      page,
+      limit,
+    });
+  } catch (error: any) {
+    console.error('[API] GET /api/notifications error:', error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: error.message || 'Failed to fetch notifications',
+      },
+      { status: error.status || 500 }
+    );
+  }
 }
 
+/**
+ * POST /api/notifications - Create notification (admin only)
+ */
 export async function POST(request: Request) {
-  const body = await request.json()
-  const newNotification: Notification = {
-    id: Date.now().toString(),
-    ...body,
-    createdAt: new Date().toISOString().split('T')[0],
-  }
-  mockNotifications.push(newNotification)
+  try {
+    const user = await requireRole('admin');
 
-  return NextResponse.json({
-    success: true,
-    data: newNotification,
-    message: 'Thông báo đã được gửi thành công',
-  }, { status: 201 })
+    const body = await request.json();
+
+    // Validate required fields
+    if (!body.title?.trim() || !body.content?.trim()) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Title and content are required',
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!body.category) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Category is required (announcement, emergency, reminder, system)',
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!body.targetRole) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Target role is required (admin, teacher, parent, student, all)',
+        },
+        { status: 400 }
+      );
+    }
+
+    const notification = await createNotification(body, user.id);
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: notification,
+        message: 'Notification created successfully',
+      },
+      { status: 201 }
+    );
+  } catch (error: any) {
+    console.error('[API] POST /api/notifications error:', error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: error.message || 'Failed to create notification',
+      },
+      { status: error.status || 500 }
+    );
+  }
 }
 
+/**
+ * DELETE /api/notifications?id={id} - Delete notification (admin only)
+ */
 export async function DELETE(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const id = searchParams.get('id')
+  try {
+    const user = await requireRole('admin');
 
-  if (!id) {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Notification ID is required',
+        },
+        { status: 400 }
+      );
+    }
+
+    const supabase = await createClient();
+
+    // Delete notification (cascade will delete recipients and logs)
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw new Error(`Failed to delete notification: ${error.message}`);
+    }
+
     return NextResponse.json({
-      success: false,
-      message: 'Thiếu ID thông báo',
-    }, { status: 400 })
+      success: true,
+      message: 'Notification deleted successfully',
+    });
+  } catch (error: any) {
+    console.error('[API] DELETE /api/notifications error:', error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: error.message || 'Failed to delete notification',
+      },
+      { status: error.status || 500 }
+    );
   }
-
-  const index = mockNotifications.findIndex(n => n.id === id)
-  if (index === -1) {
-    return NextResponse.json({
-      success: false,
-      message: 'Không tìm thấy thông báo',
-    }, { status: 404 })
-  }
-
-  mockNotifications.splice(index, 1)
-
-  return NextResponse.json({
-    success: true,
-    message: 'Thông báo đã được xóa thành công',
-  })
 }
