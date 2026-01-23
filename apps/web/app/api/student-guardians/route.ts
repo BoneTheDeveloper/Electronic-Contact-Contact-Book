@@ -127,8 +127,8 @@ export async function POST(request: Request) {
     }
 
     // Check if link already exists
-    const { data: existing } = await supabase
-      .from('student_guardians')
+    const { data: existing } = await (supabase
+      .from('student_guardians') as any)
       .select('*')
       .eq('student_id', studentId)
       .eq('guardian_id', parentId)
@@ -143,15 +143,15 @@ export async function POST(request: Request) {
 
     // If this is being set as primary, unmark other primary relationships for this student
     if (isPrimary) {
-      await supabase
-        .from('student_guardians')
+      await (supabase
+        .from('student_guardians') as any)
         .update({ is_primary: false })
         .eq('student_id', studentId)
     }
 
     // Create the link
-    const { data, error } = await supabase
-      .from('student_guardians')
+    const { data, error } = await (supabase
+      .from('student_guardians') as any)
       .insert({
         student_id: studentId,
         guardian_id: parentId,
@@ -193,8 +193,8 @@ export async function DELETE(request: Request) {
       }, { status: 400 })
     }
 
-    const { error } = await supabase
-      .from('student_guardians')
+    const { error } = await (supabase
+      .from('student_guardians') as any)
       .delete()
       .eq('student_id', studentId)
       .eq('guardian_id', guardianId)
