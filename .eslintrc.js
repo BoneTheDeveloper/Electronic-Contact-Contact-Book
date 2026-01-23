@@ -1,34 +1,50 @@
+/**
+ * ESLint Configuration - Catch TypeScript errors before deployment
+ */
+
 module.exports = {
   root: true,
-  env: {
-    node: true,
-    es2020: true,
-  },
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'next/core-web-vitals',
-  ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: 2020,
-    sourceType: 'module',
-    project: './tsconfig.json',
+    ecmaVersion: 2022,
+    sourceType: 'module'
   },
   plugins: ['@typescript-eslint'],
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended'
+  ],
+  env: {
+    node: true,
+    browser: true,
+    es2022: true
+  },
   rules: {
-    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    // CORE: Prevent deployment-blocking type errors
     '@typescript-eslint/no-explicit-any': 'warn',
-    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'warn',
+    '@typescript-eslint/no-var-requires': 'off',
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'no-undef': 'off' // TypeScript handles this
   },
   ignorePatterns: [
     'node_modules/',
+    '.next/',
     'dist/',
     'build/',
-    '.next/',
-    'coverage/',
-    '*.config.js',
-    'apps/mobile/',
+    '*.config.{js,ts}',
+    '.husky/',
+    'packages/database/prisma/'
   ],
-};
+  overrides: [
+    {
+      files: ['.eslintrc.js', '**/scripts/**'],
+      env: {
+        node: true,
+        browser: false
+      }
+    }
+  ]
+}

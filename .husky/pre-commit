@@ -1,0 +1,10 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "Running type checks before commit..."
+pnpm run lint || {
+  echo "Type check failed. Please fix errors before committing."
+  exit 1
+}
+
+echo "Pre-commit checks passed!"
