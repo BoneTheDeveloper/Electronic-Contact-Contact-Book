@@ -30,19 +30,19 @@ export async function POST(request: NextRequest) {
 
     // Filter by date range (handle null/undefined dueDate)
     if (startDate) {
-      invoices = invoices.filter(inv => inv.dueDate && inv.dueDate >= startDate)
+      invoices = invoices.filter((inv: any) => inv.dueDate && inv.dueDate >= startDate)
     }
     if (endDate) {
-      invoices = invoices.filter(inv => inv.dueDate && inv.dueDate <= endDate)
+      invoices = invoices.filter((inv: any) => inv.dueDate && inv.dueDate <= endDate)
     }
 
     // Filter by status
     if (status && ['paid', 'pending', 'overdue'].includes(status)) {
-      invoices = invoices.filter(inv => inv.status === status)
+      invoices = invoices.filter((inv: any) => inv.status === status)
     }
 
     // Filter included fields
-    const filteredInvoices = invoices.map(inv => {
+    const filteredInvoices = invoices.map((inv: any) => {
       const result: Record<string, any> = {}
       include.forEach((field: string) => {
         if (field in inv) {
