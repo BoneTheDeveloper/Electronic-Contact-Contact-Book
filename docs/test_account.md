@@ -53,15 +53,21 @@ Test123456!
 | **Password** | `Test123456!` |
 | **Role** | parent |
 | **Full Name** | Test Parent |
-| **User ID** | `2aa5d271-79fa-4301-8080-30e332b41556` |
-| **Relationship** | father |
+| **User ID** | `61363a34-b945-4951-ae70-6109d47f3a75` |
 
 **Access:** Mobile App (Parent Portal)
 **Login:** Use `0901234569` or `parent@school.edu`
 
+**Linked Children:**
+| Student Name | Student Code | Class | Primary |
+|--------------|--------------|-------|---------|
+| Đỗ Thị Bình | 202690906 | 9A | Yes |
+| Lê Thị Lan | 202690804 | 6B | No |
+| Phan Thị Bình | 202670337 | 6B | No |
+
 ---
 
-### 4. Student Account
+### 4. Student Account (Not Enrolled - Use linked children above)
 | Field | Value |
 |-------|-------|
 | **Student Code** | `ST2024001` |

@@ -33,17 +33,22 @@ export const getParentChildren = async (
       students!inner(
         id,
         student_code,
-        grade,
-        section,
-        class_id,
         profiles!inner(
           full_name,
           avatar_url
         )
+      ),
+      enrollments!inner(
+        class_id,
+        classes!inner(
+          name,
+          grade_id
+        )
       )
     `)
     .eq('guardian_id', parentId)
-    .eq('students.profiles.status', 'active');
+    .eq('students.profiles.status', 'active')
+    .eq('enrollments.status', 'active');
 
   if (error) {
     console.error('[QUERIES] Error fetching children:', error);
@@ -54,13 +59,23 @@ export const getParentChildren = async (
     return [];
   }
 
-  return data.map((item: any) => ({
+  // Group by student (in case multiple enrollments exist, get the active one)
+  const uniqueChildren = new Map<string, any>();
+
+  for (const item of data as any[]) {
+    const studentId = item.students.id;
+    if (!uniqueChildren.has(studentId)) {
+      uniqueChildren.set(studentId, item);
+    }
+  }
+
+  return Array.from(uniqueChildren.values()).map((item: any) => ({
     id: item.students.id,
     name: item.students.profiles.full_name,
     rollNumber: item.students.student_code,
-    classId: item.students.class_id || '',
-    section: item.students.section || '',
-    grade: item.students.grade || 0,
+    classId: item.enrollments?.class_id || '',
+    section: '',
+    grade: parseInt(item.enrollments?.classes?.grade_id || '0', 10),
     studentCode: item.students.student_code,
     isPrimary: item.is_primary,
     avatarUrl: item.students.profiles.avatar_url,
