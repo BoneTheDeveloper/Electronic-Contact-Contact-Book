@@ -16,10 +16,16 @@ import { cookies, headers as nextHeaders } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { User, UserRole } from '@school-management/shared-types';
 import { createClient } from '@/lib/supabase/server';
+import type { Database } from '@/types/supabase';
 
 const AUTH_COOKIE_NAME = 'auth';
 const SESSION_COOKIE_NAME = 'session_id';
 const AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 1 week
+
+// Type for user_sessions table insert
+type UserSessionInsert = Database['public']['Tables']['user_sessions']['Insert'];
+// Type for RPC parameters
+type TerminateSessionsParams = Database['public']['Functions']['terminate_user_sessions']['Args'];
 
 /**
  * Find user by identifier (code/phone/email)
@@ -191,10 +197,12 @@ async function terminateUserSessions(
 ): Promise<void> {
   const supabase = await createClient();
 
-  await supabase.rpc('terminate_user_sessions', {
+  const params: TerminateSessionsParams = {
     p_user_id: userId,
     p_reason: reason
-  } as any);
+  };
+
+  await supabase.rpc('terminate_user_sessions', params);
 }
 
 /**
@@ -298,17 +306,19 @@ async function loginImpl(identifier: string, password: string): Promise<LoginSta
   await broadcastSessionTermination(user.id, 'new_login');
 
   // Create new session
+  const sessionInsert: UserSessionInsert = {
+    user_id: user.id,
+    session_token: sessionToken,
+    is_active: true,
+    device_type: deviceInfo.type,
+    device_id: deviceInfo.id,
+    user_agent: userAgent,
+    ip_address: ipAddress,
+  };
+
   const { data: newSession, error: sessionError } = await supabase
     .from('user_sessions')
-    .insert({
-      user_id: user.id,
-      session_token: sessionToken,
-      is_active: true,
-      device_type: deviceInfo.type,
-      device_id: deviceInfo.id,
-      user_agent: userAgent,
-      ip_address: ipAddress,
-    } as any)
+    .insert(sessionInsert)
     .select('id')
     .single();
 
@@ -328,7 +338,7 @@ async function loginImpl(identifier: string, password: string): Promise<LoginSta
     priority: 'high',
   });
 
-  cookieStore.set(SESSION_COOKIE_NAME, (newSession as any)?.id || '', {
+  cookieStore.set(SESSION_COOKIE_NAME, newSession?.id || '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
@@ -403,12 +413,11 @@ export async function logout() {
         const supabase = await createClient();
         await supabase
           .from('user_sessions')
-          // @ts-expect-error - user_sessions table exists in DB but not in generated types
           .update({
             is_active: false,
             terminated_at: new Date().toISOString(),
             termination_reason: 'manual'
-          } as any)
+          })
           .eq('id', sessionId);
       }
     } catch {

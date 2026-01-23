@@ -11,10 +11,12 @@
     "web": "expo start --web",
     "build:android": "eas build --profile development --platform android",
     "build:ios": "eas build --profile development --platform ios",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
     "check:boolean-props": "node scripts/check-boolean-props.js",
-    "validate": "npm run lint && npm run typecheck && npm run check:boolean-props",
+    "validate": "npm run lint && npm run typecheck && npm run check:boolean-props && npm run test:run",
     "postinstall": "patch-package"
   },
   "dependencies": {

@@ -1,4 +1,5 @@
 import { createClient } from './server'
+import type { PostgrestError } from '@supabase/supabase-js'
 
 export type QueryResult<T> = {
   data: T | null
@@ -6,7 +7,7 @@ export type QueryResult<T> = {
 }
 
 export async function safeQuery<T>(
-  queryFn: () => Promise<{ data: T | null; error: any }>,
+  queryFn: () => Promise<{ data: T | null; error: PostgrestError | null }>,
   fallback: T
 ): Promise<QueryResult<T>> {
   try {
@@ -22,27 +23,30 @@ export async function safeQuery<T>(
   }
 }
 
-export async function safeSelect(table: string, fallback: any[] = []): Promise<QueryResult<any[]>> {
+export async function safeSelect<T = Record<string, unknown>>(
+  table: string,
+  fallback: T[] = []
+): Promise<QueryResult<T[]>> {
   const supabase = await createClient()
   return safeQuery(
     async () => {
       const result = await supabase.from(table).select('*')
-      return { data: result.data, error: result.error }
+      return { data: result.data as T[] | null, error: result.error }
     },
     fallback
   )
 }
 
-export async function safeSelectById(
+export async function safeSelectById<T = Record<string, unknown>>(
   table: string,
   id: string,
-  fallback: any = null
-): Promise<QueryResult<any>> {
+  fallback: T | null = null
+): Promise<QueryResult<T>> {
   const supabase = await createClient()
   return safeQuery(
     async () => {
       const result = await supabase.from(table).select('*').eq('id', id).single()
-      return { data: result.data, error: result.error }
+      return { data: result.data as T | null, error: result.error }
     },
     fallback
   )
