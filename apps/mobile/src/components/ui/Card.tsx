@@ -9,7 +9,7 @@ import { Card as PaperCard } from 'react-native-paper';
 import { StyleSheet, ViewStyle } from 'react-native';
 
 export interface CardProps {
-  children: React.ReactNode;
+  children: React.ReactNode | string | number | boolean | null | undefined;
   style?: ViewStyle;
   variant?: 'elevated' | 'outlined' | 'contained';
   onPress?: () => void;
@@ -31,7 +31,7 @@ const Card: React.FC<CardProps> = ({
       contentStyle={styles.content}
       onPress={onPress}
     >
-      {children}
+      {children as any}
     </PaperCard>
   );
 };

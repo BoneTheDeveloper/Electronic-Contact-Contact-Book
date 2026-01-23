@@ -16,7 +16,7 @@ declare global {
     }
   }
 
-  var process: {
+  const process: {
     env: NodeJS.ProcessEnv;
   };
 }

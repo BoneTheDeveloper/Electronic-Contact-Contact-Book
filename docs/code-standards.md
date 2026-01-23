@@ -178,7 +178,16 @@ App.tsx
 │   │   └── ...
 │   ├── student/
 │   │   ├── Dashboard.tsx
-│   │   └── StudentScreens.tsx
+│   │   ├── Schedule.tsx
+│   │   ├── Grades.tsx
+│   │   ├── Attendance.tsx
+│   │   ├── StudyMaterials.tsx
+│   │   ├── LeaveRequest.tsx
+│   │   ├── TeacherFeedback.tsx
+│   │   ├── News.tsx
+│   │   ├── Summary.tsx
+│   │   ├── Payment.tsx
+│   │   └── index.ts
 │   ├── teacher/
 │   │   ├── Dashboard.tsx
 │   │   ├── Attendance.tsx
@@ -202,6 +211,106 @@ App.tsx
 2. **Pure Functions**: Components should be predictable and side-effect free
 3. **Composition**: Prefer composition over inheritance
 4. **Performance**: Use `React.memo`, `useCallback`, and `useMemo` appropriately
+
+## Student Screen Patterns
+
+### Naming Conventions
+- **Internal Component Name**: `Student{Feature}Screen` (e.g., `StudentScheduleScreen`)
+- **Export Name**: `{Feature}Screen` (e.g., `ScheduleScreen`)
+- **File Name**: `{Feature}.tsx` (e.g., `Schedule.tsx`)
+
+### File Structure Pattern
+```typescript
+/**
+ * {Feature} Screen
+ * {Brief description of screen purpose}
+ */
+
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { useStudentStore } from '../../stores';
+import { ScreenHeader } from '../../components/ui';
+import type { StudentHomeStackNavigationProp } from '../../navigation/types';
+
+interface {Feature}ScreenProps {
+  navigation?: StudentHomeStackNavigationProp;
+}
+
+const {Feature}Screen: React.FC<{}Feature}ScreenProps> = ({ navigation }) => {
+  // Screen implementation using appropriate hooks and components
+  return (
+    <View style={styles.container}>
+      <ScreenHeader title="{Feature}" onBack={() => navigation?.goBack()} />
+      {/* Screen content */}
+    </View>
+  );
+};
+
+export default {Feature}Screen;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+});
+```
+
+### Navigation Integration
+All student screens are integrated through the navigation structure:
+- **Tab Navigation**: Two main tabs - "Trang chủ" (Home) and "Cá nhân" (Profile)
+- **Stack Navigation**: Home tab contains stack of all student screens with hidden headers
+- **Screen Registration**: Each screen registered in `StudentTabs.tsx` with appropriate naming
+
+### Export Pattern
+Export all screens from `/apps/mobile/src/screens/student/index.ts`:
+```typescript
+export { StudentDashboardScreen as DashboardScreen } from './Dashboard';
+export { StudentScheduleScreen as ScheduleScreen } from './Schedule';
+export { StudentGradesScreen as GradesScreen } from './Grades';
+// ... continue for all screens
+```
+
+### State Management Patterns
+```typescript
+// Student-specific data fetching
+const useStudentData = () => {
+  return useQuery({
+    queryKey: ['student', 'dashboard'],
+    queryFn: fetchStudentDashboardData,
+  });
+};
+
+// Local component state
+const {Feature}Screen = () => {
+  const [localState, setLocalState] = useState(initialValue);
+  const globalState = useStudentStore(state => state.someValue);
+
+  return (
+    // Component implementation
+  );
+};
+```
+
+### Mock Data Implementation
+During development phase, use mock data structures:
+```typescript
+const MOCK_{FEATURE}_DATA = {
+  // Define data structure matching API response
+};
+
+// Replace with real Supabase queries when integrated
+const fetch{Feature}Data = async () => {
+  // Temporarily return mock data
+  return MOCK_{FEATURE}_DATA;
+
+  // Future implementation:
+  // const { data, error } = await supabase
+  //   .from('table_name')
+  //   .select('*')
+  //   .eq('student_id', studentId);
+};
+```
 
 ### Custom Hooks
 ```typescript

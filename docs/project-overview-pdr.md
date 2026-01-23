@@ -21,17 +21,23 @@ To be the leading digital platform for educational institutions, combining cutti
 - **Session Management**: Secure authentication with proper token handling
 
 #### Mobile Application (Parent/Student Portal)
-- **Dashboard**: Quick access to 9 core services via icon-based navigation
-- **Schedule/Calendar**: Class schedules, events, and academic calendar
-- **Grades**: Academic performance tracking with detailed grade history
-- **Attendance**: Real-time attendance records with visual indicators
-- **Payments**: Fee tracking, payment methods, and receipt management
-- **Communication**: Direct messaging with teachers and school staff
-- **Notifications**: Push notifications for important updates
-- **News & Announcements**: School news and important notifications
-- **Teacher Directory**: Contact information for all teachers
-- **Leave Requests**: Student absence requests with approval workflow
-- **Academic Summary**: Consolidated academic performance reports
+
+**Phase 1 Implementation: Student Screens**
+- **Schedule**: Weekly class schedule with time periods, subjects, and room assignments
+- **Grades**: Academic performance tracking with assignment scores and GPA calculation
+- **Attendance**: Class attendance records with status tracking and statistics
+- **Study Materials**: Educational resources library with document categorization
+- **Leave Requests**: Absence submission workflow with approval tracking
+- **Teacher Feedback**: Communication interface for submitting feedback to teachers
+- **News & Announcements**: School news feed with categorized updates
+- **Summary**: Consolidated academic overview with key metrics and trends
+- **Payment**: Fee payment status, history, and payment method management
+- **Dashboard**: Student overview with quick stats and navigation to all features
+
+**Navigation Architecture:**
+- **Two-Tab System**: "Trang chủ" (Home) and "Cá nhân" (Profile)
+- **Stack Navigation**: Home tab contains headerless stack of all academic screens
+- **Profile Management**: Account settings, password change, and support features
 
 #### Web Application - Admin Portal
 - **Dashboard**: Comprehensive system statistics and metrics
@@ -78,6 +84,72 @@ To be the leading digital platform for educational institutions, combining cutti
 - **Accessibility**: WCAG 2.1 AA compliant for all user interfaces
 - **Offline Support**: Critical features available without internet connection
 - **Multi-language**: Support for English and Vietnamese languages
+
+## Development Standards & Practices
+
+### Code Quality Framework
+- **TypeScript**: Strict mode enabled across all projects
+- **ESLint**: Custom rules for React Native boolean props compliance
+- **Testing**: Jest + React Testing Library for unit and component tests
+- **Git Conventional Commits**: Semantic versioning with clear scope definitions
+
+### Component Architecture Principles
+- **YAGNI**: Implement only currently needed features
+- **KISS**: Prefer simple solutions over complex ones
+- **DRY**: Extract common functionality into reusable components
+- **Single Responsibility**: Each component should do one thing well
+
+### Student Screen Implementation Standards
+- **Naming**: `Student{Feature}Screen` internal, `{Feature}Screen` exported
+- **Navigation**: Stack-based with header hidden, tab navigation for main access
+- **Data Display**: Clean, card-based layouts with clear information hierarchy
+- **State Management**: Zustand for global state, React Query for data fetching
+- **Mock Data**: Temporary implementation with Supabase integration ready
+
+### Performance Optimization
+- **React Native**: FlatList for large datasets, optimized images
+- **Next.js**: Automatic code splitting, static generation, ISR
+- **Caching**: React Query for efficient data caching and refetching
+- **Bundle Analysis**: Regular monitoring to keep bundle sizes optimal
+
+## Technical Architecture
+
+## Implementation Status
+
+### Phase 1: Core Infrastructure ✅
+- **Status**: Completed (January 23, 2026)
+- **React Native Boolean Type Compliance**: All 32 TSX files audited, 0 violations
+- **ESLint Integration**: Custom boolean props rules with automated validation
+- **Authentication**: Supabase Auth integration with JWT tokens
+- **Navigation**: React Navigation 7.x with type-safe parameters
+
+### Phase 2: Student Screen Implementation ✅
+- **Status**: Completed (January 23, 2026)
+- **Screen Decomposition**: Replaced monolithic StudentScreens.tsx with 10 dedicated screens
+- **Navigation Structure**: Two-tab system with stack navigation for academic features
+- **Component Architecture**: Consistent naming and export patterns
+- **Type Safety**: Full TypeScript implementation with proper interfaces
+
+### Phase 3: Data Integration ⏳
+- **Status**: Pending
+- **Supabase Integration**: Replace mock data with real database queries
+- **Real-time Updates**: Implement Realtime subscriptions for live data
+- **Offline Support**: Add offline data caching and synchronization
+- **File Upload**: Document management for Study Materials
+
+### Phase 4: Advanced Features ⏳
+- **Status**: Planning
+- **Push Notifications**: Implement mobile push notifications
+- **Multi-language Support**: English and Vietnamese localization
+- **Advanced Analytics**: Grade trends and performance insights
+- **Parent Portal**: Complete parent-facing feature implementation
+
+### Phase 5: Production Deployment ⏳
+- **Status**: Future
+- **CI/CD Pipeline**: GitHub Actions for automated deployment
+- **Performance Monitoring**: Error tracking and analytics
+- **Security Hardening**: Production security measures
+- **Load Testing**: Performance validation with user load
 
 ## Technical Architecture
 

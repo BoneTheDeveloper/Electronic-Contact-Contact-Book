@@ -11,17 +11,17 @@ import { View, StyleSheet } from 'react-native';
 import Svg, { Path, Polyline, Circle } from 'react-native-svg';
 import { useUIStore } from '../stores';
 import { colors } from '../theme';
-import { DashboardScreen } from '../screens/student';
 import {
-  StudentScheduleScreen,
-  StudentGradesScreen,
-  StudentAttendanceScreen,
-  StudentTeacherFeedbackScreen,
-  StudentLeaveRequestScreen,
-  StudentNewsScreen,
-  StudentSummaryScreen,
-  StudentPaymentScreen,
-  StudentStudyMaterialsScreen,
+  DashboardScreen,
+  ScheduleScreen,
+  GradesScreen,
+  AttendanceScreen,
+  StudyMaterialsScreen,
+  LeaveRequestScreen,
+  TeacherFeedbackScreen,
+  NewsScreen,
+  SummaryScreen,
+  PaymentScreen,
 } from '../screens/student';
 import {
   ProfileScreen,
@@ -38,15 +38,15 @@ const HomeStack = createNativeStackNavigator();
 const HomeStackNavigator = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
     <HomeStack.Screen name="StudentDashboard" component={DashboardScreen as any} />
-    <HomeStack.Screen name="StudentSchedule" component={StudentScheduleScreen as any} />
-    <HomeStack.Screen name="StudentGrades" component={StudentGradesScreen as any} />
-    <HomeStack.Screen name="StudentAttendance" component={StudentAttendanceScreen as any} />
-    <HomeStack.Screen name="StudentStudyMaterials" component={StudentStudyMaterialsScreen as any} />
-    <HomeStack.Screen name="StudentLeaveRequest" component={StudentLeaveRequestScreen as any} />
-    <HomeStack.Screen name="StudentTeacherFeedback" component={StudentTeacherFeedbackScreen as any} />
-    <HomeStack.Screen name="StudentNews" component={StudentNewsScreen as any} />
-    <HomeStack.Screen name="StudentSummary" component={StudentSummaryScreen as any} />
-    <HomeStack.Screen name="StudentPayment" component={StudentPaymentScreen as any} />
+    <HomeStack.Screen name="StudentSchedule" component={ScheduleScreen as any} />
+    <HomeStack.Screen name="StudentGrades" component={GradesScreen as any} />
+    <HomeStack.Screen name="StudentAttendance" component={AttendanceScreen as any} />
+    <HomeStack.Screen name="StudentStudyMaterials" component={StudyMaterialsScreen as any} />
+    <HomeStack.Screen name="StudentLeaveRequest" component={LeaveRequestScreen as any} />
+    <HomeStack.Screen name="StudentTeacherFeedback" component={TeacherFeedbackScreen as any} />
+    <HomeStack.Screen name="StudentNews" component={NewsScreen as any} />
+    <HomeStack.Screen name="StudentSummary" component={SummaryScreen as any} />
+    <HomeStack.Screen name="StudentPayment" component={PaymentScreen as any} />
   </HomeStack.Navigator>
 );
 

@@ -9,7 +9,7 @@ import { Button as PaperButton } from 'react-native-paper';
 import { StyleSheet, ViewStyle } from 'react-native';
 
 export interface ButtonProps {
-  children: React.ReactNode;
+  children: React.ReactNode | string | number | boolean | null | undefined;
   mode?: 'contained' | 'outlined' | 'text' | 'elevated' | 'contained-tonal';
   onPress?: () => void;
   loading?: boolean;
@@ -41,7 +41,7 @@ const Button: React.FC<ButtonProps> = ({
       uppercase={uppercase}
       {...props}
     >
-      {children}
+      {children as any}
     </PaperButton>
   );
 };
