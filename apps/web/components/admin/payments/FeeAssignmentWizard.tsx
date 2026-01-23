@@ -173,7 +173,7 @@ export function FeeAssignmentWizard({ onComplete }: FeeAssignmentWizardProps) {
 
   const toggleFee = (feeId: string) => {
     if (selectedFees.includes(feeId)) {
-      setSelectedFees(selectedFees.filter(f => f !== feeId))
+      setSelectedFees(selectedFees.filter((f: any) => f !== feeId))
     } else {
       setSelectedFees([...selectedFees, feeId])
     }
@@ -184,8 +184,8 @@ export function FeeAssignmentWizard({ onComplete }: FeeAssignmentWizardProps) {
   }
 
   const totalAmount = feeItems
-    .filter(f => selectedFees.includes(f.id))
-    .reduce((sum, f) => sum + f.amount, 0)
+    .filter((f: any) => selectedFees.includes(f.id))
+    .reduce((sum: any, f: any) => sum + f.amount, 0)
 
   return (
     <div className="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">

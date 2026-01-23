@@ -177,7 +177,7 @@ export function SendReminderModal({
       })
 
       const results = await Promise.allSettled(promises)
-      const successful = results.filter(r => r.status === 'fulfilled').length
+      const successful = results.filter((r: any) => r.status === 'fulfilled').length
 
       if (successful === recipients.length) {
         onSuccess?.()

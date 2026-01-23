@@ -27,11 +27,11 @@ export function AssessmentsClient({ initialAssessments }: AssessmentsClientProps
     let filtered = initialAssessments
 
     if (filters.status !== 'all') {
-      filtered = filtered.filter(a => a.status === filters.status)
+      filtered = filtered.filter((a: any) => a.status === filters.status)
     }
 
     if (filters.search) {
-      filtered = filtered.filter(a =>
+      filtered = filtered.filter((a: any) =>
         a.studentName.toLowerCase().includes(filters.search.toLowerCase()) ||
         a.className.toLowerCase().includes(filters.search.toLowerCase())
       )
@@ -41,10 +41,10 @@ export function AssessmentsClient({ initialAssessments }: AssessmentsClientProps
   }, [filters, initialAssessments])
 
   const summary = useMemo(() => ({
-    evaluated: initialAssessments.filter(a => a.status === 'evaluated').length,
-    pending: initialAssessments.filter(a => a.status === 'pending').length,
-    positive: initialAssessments.filter(a => a.rating && a.rating >= 4).length,
-    needsAttention: initialAssessments.filter(a => a.status === 'needs-attention').length,
+    evaluated: initialAssessments.filter((a: any) => a.status === 'evaluated').length,
+    pending: initialAssessments.filter((a: any) => a.status === 'pending').length,
+    positive: initialAssessments.filter((a: any) => a.rating && a.rating >= 4).length,
+    needsAttention: initialAssessments.filter((a: any) => a.status === 'needs-attention').length,
   }), [initialAssessments])
 
   const handleEvaluate = (studentId: string) => {

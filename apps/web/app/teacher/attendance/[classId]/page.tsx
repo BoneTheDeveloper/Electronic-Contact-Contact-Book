@@ -68,7 +68,7 @@ export default async function ClassAttendancePage({ params }: PageProps) {
             <div>
               <p className="text-gray-500">Vắng hôm nay</p>
               <p className="font-semibold text-red-600">
-                {students.filter(s => s.status !== 'present').length} học sinh
+                {students.filter((s: any) => s.status !== 'present').length} học sinh
               </p>
             </div>
           </div>

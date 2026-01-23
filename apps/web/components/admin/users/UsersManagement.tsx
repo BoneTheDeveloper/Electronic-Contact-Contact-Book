@@ -59,10 +59,10 @@ export function UsersManagement({
             setUsers(result.data)
             const newStats = {
               total: result.data.length,
-              admin: result.data.filter(u => u.role === 'admin').length,
-              teachers: result.data.filter(u => u.role === 'teacher').length,
-              parents: result.data.filter(u => u.role === 'parent').length,
-              students: result.data.filter(u => u.role === 'student').length,
+              admin: result.data.filter((u: any) => u.role === 'admin').length,
+              teachers: result.data.filter((u: any) => u.role === 'teacher').length,
+              parents: result.data.filter((u: any) => u.role === 'parent').length,
+              students: result.data.filter((u: any) => u.role === 'student').length,
             }
             setStats(newStats)
           }
@@ -135,10 +135,10 @@ export function UsersManagement({
           // Update stats when data changes
           const newStats = {
             total: result.data.length,
-            admin: result.data.filter(u => u.role === 'admin').length,
-            teachers: result.data.filter(u => u.role === 'teacher').length,
-            parents: result.data.filter(u => u.role === 'parent').length,
-            students: result.data.filter(u => u.role === 'student').length,
+            admin: result.data.filter((u: any) => u.role === 'admin').length,
+            teachers: result.data.filter((u: any) => u.role === 'teacher').length,
+            parents: result.data.filter((u: any) => u.role === 'parent').length,
+            students: result.data.filter((u: any) => u.role === 'student').length,
           }
           setStats(newStats)
         }
@@ -207,7 +207,7 @@ export function UsersManagement({
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 overflow-hidden rounded-full bg-gradient-to-br from-[#0284C7] to-[#0369a1] p-0.5">
             <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-xs font-bold text-[#0284C7]">
-              {row.name.split(' ').slice(0, 2).map((n: string) => n[0]).join('')}
+              {row.name.split(' ').slice(0, 2).map((n: any) => n[0]).join('')}
             </div>
           </div>
           <div>
@@ -342,7 +342,7 @@ export function UsersManagement({
             className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none"
           >
             <option value="">Tất cả vai trò</option>
-            {roleFilterOptions.map(opt => (
+            {roleFilterOptions.map((opt: any) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
@@ -354,7 +354,7 @@ export function UsersManagement({
             className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none"
           >
             <option value="">Tất cả trạng thái</option>
-            {statusFilterOptions.map(opt => (
+            {statusFilterOptions.map((opt: any) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
@@ -366,7 +366,7 @@ export function UsersManagement({
             className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none"
           >
             <option value="">Tất cả khối</option>
-            {classOptions.map(opt => (
+            {classOptions.map((opt: any) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>

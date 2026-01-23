@@ -194,7 +194,7 @@ async function terminateUserSessions(
   await supabase.rpc('terminate_user_sessions', {
     p_user_id: userId,
     p_reason: reason
-  } as any);
+  } as { p_user_id: string; p_reason: string });
 }
 
 /**
@@ -309,7 +309,7 @@ async function loginImpl(identifier: string, password: string): Promise<LoginSta
       device_id: deviceInfo.id,
       user_agent: userAgent,
       ip_address: ipAddress,
-    })
+    } as any)
     .select('id')
     .single();
 
@@ -329,7 +329,7 @@ async function loginImpl(identifier: string, password: string): Promise<LoginSta
     priority: 'high',
   });
 
-  cookieStore.set(SESSION_COOKIE_NAME, (newSession as any)?.id || '', {
+  cookieStore.set(SESSION_COOKIE_NAME, (newSession as { id: string })?.id || '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
@@ -409,7 +409,7 @@ export async function logout() {
             is_active: false,
             terminated_at: new Date().toISOString(),
             termination_reason: 'manual'
-          })
+          } as any)
           .eq('id', sessionId);
       }
     } catch {

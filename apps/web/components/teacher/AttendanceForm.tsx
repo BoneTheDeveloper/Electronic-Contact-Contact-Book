@@ -88,10 +88,10 @@ export function AttendanceForm({ students, date = new Date(), classId }: Attenda
   }
 
   const summary = {
-    P: Object.values(attendance).filter(s => s === 'P').length,
-    A: Object.values(attendance).filter(s => s === 'A').length,
-    L: Object.values(attendance).filter(s => s === 'L').length,
-    E: Object.values(attendance).filter(s => s === 'E').length,
+    P: Object.values(attendance).filter((s: any) => s === 'P').length,
+    A: Object.values(attendance).filter((s: any) => s === 'A').length,
+    L: Object.values(attendance).filter((s: any) => s === 'L').length,
+    E: Object.values(attendance).filter((s: any) => s === 'E').length,
   }
 
   return (

@@ -30,7 +30,7 @@ export function UserActionsModal({ isOpen, onClose, onSuccess, onLinkParent, onL
   const canPerformAction = currentUser?.role === 'admin'
 
   const getInitials = (name: string) => {
-    return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+    return name.split(' ').slice(0, 2).map((n: any) => n[0]).join('').toUpperCase()
   }
 
   const getRoleBadgeClass = (role: string) => {

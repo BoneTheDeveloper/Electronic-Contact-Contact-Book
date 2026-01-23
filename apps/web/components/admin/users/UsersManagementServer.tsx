@@ -30,18 +30,18 @@ export function UsersManagementServer({
   // Calculate statistics server-side (faster, no client-side work)
   const stats: UserStats = {
     total: initialUsers.length,
-    admin: initialUsers.filter(u => u.role === 'admin').length,
-    teachers: initialUsers.filter(u => u.role === 'teacher').length,
-    parents: initialUsers.filter(u => u.role === 'parent').length,
-    students: initialUsers.filter(u => u.role === 'student').length,
+    admin: initialUsers.filter((u: any) => u.role === 'admin').length,
+    teachers: initialUsers.filter((u: any) => u.role === 'teacher').length,
+    parents: initialUsers.filter((u: any) => u.role === 'parent').length,
+    students: initialUsers.filter((u: any) => u.role === 'student').length,
   }
 
   // Get unique classes server-side
   const classOptions = initialUsers
-    .map(u => u.classId)
+    .map((u: any) => u.classId)
     .filter(Boolean)
-    .filter((value, index, self) => self.indexOf(value) === index)
-    .map(c => ({ value: c as string, label: `Lớp ${c}` }))
+    .filter((value: any, index: any, self: any) => self.indexOf(value) === index)
+    .map((c: any) => ({ value: c as string, label: `Lớp ${c}` }))
 
   return (
     <UsersManagement

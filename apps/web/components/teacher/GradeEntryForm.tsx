@@ -73,17 +73,17 @@ export function GradeEntryForm({ students, subject, classId }: GradeEntryFormPro
   // Calculate statistics
   const calculateStatistics = () => {
     const averages = students
-      .map(s => calculateAverage(s.studentId))
-      .filter(a => a !== '--')
-      .map(a => parseFloat(a))
+      .map((s: any) => calculateAverage(s.studentId))
+      .filter((a: any) => a !== '--')
+      .map((a: any) => parseFloat(a))
 
     return {
-      excellent: averages.filter(a => a >= 8.0).length,
-      good: averages.filter(a => a >= 6.5 && a < 8.0).length,
-      average: averages.filter(a => a >= 5.0 && a < 6.5).length,
-      poor: averages.filter(a => a < 5.0).length,
+      excellent: averages.filter((a: any) => a >= 8.0).length,
+      good: averages.filter((a: any) => a >= 6.5 && a < 8.0).length,
+      average: averages.filter((a: any) => a >= 5.0 && a < 6.5).length,
+      poor: averages.filter((a: any) => a < 5.0).length,
       classAverage: averages.length > 0
-        ? (averages.reduce((a, b) => a + b, 0) / averages.length).toFixed(2)
+        ? (averages.reduce((a: any, b: any) => a + b, 0) / averages.length).toFixed(2)
         : '--',
     }
   }
@@ -220,7 +220,7 @@ export function GradeEntryForm({ students, subject, classId }: GradeEntryFormPro
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {students.map((student, index) => {
+              {students.map((student: any, index: any) => {
                 const avg = calculateAverage(student.studentId)
                 return (
                   <tr key={student.studentId} className="hover:bg-gray-50">
@@ -230,7 +230,7 @@ export function GradeEntryForm({ students, subject, classId }: GradeEntryFormPro
                     <td className="px-4 py-4 text-sm font-bold sticky left-12 bg-white z-10">
                       {student.studentName}
                     </td>
-                    {(['tx1', 'tx2', 'tx3', 'gk', 'ck'] as const).map((field) => (
+                    {(['tx1', 'tx2', 'tx3', 'gk', 'ck'] as const).map((field: any) => (
                       <td key={field} className="px-2 py-4 text-center">
                         <GradeInputCell
                           value={grades[student.studentId]?.[field]}

@@ -303,7 +303,7 @@ export function AcademicStructure() {
             {/* Subjects by Category */}
             <div className="space-y-4">
               {['Khoa học tự nhiên', 'Khoa học xã hội', 'Ngoại ngữ', 'Kỹ thuật'].map((category) => {
-                const categorySubjects = subjectsData.filter(s => s.category === category)
+                const categorySubjects = subjectsData.filter((s: any) => s.category === category)
                 return (
                   <div key={category} className="rounded-xl border border-slate-200 bg-white p-4">
                     <h3 className="mb-3 text-sm font-black text-slate-800">{category}</h3>
