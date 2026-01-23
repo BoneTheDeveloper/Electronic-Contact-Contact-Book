@@ -51,15 +51,15 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
     log('IDENTIFIER_LOOKUP', 'Checking student_code...');
     const { data, error } = await supabase
       .from('students')
-      .select('profiles!students_id_fkey(email, status)')
+      .select('student_code, profiles!students_id_fkey(email)')
       .eq('student_code', normalizedId)
-      .eq('profiles.status', 'active')
       .maybeSingle();
 
-    log('IDENTIFIER_LOOKUP', 'Student lookup result:', { data, error });
-    // Type assertion for the joined profiles data
-    const profiles = data?.profiles as unknown as { email: string; status: string } | null;
-    if (profiles?.email) return profiles.email;
+    log('IDENTIFIER_LOOKUP', 'Student lookup result:', JSON.stringify({ data, error }, null, 2));
+
+    // Handle both nested (profiles.email) and flattened (email) response structures
+    const email = (data as any)?.profiles?.email || (data as any)?.email;
+    if (email) return email;
   }
 
   // 2. Check phone number (for parents)

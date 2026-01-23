@@ -14,7 +14,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
   const { id } = await params
   // TODO: Get real teacher ID from auth
   const assessments = await getAssessments('current-teacher-id')
-  const assessment = assessments.find(a => a.id === id)
+  const assessment = assessments.find((a: any) => a.id === id)
 
   if (!assessment) {
     notFound()
