@@ -28,12 +28,12 @@ export async function POST(request: NextRequest) {
     // Get invoices
     let invoices = await getInvoices()
 
-    // Filter by date range
+    // Filter by date range (handle null/undefined dueDate)
     if (startDate) {
-      invoices = invoices.filter(inv => inv.dueDate >= startDate)
+      invoices = invoices.filter(inv => inv.dueDate && inv.dueDate >= startDate)
     }
     if (endDate) {
-      invoices = invoices.filter(inv => inv.dueDate <= endDate)
+      invoices = invoices.filter(inv => inv.dueDate && inv.dueDate <= endDate)
     }
 
     // Filter by status

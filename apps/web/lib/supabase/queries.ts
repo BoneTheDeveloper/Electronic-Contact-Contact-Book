@@ -603,7 +603,7 @@ export const getInvoices = cache(async (): Promise<Invoice[]> => {
     studentName: inv.student_name,
     amount: inv.total_amount,
     status: inv.status as Invoice['status'],
-    dueDate: inv.due_date,
+    dueDate: inv.due_date || undefined,
     paidDate: inv.paid_date || undefined
   }))
 })

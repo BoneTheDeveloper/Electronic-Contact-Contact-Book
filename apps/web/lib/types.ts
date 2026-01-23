@@ -45,7 +45,7 @@ export interface Invoice {
   studentName: string
   amount: number
   status: 'paid' | 'pending' | 'overdue'
-  dueDate: string
+  dueDate?: string
   paidDate?: string
 }
 

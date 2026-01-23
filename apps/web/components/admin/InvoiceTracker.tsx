@@ -38,7 +38,8 @@ export function InvoiceTracker({ invoices }: InvoiceTrackerProps) {
     }).format(amount)
   }
 
-  const formatDate = (dateStr: string) => {
+  const formatDate = (dateStr: string | undefined) => {
+    if (!dateStr) return '-'
     const date = new Date(dateStr)
     return date.toLocaleDateString('vi-VN')
   }
