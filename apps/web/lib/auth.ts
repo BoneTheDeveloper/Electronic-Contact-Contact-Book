@@ -194,7 +194,7 @@ async function terminateUserSessions(
   await supabase.rpc('terminate_user_sessions', {
     p_user_id: userId,
     p_reason: reason
-  } as { p_user_id: string; p_reason: string });
+  } as any);
 }
 
 /**
@@ -300,7 +300,6 @@ async function loginImpl(identifier: string, password: string): Promise<LoginSta
   // Create new session
   const { data: newSession, error: sessionError } = await supabase
     .from('user_sessions')
-    // @ts-expect-error - user_sessions table exists in DB but not in generated types
     .insert({
       user_id: user.id,
       session_token: sessionToken,
@@ -329,7 +328,7 @@ async function loginImpl(identifier: string, password: string): Promise<LoginSta
     priority: 'high',
   });
 
-  cookieStore.set(SESSION_COOKIE_NAME, (newSession as { id: string })?.id || '', {
+  cookieStore.set(SESSION_COOKIE_NAME, (newSession as any)?.id || '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',

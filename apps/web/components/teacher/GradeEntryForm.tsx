@@ -233,7 +233,7 @@ export function GradeEntryForm({ students, subject, classId }: GradeEntryFormPro
                     {(['tx1', 'tx2', 'tx3', 'gk', 'ck'] as const).map((field: any) => (
                       <td key={field} className="px-2 py-4 text-center">
                         <GradeInputCell
-                          value={grades[student.studentId]?.[field]}
+                          value={grades[student.studentId]?.[field as keyof StudentGrades]}
                           onChange={(val) => updateGrade(student.studentId, field, val)}
                           disabled={isLocked}
                           locked={isLocked}
