@@ -230,7 +230,201 @@ app/
     ├── auth/
     ├── users/
     ├── classes/
-    └── payments/
+    ├── payments/
+    └── notifications/            # Notification management API
+        ├── route.ts            # CRUD operations
+        └── my/                 # User-specific notifications
+            └── route.ts        # Inbox management
+```
+
+## Notification System Architecture
+
+### Overview
+The notification system is a multi-channel real-time communication platform that delivers notifications through various channels with tracking and analytics capabilities.
+
+### Architecture Components
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         Notification System                             │
+├─────────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐  │
+│  │   Admin Portal      │  │   Web Inbox        │  │   Mobile App        │  │
+│  │                     │  │                     │  │                     │  │
+│  │ • Create/Manage     │  │ • Real-time View    │  │ • Vietnamese UI     │  │
+│  │ • Delivery Tracking │  │ • Mark as Read     │  │ • Pull-to-Refresh   │  │
+│  │ • Analytics         │  │ • Batch Actions     │  │ • Floating Actions  │  │
+│  └─────────────────────┘  └─────────────────────┘  └─────────────────────┘  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                         Backend Services                                │
+│  ┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐  │
+│  │   Supabase Realtime │  │   Notification     │  │   Delivery Logs     │  │
+│  │   Subscriptions     │  │   Queue            │  │   Tracking          │  │
+│  │                     │  │                     │  │                     │  │
+│  │ • WebSocket Events   │  │ • Priority Routing  │  │ • Channel Status    │  │
+│  │ • Real-time Updates  │  │ • Scheduling       │  │ • Retry Logic       │  │
+│  │ • Memory Management  │  │ • Batch Processing  │  │ • Analytics         │  │
+│  └─────────────────────┘  └─────────────────────┘  └─────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Real-time Architecture
+#### Web App Real-time Flow
+```typescript
+// Subscribe to notifications
+const channel = subscribeToNotifications(userId, (notification) => {
+  setNotifications(prev => {
+    // Prevent duplicates
+    if (prev.some(n => n.id === notification.id)) return prev;
+    return [notification, ...prev];
+  });
+});
+
+// Subscribe to delivery status (admin only)
+const deliveryChannel = subscribeToDeliveryStatus(notificationId, (status) => {
+  setDeliveryStatuses(prev => ({
+    ...prev,
+    [notificationId]: updateStatus(prev[notificationId], status)
+  }));
+});
+```
+
+#### Mobile App Real-time Flow
+```typescript
+// Direct Supabase channel subscription
+const channel = supabase
+  .channel(`user_notifications_${user.id}`)
+  .on('postgres_changes', {
+    event: 'INSERT',
+    schema: 'public',
+    table: 'notifications',
+    filter: `recipient_id=eq.${user.id}`
+  }, (payload) => {
+    // Update local state in real-time
+    setNotifications(prev => [payload.new, ...prev]);
+  })
+  .subscribe();
+```
+
+### Database Schema Enhancements
+#### Notification Tables
+```sql
+-- Enhanced notifications table
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'general',
+  category TEXT NOT NULL DEFAULT 'announcement',
+  priority TEXT NOT NULL DEFAULT 'normal',
+  scheduled_for TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Notification recipients with many-to-many relationship
+CREATE TABLE notification_recipients (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  notification_id UUID REFERENCES notifications(id) ON DELETE CASCADE,
+  recipient_id UUID REFERENCES profiles(id),
+  role TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Delivery logs per channel
+CREATE TABLE notification_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  notification_id UUID REFERENCES notifications(id),
+  recipient_id UUID REFERENCES profiles(id),
+  channel TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  sent_at TIMESTAMPTZ,
+  delivered_at TIMESTAMPTZ,
+  failed_at TIMESTAMPTZ,
+  error_message TEXT,
+  retry_count INTEGER DEFAULT 0,
+  external_id TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### Delivery System Architecture
+#### Multi-channel Delivery
+```typescript
+interface DeliveryStrategy {
+  channel: 'websocket' | 'email' | 'in_app' | 'push';
+  priority: 'immediate' | 'scheduled' | 'batch';
+  retryPolicy: {
+    maxRetries: number;
+    delayMs: number;
+    exponential: boolean;
+  };
+}
+
+// Priority-based routing
+function getDeliveryChannels(priority: NotificationPriority): DeliveryStrategy[] {
+  const baseChannels = ['in_app'];
+
+  if (priority === 'emergency') {
+    return [...baseChannels, 'websocket', 'email'];
+  }
+
+  if (priority === 'high') {
+    return [...baseChannels, 'email'];
+  }
+
+  return baseChannels;
+}
+```
+
+#### Memory Optimization
+```typescript
+// Limit concurrent subscriptions to prevent memory leaks
+const MAX_CONCURRENT_SUBSCRIPTIONS = 20;
+
+// Cleanup strategy
+function cleanupSubscriptions(notifications: Notification[]) {
+  const currentSubscriptions = new Set(
+    Object.keys(deliveryStatuses)
+  );
+
+  // Remove stale subscriptions
+  for (const notificationId of currentSubscriptions) {
+    if (!notifications.find(n => n.id === notificationId)) {
+      unsubscribeChannel(deliveryChannels[notificationId]);
+      delete deliveryChannels[notificationId];
+      delete deliveryStatuses[notificationId];
+    }
+  }
+}
+```
+
+### API Architecture
+#### RESTful Endpoints
+```typescript
+// Admin endpoints
+POST   /api/notifications              # Create new notification
+GET    /api/notifications              # List notifications (admin)
+GET    /api/notifications/:id          # Get notification details
+DELETE /api/notifications/:id          # Delete notification
+PATCH  /api/notifications/:id/read     # Mark as read
+
+// User endpoints
+GET    /api/notifications/my          # User's notification inbox
+PATCH  /api/notifications/my          # Mark as read (batch)
+```
+
+### Security Architecture
+```typescript
+// RLS policies on notifications
+CREATE POLICY "Users can view own notifications"
+  ON notifications FOR SELECT
+  USING (recipient_id = auth.uid());
+
+// Delivery status tracking
+CREATE POLICY "Users can view delivery status"
+  ON notification_logs FOR SELECT
+  USING (recipient_id = auth.uid());
 ```
 
 #### API Route Architecture
@@ -268,6 +462,9 @@ erDiagram
     profiles ||--o{ teachers : ""
     profiles ||--o{ parents : ""
     profiles ||--o{ students : ""
+    notifications ||--o{ notification_recipients : ""
+    notification_recipients ||--o{ notification_logs : ""
+    profiles ||--o{ user_sessions : ""
 
     profiles {
         uuid id PK
@@ -337,6 +534,61 @@ erDiagram
         string grade
         date submitted_date
     }
+
+    notifications {
+        uuid id PK
+        string title
+        string message
+        string type
+        boolean is_read
+        uuid recipient_id FK
+        timestamp created_at
+        timestamp read_at
+        priority TEXT
+        scheduled_for TIMESTAMPTZ
+        expires_at TIMESTAMPTZ
+        category TEXT
+    }
+
+    notification_recipients {
+        uuid id PK
+        uuid notification_id FK
+        uuid recipient_id FK
+        role TEXT
+        timestamp created_at
+    }
+
+    notification_logs {
+        uuid id PK
+        uuid notification_id FK
+        uuid recipient_id FK
+        channel TEXT
+        status TEXT
+        timestamp sent_at
+        timestamp delivered_at
+        timestamp failed_at
+        text error_message
+        int retry_count
+        text external_id
+        timestamp created_at
+    }
+
+    user_sessions {
+        uuid id PK
+        uuid user_id FK
+        text session_token
+        boolean is_active
+        timestamp last_active
+        text device_type
+        text device_id
+        text user_agent
+        inet ip_address
+        text city
+        text country
+        timestamp created_at
+        timestamp terminated_at
+        text termination_reason
+    }
 ```
 
 ### Data Flow
@@ -384,13 +636,26 @@ graph TD
    - Invalid sessions return null, redirect via `requireAuth()` helper
    - Recent fix: Removed `cookieStore.delete()` from `getUser()` to prevent App Router errors
 
-2. **Data Protection**:
+2. **Notification Security**:
+   - Multi-channel delivery tracking (WebSocket, email, in-app, push)
+   - Priority-based routing and scheduling
+   - Rate limiting to prevent notification spam
+   - Per-user access control on notification logs
+
+3. **Session Management**:
+   - Single session per user enforcement
+   - Device tracking with location information
+   - Automatic termination on new login
+   - Session timeout with configurable duration
+   - `terminate_user_sessions()` function for secure session invalidation
+
+4. **Data Protection**:
    - HTTPS encryption for all communications
    - Password hashing with bcrypt
    - Input validation and sanitization
    - SQL injection prevention
 
-3. **API Security**:
+5. **API Security**:
    - Rate limiting (100 requests/minute)
    - CORS configuration
    - Request size limits

@@ -462,6 +462,350 @@ const handleCreateUser = async (userData: User) => {
 3. **Loading States**: Show loading indicators during API calls
 4. **Caching**: Use React Query for automatic caching and refetching
 
+### Notification System Integration
+```typescript
+// Notification service with multi-channel support
+export const notificationService = {
+  // Send notifications to specific users/roles
+  sendNotification: async (data: NotificationData) => {
+    const { data: notification, error } = await supabase
+      .from('notifications')
+      .insert({
+        title: data.title,
+        message: data.message,
+        priority: data.priority || 'normal',
+        scheduled_for: data.scheduledAt,
+        category: data.category || 'announcement',
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Add recipients
+    const recipients = await getNotificationRecipients(
+      data.targetRole,
+      data.gradeIds,
+      data.classIds,
+      data.userIds
+    );
+
+    // Create notification logs for each channel
+    const logs = recipients.map(recipient => ({
+      notification_id: notification.id,
+      recipient_id: recipient.user_id,
+      role: recipient.role,
+      channel: 'in_app', // Default channel
+      status: 'pending'
+    }));
+
+    await supabase.from('notification_logs').insert(logs);
+
+    return notification;
+  },
+
+  // Get user notifications with read status
+  getUserNotifications: async (userId: string) => {
+    const { data, error } = await supabase
+      .from('notifications')
+      .select(`
+        *,
+        notification_logs!inner(
+          status,
+          channel,
+          sent_at,
+          delivered_at
+        )
+      `)
+      .eq('notification_logs.recipient_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+};
+
+// Session management
+export const sessionService = {
+  // Terminate user sessions (except current)
+  terminateSessions: async (userId: string, reason: string = 'new_login') => {
+    const { error } = await supabase.rpc('terminate_user_sessions', {
+      p_user_id: userId,
+      p_reason: reason
+    });
+
+    if (error) throw error;
+  },
+
+  // Track session activity
+  updateLastActive: async (sessionToken: string) => {
+    const { error } = await supabase
+      .from('user_sessions')
+      .update({ last_active: new Date() })
+      .eq('session_token', sessionToken);
+
+    if (error) throw error;
+  }
+};
+```
+
+### Database Access Patterns
+1. **Read Operations**: Use Supabase queries with proper error handling
+2. **Write Operations**: Wrap in transactions for complex operations
+3. **Real-time Updates**: Use Supabase Realtime subscriptions
+4. **Security**: Always verify user permissions via RLS policies
+5. **Performance**: Use proper indexing and query optimization
+
+### Notification Component Patterns
+
+#### Real-time Subscription Patterns
+```typescript
+// Web App - Admin Notification Management
+const useNotificationManagement = () => {
+  const [notifications, setNotifications] = useState<NotificationListItem[]>([]);
+  const [deliveryStatuses, setDeliveryStatuses] = useState<Record<string, DeliveryStatusData>>({});
+  const deliveryChannelsRef = useRef<Map<string, RealtimeChannel>>(new Map());
+
+  // Subscribe to all notification changes
+  useEffect(() => {
+    const channel = subscribeToAllNotifications(({ event, notification }) => {
+      if (event === 'INSERT' && notification) {
+        setNotifications(prev => [notification, ...prev]);
+        subscribeToNotificationDelivery(notification.id);
+      }
+    });
+
+    return () => channel.unsubscribe();
+  }, []);
+
+  // Subscribe to delivery status with memory optimization
+  useEffect(() => {
+    // Cleanup existing channels
+    deliveryChannelsRef.current.forEach(channel => unsubscribeChannel(channel));
+    deliveryChannelsRef.current.clear();
+
+    // Limit concurrent subscriptions
+    const notificationsToTrack = notifications.slice(0, 20);
+    notificationsToTrack.forEach(notification => {
+      if (!deliveryChannelsRef.current.has(notification.id)) {
+        subscribeToNotificationDelivery(notification.id);
+      }
+    });
+
+    return () => {
+      deliveryChannelsRef.current.forEach(channel => unsubscribeChannel(channel));
+      deliveryChannelsRef.current.clear();
+    };
+  }, [notifications]);
+
+  return { notifications, deliveryStatuses };
+};
+```
+
+#### Mobile Notification Component
+```typescript
+// Mobile App - Notifications Screen
+const NotificationsScreen: React.FC = () => {
+  const { user } = useAuthStore();
+  const [notifications, setNotifications] = useState<DatabaseNotification[]>([]);
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+
+  // Real-time subscription with cleanup
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel(`user_notifications_${user.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `recipient_id=eq.${user.id}`,
+      }, (payload) => {
+        const newNotification = payload.new as DatabaseNotification;
+        setNotifications(prev => {
+          if (prev.some(n => n.id === newNotification.id)) return prev;
+          return [newNotification, ...prev];
+        });
+      })
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [user?.id]);
+
+  // Optimistic UI updates for read status
+  const markAsRead = useCallback(async (notificationId: string) => {
+    if (!user?.id) return;
+
+    // Optimistic update
+    setNotifications(prev =>
+      prev.map(n =>
+        n.id === notificationId
+          ? { ...n, is_read: true, read_at: new Date().toISOString() }
+          : n
+      )
+    );
+
+    try {
+      await supabase
+        .from('notifications')
+        .update({
+          is_read: true,
+          read_at: new Date().toISOString()
+        })
+        .eq('id', notificationId)
+        .eq('recipient_id', user.id);
+    } catch (error) {
+      // Revert on error
+      console.error('Failed to mark as read:', error);
+      fetchNotifications();
+    }
+  }, [user?.id]);
+};
+```
+
+#### Web Notification Inbox Pattern
+```typescript
+// Web App - Notification Inbox
+const NotificationInbox: React.FC<{ userId: string }> = ({ userId }) => {
+  const [notifications, setNotifications] = useState<UserNotification[]>([]);
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+
+  // Real-time subscription with duplicate prevention
+  useEffect(() => {
+    const channel = subscribeToNotifications(userId, (notification) => {
+      setNotifications(prev => {
+        // Prevent duplicates
+        if (prev.some(n => n.id === notification.id)) return prev;
+        return [notification, ...prev];
+      });
+      setUnreadCount(prev => prev + 1);
+    });
+
+    return () => channel.unsubscribe();
+  }, [userId]);
+
+  // Batch read/unread operations
+  const markAllAsRead = useCallback(async () => {
+    const unreadIds = notifications.filter(n => !n.isRead).map(n => n.id);
+
+    if (unreadIds.length === 0) return;
+
+    try {
+      await fetch('/api/notifications/my', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationIds: unreadIds }),
+      });
+
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark all as read:', error);
+    }
+  }, [notifications]);
+
+  return (
+    <div className="notification-inbox">
+      {/* Filter controls */}
+      <div className="filters">
+        <button onClick={() => setFilter('all')}>Tất cả</button>
+        <button onClick={() => setFilter('unread')}>Chưa đọc</button>
+        {unreadCount > 0 && (
+          <button onClick={markAllAsRead}>Đọc tất cả</button>
+        )}
+      </div>
+
+      {/* Notification list */}
+      <div className="notification-list">
+        {filteredNotifications.map(notification => (
+          <NotificationItem
+            key={notification.id}
+            notification={notification}
+            onMarkAsRead={() => markAsRead(notification.id)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+#### Type-safe Notification Types
+```typescript
+// packages/shared-types/src/notification.ts
+export interface NotificationCreateInput {
+  title: string;
+  content: string;
+  category: NotificationCategory;
+  priority: NotificationPriority;
+  targetRole: 'admin' | 'teacher' | 'parent' | 'student' | 'all';
+  targetGradeIds?: string[];
+  targetClassIds?: string[];
+  targetUserIds?: string[];
+  scheduledFor?: string;
+}
+
+export interface NotificationListItem {
+  id: string;
+  title: string;
+  content: string;
+  category: NotificationCategory;
+  priority: NotificationPriority;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface DeliveryStatusData {
+  notificationId: string;
+  total: number;
+  delivered: number;
+  failed: number;
+  pending: number;
+}
+```
+
+#### Memory Optimization Patterns
+```typescript
+// Prevent memory leaks with subscription management
+export const useRealtimeSubscriptions = <T extends { id: string }>(
+  data: T[],
+  subscribeFn: (id: string, callback: (data: T) => void) => RealtimeChannel,
+  maxSubscriptions: number = 20
+) => {
+  const channelsRef = useRef<Map<string, RealtimeChannel>>(new Map());
+
+  useEffect(() => {
+    // Calculate which notifications to subscribe to
+    const notificationsToTrack = data.slice(0, maxSubscriptions);
+    const currentIds = new Set(notificationsToTrack.map(n => n.id));
+
+    // Clean up stale subscriptions
+    for (const [id, channel] of channelsRef.current) {
+      if (!currentIds.has(id)) {
+        unsubscribeChannel(channel);
+        channelsRef.current.delete(id);
+      }
+    }
+
+    // Add new subscriptions
+    notificationsToTrack.forEach(notification => {
+      if (!channelsRef.current.has(notification.id)) {
+        const channel = subscribeFn(notification.id, (data) => {
+          // Handle real-time updates
+        });
+        channelsRef.current.set(notification.id, channel);
+      }
+    });
+
+    return () => {
+      channelsRef.current.forEach(channel => unsubscribeChannel(channel));
+      channelsRef.current.clear();
+    };
+  }, [data, subscribeFn, maxSubscriptions]);
+};
+```
+
 ## Testing Standards
 
 ### Testing Structure
