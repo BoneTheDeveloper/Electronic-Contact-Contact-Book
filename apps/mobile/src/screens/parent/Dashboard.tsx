@@ -1,6 +1,7 @@
 /**
  * Parent Dashboard Screen
  * Main screen with 9 service icons, header greeting, child selector
+ * Wireframe-compliant design with SVG icons
  */
 
 import React from 'react';
@@ -9,6 +10,7 @@ import { useAuthStore } from '../../stores';
 import { useParentStore } from '../../stores';
 import type { ParentHomeStackNavigationProp, ParentHomeStackParamList } from '../../navigation/types';
 import { colors } from '../../theme';
+import { Icon } from '../../components/ui';
 
 const { width } = Dimensions.get('window');
 const ICON_SIZE = 80;
@@ -39,7 +41,7 @@ const SERVICE_ICONS: ServiceIcon[] = [
 ];
 
 interface DashboardScreenProps {
-  navigation: ParentHomeStackNavigationProp;
+  navigation?: ParentHomeStackNavigationProp;
 }
 
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
@@ -57,47 +59,18 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
     return `${first}${last}`.toUpperCase();
   };
 
-  const getIconEmoji = (icon: string) => {
-    const iconMap: Record<string, string> = {
-      'calendar': '📅',
-      'check-circle': '✓',
-      'account-check': '✓',
-      'file-document': '📄',
-      'message-reply': '💬',
-      'newspaper': '📰',
-      'chart-pie': '📊',
-      'account-group': '👥',
-      'cash': '💰',
-    };
-    return iconMap[icon] || '•';
-  };
-
   const renderServiceIcon = (item: ServiceIcon) => {
     const containerWidth = (width - CONTAINER_PADDING * 2 - HORIZONTAL_GAP * 2) / 3;
 
     return (
       <TouchableOpacity
         key={item.id}
-        style={[styles.iconContainer, { width: containerWidth, marginBottom: VERTICAL_GAP, paddingHorizontal: HORIZONTAL_GAP / 2 }]}
-        onPress={() => navigation.navigate(item.route as any)}
+        style={[styles.iconContainer, { width: containerWidth, marginBottom: VERTICAL_GAP }]}
+        onPress={() => navigation?.navigate(item.route as any)}
         activeOpacity={0.7}
       >
-        <View
-          style={[
-            styles.iconBox,
-            {
-              width: ICON_SIZE,
-              height: ICON_SIZE,
-              borderColor: item.color,
-              backgroundColor: '#FFFFFF',
-            },
-          ]}
-        >
-          <View style={[styles.iconInner, { backgroundColor: `${item.color}20` }]}>
-            <Text style={[styles.iconEmoji, { color: item.color }]}>
-              {getIconEmoji(item.icon)}
-            </Text>
-          </View>
+        <View style={styles.iconBox}>
+          <Icon name={item.icon as any} size={32} color={item.color} />
         </View>
         <Text style={styles.iconLabel}>{item.label}</Text>
       </TouchableOpacity>
@@ -115,7 +88,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
           </View>
           <TouchableOpacity style={styles.notificationButton}>
             <View style={styles.notificationIcon}>
-              <Text style={styles.notificationEmoji}>🔔</Text>
+              <Icon name="bell" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.notificationBadge}>
               <Text style={styles.notificationBadgeText}>5</Text>
@@ -127,7 +100,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
         {selectedChild && (
           <TouchableOpacity
             style={styles.childCard}
-            onPress={() => navigation.navigate('ChildSelection')}
+            onPress={() => navigation?.navigate('ChildSelection' as any)}
             activeOpacity={0.7}
           >
             <View style={[styles.avatar, { backgroundColor: '#E0F2FE' }]}>
@@ -143,7 +116,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
               </Text>
             </View>
             <View style={styles.dropdownIcon}>
-              <Text style={styles.dropdownArrow}>▼</Text>
+              <Icon name="chevron-down" size={18} color="#0284C7" />
             </View>
           </TouchableOpacity>
         )}
@@ -155,12 +128,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
         contentContainerStyle={styles.scrollViewContent}
         showsVerticalScrollIndicator={false}
       >
-        <View
-          style={[
-            styles.iconsGrid,
-            { marginLeft: -HORIZONTAL_GAP / 2, marginRight: -HORIZONTAL_GAP / 2 },
-          ]}
-        >
+        <View style={styles.iconsGrid}>
           {SERVICE_ICONS.map(renderServiceIcon)}
         </View>
 
@@ -168,7 +136,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
         <View style={styles.newsSection}>
           <View style={styles.newsHeader}>
             <Text style={styles.newsTitle}>Thông báo mới</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('News')}>
+            <TouchableOpacity onPress={() => navigation?.navigate('News')}>
               <Text style={styles.seeAll}>Xem tất cả</Text>
             </TouchableOpacity>
           </View>
@@ -231,9 +199,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  notificationEmoji: {
-    fontSize: 20,
-  },
   notificationBadge: {
     position: 'absolute',
     top: -4,
@@ -257,7 +222,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
-    padding: 12,
+    padding: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -284,7 +249,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   childName: {
     color: '#1F2937',
@@ -293,15 +258,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   dropdownIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 12,
+    backgroundColor: '#E0F2FE',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  dropdownArrow: {
-    color: '#6B7280',
-    fontSize: 16,
   },
   scrollView: {
     flex: 1,
@@ -314,31 +276,26 @@ const styles = StyleSheet.create({
   iconsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'space-between',
     marginBottom: 32,
   },
   iconContainer: {
     alignItems: 'center',
   },
   iconBox: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+    backgroundColor: '#FFFFFF',
     borderRadius: 28,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
-  },
-  iconInner: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  iconEmoji: {
-    fontSize: 20,
   },
   iconLabel: {
     color: '#6B7280',

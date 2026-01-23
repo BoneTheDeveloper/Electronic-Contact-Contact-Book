@@ -37,16 +37,16 @@ import type { StudentTabParamList, StudentProfileStackParamList } from './types'
 const HomeStack = createNativeStackNavigator();
 const HomeStackNavigator = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-    <HomeStack.Screen name="StudentDashboard" component={DashboardScreen} />
-    <HomeStack.Screen name="StudentSchedule" component={StudentScheduleScreen} />
-    <HomeStack.Screen name="StudentGrades" component={StudentGradesScreen} />
-    <HomeStack.Screen name="StudentAttendance" component={StudentAttendanceScreen} />
-    <HomeStack.Screen name="StudentStudyMaterials" component={StudentStudyMaterialsScreen} />
-    <HomeStack.Screen name="StudentLeaveRequest" component={StudentLeaveRequestScreen} />
-    <HomeStack.Screen name="StudentTeacherFeedback" component={StudentTeacherFeedbackScreen} />
-    <HomeStack.Screen name="StudentNews" component={StudentNewsScreen} />
-    <HomeStack.Screen name="StudentSummary" component={StudentSummaryScreen} />
-    <HomeStack.Screen name="StudentPayment" component={StudentPaymentScreen} />
+    <HomeStack.Screen name="StudentDashboard" component={DashboardScreen as any} />
+    <HomeStack.Screen name="StudentSchedule" component={StudentScheduleScreen as any} />
+    <HomeStack.Screen name="StudentGrades" component={StudentGradesScreen as any} />
+    <HomeStack.Screen name="StudentAttendance" component={StudentAttendanceScreen as any} />
+    <HomeStack.Screen name="StudentStudyMaterials" component={StudentStudyMaterialsScreen as any} />
+    <HomeStack.Screen name="StudentLeaveRequest" component={StudentLeaveRequestScreen as any} />
+    <HomeStack.Screen name="StudentTeacherFeedback" component={StudentTeacherFeedbackScreen as any} />
+    <HomeStack.Screen name="StudentNews" component={StudentNewsScreen as any} />
+    <HomeStack.Screen name="StudentSummary" component={StudentSummaryScreen as any} />
+    <HomeStack.Screen name="StudentPayment" component={StudentPaymentScreen as any} />
   </HomeStack.Navigator>
 );
 
@@ -54,12 +54,12 @@ const HomeStackNavigator = () => (
 const ProfileStack = createNativeStackNavigator<StudentProfileStackParamList>();
 const ProfileStackNavigator = () => (
   <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
-    <ProfileStack.Screen name="Profile" component={ProfileScreen} />
-    <ProfileStack.Screen name="UpdateProfile" component={UpdateProfileScreen} />
-    <ProfileStack.Screen name="ChangePassword" component={ChangePasswordScreen} />
-    <ProfileStack.Screen name="BiometricAuth" component={BiometricAuthScreen} />
-    <ProfileStack.Screen name="FAQ" component={FAQScreen} />
-    <ProfileStack.Screen name="Support" component={SupportScreen} />
+    <ProfileStack.Screen name="Profile" component={ProfileScreen as any} />
+    <ProfileStack.Screen name="UpdateProfile" component={UpdateProfileScreen as any} />
+    <ProfileStack.Screen name="ChangePassword" component={ChangePasswordScreen as any} />
+    <ProfileStack.Screen name="BiometricAuth" component={BiometricAuthScreen as any} />
+    <ProfileStack.Screen name="FAQ" component={FAQScreen as any} />
+    <ProfileStack.Screen name="Support" component={SupportScreen as any} />
   </ProfileStack.Navigator>
 );
 

@@ -38,22 +38,22 @@ import type { ParentTabParamList, ParentHomeStackParamList, ParentProfileStackPa
 const HomeStack = createNativeStackNavigator<ParentHomeStackParamList>();
 const HomeStackNavigator = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-    <HomeStack.Screen name="Dashboard" component={DashboardScreen} />
-    <HomeStack.Screen name="ChildSelection" component={ChildSelectionScreen} />
-    <HomeStack.Screen name="Schedule" component={ScheduleScreen} />
-    <HomeStack.Screen name="Grades" component={GradesScreen} />
-    <HomeStack.Screen name="Attendance" component={AttendanceScreen} />
-    <HomeStack.Screen name="TeacherFeedback" component={TeacherFeedbackScreen} />
-    <HomeStack.Screen name="LeaveRequest" component={LeaveRequestScreen} />
-    <HomeStack.Screen name="Summary" component={SummaryScreen} />
-    <HomeStack.Screen name="TeacherDirectory" component={TeacherDirectoryScreen} />
+    <HomeStack.Screen name="Dashboard" component={DashboardScreen as any} />
+    <HomeStack.Screen name="ChildSelection" component={ChildSelectionScreen as any} />
+    <HomeStack.Screen name="Schedule" component={ScheduleScreen as any} />
+    <HomeStack.Screen name="Grades" component={GradesScreen as any} />
+    <HomeStack.Screen name="Attendance" component={AttendanceScreen as any} />
+    <HomeStack.Screen name="TeacherFeedback" component={TeacherFeedbackScreen as any} />
+    <HomeStack.Screen name="LeaveRequest" component={LeaveRequestScreen as any} />
+    <HomeStack.Screen name="Summary" component={SummaryScreen as any} />
+    <HomeStack.Screen name="TeacherDirectory" component={TeacherDirectoryScreen as any} />
     {/* News screen for dashboard navigation */}
-    <HomeStack.Screen name="News" component={NewsScreen} />
+    <HomeStack.Screen name="News" component={NewsScreen as any} />
     {/* Payment screens for dashboard navigation */}
-    <HomeStack.Screen name="PaymentOverview" component={PaymentOverviewScreen} />
-    <HomeStack.Screen name="PaymentDetail" component={PaymentDetailScreen} />
-    <HomeStack.Screen name="PaymentMethod" component={PaymentMethodScreen} />
-    <HomeStack.Screen name="PaymentReceipt" component={PaymentReceiptScreen} />
+    <HomeStack.Screen name="PaymentOverview" component={PaymentOverviewScreen as any} />
+    <HomeStack.Screen name="PaymentDetail" component={PaymentDetailScreen as any} />
+    <HomeStack.Screen name="PaymentMethod" component={PaymentMethodScreen as any} />
+    <HomeStack.Screen name="PaymentReceipt" component={PaymentReceiptScreen as any} />
   </HomeStack.Navigator>
 );
 
@@ -61,8 +61,8 @@ const HomeStackNavigator = () => (
 const CommStack = createNativeStackNavigator();
 const CommStackNavigator = () => (
   <CommStack.Navigator screenOptions={{ headerShown: false }}>
-    <CommStack.Screen name="Messages" component={MessagesScreen} />
-    <CommStack.Screen name="Notifications" component={NotificationsScreen} />
+    <CommStack.Screen name="Messages" component={MessagesScreen as any} />
+    <CommStack.Screen name="Notifications" component={NotificationsScreen as any} />
   </CommStack.Navigator>
 );
 
@@ -70,12 +70,12 @@ const CommStackNavigator = () => (
 const ProfileStack = createNativeStackNavigator<ParentProfileStackParamList>();
 const ProfileStackNavigator = () => (
   <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
-    <ProfileStack.Screen name="Profile" component={ProfileScreen} />
-    <ProfileStack.Screen name="UpdateProfile" component={UpdateProfileScreen} />
-    <ProfileStack.Screen name="ChangePassword" component={ChangePasswordScreen} />
-    <ProfileStack.Screen name="BiometricAuth" component={BiometricAuthScreen} />
-    <ProfileStack.Screen name="FAQ" component={FAQScreen} />
-    <ProfileStack.Screen name="Support" component={SupportScreen} />
+    <ProfileStack.Screen name="Profile" component={ProfileScreen as any} />
+    <ProfileStack.Screen name="UpdateProfile" component={UpdateProfileScreen as any} />
+    <ProfileStack.Screen name="ChangePassword" component={ChangePasswordScreen as any} />
+    <ProfileStack.Screen name="BiometricAuth" component={BiometricAuthScreen as any} />
+    <ProfileStack.Screen name="FAQ" component={FAQScreen as any} />
+    <ProfileStack.Screen name="Support" component={SupportScreen as any} />
   </ProfileStack.Navigator>
 );
 

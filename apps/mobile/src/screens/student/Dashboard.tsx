@@ -1,7 +1,7 @@
 /**
  * Student Dashboard Screen
  * Updated with service icon grid matching wireframe design
- * Shows 9 service icons for navigation
+ * Shows 9 service icons for navigation with SVG icons
  */
 
 import React from 'react';
@@ -9,12 +9,13 @@ import { View, ScrollView, TouchableOpacity, Dimensions, Text, StyleSheet } from
 import { useAuthStore } from '../../stores';
 import { useStudentStore } from '../../stores';
 import { colors } from '../../theme';
+import { Icon } from '../../components/ui';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 const { width } = Dimensions.get('window');
 const ICON_SIZE = 80;
 const HORIZONTAL_GAP = 16;
-const VERTICAL_GAP = 24;
+const VERTICAL_GAP = 48;
 const CONTAINER_PADDING = 24;
 
 interface ServiceIcon {
@@ -30,7 +31,7 @@ const STUDENT_SERVICE_ICONS: ServiceIcon[] = [
   { id: '1', label: 'Thời khóa\nbiểu', icon: 'calendar', color: '#F97316', route: 'StudentSchedule' },
   { id: '2', label: 'Bảng điểm\nmôn học', icon: 'check-circle', color: '#0284C7', route: 'StudentGrades' },
   { id: '3', label: 'Lịch sử\nđiểm danh', icon: 'account-check', color: '#059669', route: 'StudentAttendance' },
-  { id: '4', label: 'Tài liệu\nhọc tập', icon: 'book-open-variant', color: '#F43F5E', route: 'StudentStudyMaterials' },
+  { id: '4', label: 'Tài liệu\nhọc tập', icon: 'book', color: '#F43F5E', route: 'StudentStudyMaterials' },
   { id: '5', label: 'Đơn xin\nnghỉ phép', icon: 'file-document', color: '#F43F5E', route: 'StudentLeaveRequest' },
   { id: '6', label: 'Nhận xét\ngiáo viên', icon: 'message-reply', color: '#9333EA', route: 'StudentTeacherFeedback' },
   { id: '7', label: 'Tin tức &\nsự kiện', icon: 'newspaper', color: '#0EA5E9', route: 'StudentNews' },
@@ -64,7 +65,7 @@ const MOCK_ASSIGNMENTS: Assignment[] = [
 ];
 
 interface DashboardScreenProps {
-  navigation: NativeStackNavigationProp<any>;
+  navigation?: NativeStackNavigationProp<any>;
 }
 
 export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
@@ -81,21 +82,6 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
     return `${first}${last}`.toUpperCase();
   };
 
-  const getIconEmoji = (icon: string) => {
-    const iconMap: Record<string, string> = {
-      'calendar': '📅',
-      'check-circle': '✓',
-      'account-check': '✓',
-      'book-open-variant': '📖',
-      'file-document': '📄',
-      'message-reply': '💬',
-      'newspaper': '📰',
-      'chart-pie': '📊',
-      'cash': '💰',
-    };
-    return iconMap[icon] || '•';
-  };
-
   const renderServiceIcon = (item: ServiceIcon) => {
     const containerWidth = (width - CONTAINER_PADDING * 2 - HORIZONTAL_GAP * 2) / 3;
 
@@ -103,25 +89,11 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
       <TouchableOpacity
         key={item.id}
         style={[styles.iconContainer, { width: containerWidth, marginBottom: VERTICAL_GAP }]}
-        onPress={() => navigation.navigate(item.route as never)}
+        onPress={() => navigation?.navigate(item.route as never)}
         activeOpacity={0.7}
       >
-        <View
-          style={[
-            styles.iconBox,
-            {
-              width: ICON_SIZE,
-              height: ICON_SIZE,
-              borderColor: item.color,
-              backgroundColor: '#FFFFFF',
-            },
-          ]}
-        >
-          <View style={[styles.iconInner, { backgroundColor: `${item.color}20` }]}>
-            <Text style={[styles.iconEmoji, { color: item.color }]}>
-              {getIconEmoji(item.icon)}
-            </Text>
-          </View>
+        <View style={styles.iconBox}>
+          <Icon name={item.icon as any} size={32} color={item.color} />
         </View>
         <Text style={styles.iconLabel}>{item.label}</Text>
       </TouchableOpacity>
@@ -178,7 +150,7 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
           </View>
           <TouchableOpacity style={styles.notificationButton}>
             <View style={styles.notificationIcon}>
-              <Text style={styles.notificationEmoji}>🔔</Text>
+              <Icon name="bell" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.notificationBadge}>
               <Text style={styles.notificationBadgeText}>3</Text>
@@ -220,7 +192,7 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
         <View style={styles.assignmentsSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Bài tập sắp tới</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('StudentGrades' as never)}>
+            <TouchableOpacity onPress={() => navigation?.navigate('StudentGrades' as never)}>
               <Text style={styles.seeAll}>Xem tất cả</Text>
             </TouchableOpacity>
           </View>
@@ -263,7 +235,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
   },
   header: {
-    paddingTop: 60,
+    paddingTop: 64,
     paddingHorizontal: 24,
     paddingBottom: 24,
     borderBottomLeftRadius: 30,
@@ -281,15 +253,17 @@ const styles = StyleSheet.create({
   avatar: {
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   avatarText: {
     color: '#FFFFFF',
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   userDetails: {
     marginLeft: 16,
@@ -307,8 +281,11 @@ const styles = StyleSheet.create({
   },
   userClass: {
     color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 2,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   notificationButton: {
     position: 'relative',
@@ -320,9 +297,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  notificationEmoji: {
-    fontSize: 18,
   },
   notificationBadge: {
     position: 'absolute',
@@ -347,7 +321,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     paddingTop: 40,
-    paddingBottom: 100,
+    paddingBottom: 96,
     paddingHorizontal: 24,
   },
   iconsGrid: {
@@ -360,26 +334,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconBox: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+    backgroundColor: '#FFFFFF',
     borderRadius: 28,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
-  },
-  iconInner: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  iconEmoji: {
-    fontSize: 14,
-    fontWeight: '800',
   },
   iconLabel: {
     color: '#6B7280',
