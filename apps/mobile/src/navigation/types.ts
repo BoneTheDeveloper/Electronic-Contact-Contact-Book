@@ -74,6 +74,7 @@ export type ParentCommStackParamList = {
   Messages: undefined;
   Notifications: undefined;
   News: undefined;
+  ChatDetail: { chatId?: string };
 };
 
 export type ParentCommStackNavigationProp = NativeStackNavigationProp<ParentCommStackParamList>;

@@ -10,7 +10,7 @@ import { ScreenHeader } from '../../components/ui';
 import type { ParentHomeStackNavigationProp } from '../../navigation/types';
 
 interface NewsScreenProps {
-  navigation: ParentHomeStackNavigationProp;
+  navigation?: ParentHomeStackNavigationProp;
 }
 
 interface NewsItem {
@@ -177,7 +177,7 @@ export const NewsScreen: React.FC<NewsScreenProps> = ({ navigation }) => {
     <View style={styles.container}>
       <ScreenHeader
         title="Tin tức & Sự kiện"
-        onBack={() => navigation.goBack()}
+        onBack={() => navigation?.goBack()}
       />
       <ScrollView
         style={styles.scrollContent}

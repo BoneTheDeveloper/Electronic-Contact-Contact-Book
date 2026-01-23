@@ -6,6 +6,11 @@
 import React from 'react';
 import { View, ScrollView, Share, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { colors } from '../../theme';
+import { ScreenHeader } from '../../components/ui';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { ParentHomeStackParamList } from '../../navigation/types';
+
+type PaymentReceiptProps = NativeStackScreenProps<ParentHomeStackParamList, 'PaymentReceipt'>
 
 interface ReceiptData {
   id: string;
@@ -33,24 +38,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
-  },
-  header: {
-    backgroundColor: '#0284C7',
-    paddingTop: 64,
-    paddingBottom: 24,
-    paddingHorizontal: 24,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginTop: 8,
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -191,7 +178,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export const PaymentReceiptScreen: React.FC = () => {
+export const PaymentReceiptScreen: React.FC<PaymentReceiptProps> = ({ route, navigation }) => {
+  const { receiptId } = route.params
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -222,12 +211,10 @@ export const PaymentReceiptScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Biên lai thanh toán</Text>
-        <Text style={styles.headerSubtitle}>Xác nhận thanh toán thành công</Text>
-      </View>
-
+      <ScreenHeader
+        title="Biên lai thanh toán"
+        onBack={() => navigation?.goBack()}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Success Icon */}
         <View style={styles.successContainer}>

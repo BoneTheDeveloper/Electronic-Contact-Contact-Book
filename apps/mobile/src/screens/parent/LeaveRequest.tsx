@@ -10,7 +10,7 @@ import { ScreenHeader } from '../../components/ui';
 import type { ParentHomeStackNavigationProp } from '../../navigation/types';
 
 interface LeaveRequestScreenProps {
-  navigation: ParentHomeStackNavigationProp;
+  navigation?: ParentHomeStackNavigationProp;
 }
 
 interface LeaveRequestForm {
@@ -219,7 +219,7 @@ export const LeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ navigati
     <View style={styles.container}>
       <ScreenHeader
         title="Đơn xin nghỉ phép"
-        onBack={() => navigation.goBack()}
+        onBack={() => navigation?.goBack()}
       />
 
       <ScrollView

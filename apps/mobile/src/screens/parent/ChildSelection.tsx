@@ -11,7 +11,7 @@ import { ScreenHeader, Icon } from '../../components/ui';
 import type { ParentHomeStackNavigationProp } from '../../navigation/types';
 
 interface ChildSelectionScreenProps {
-  navigation: ParentHomeStackNavigationProp;
+  navigation?: ParentHomeStackNavigationProp;
 }
 
 export const ChildSelectionScreen: React.FC<ChildSelectionScreenProps> = ({ navigation }) => {
@@ -34,7 +34,7 @@ export const ChildSelectionScreen: React.FC<ChildSelectionScreenProps> = ({ navi
   const handleConfirm = () => {
     if (tempSelectedId) {
       setSelectedChildId(tempSelectedId);
-      navigation.goBack();
+      navigation?.goBack();
     }
   };
 
@@ -42,7 +42,7 @@ export const ChildSelectionScreen: React.FC<ChildSelectionScreenProps> = ({ navi
     <View style={styles.container}>
       <ScreenHeader
         title="Chọn con em"
-        onBack={() => navigation.goBack()}
+        onBack={() => navigation?.goBack()}
       />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>

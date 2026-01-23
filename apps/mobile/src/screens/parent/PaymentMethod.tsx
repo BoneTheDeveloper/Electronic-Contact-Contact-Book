@@ -5,6 +5,12 @@
 
 import React, { useState } from 'react';
 import { View, ScrollView, Pressable, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { ScreenHeader } from '../../components/ui';
+import type { ParentHomeStackNavigationProp } from '../../navigation/types';
+
+interface PaymentMethodProps {
+  navigation?: ParentHomeStackNavigationProp;
+}
 
 interface PaymentMethod {
   id: string;
@@ -49,24 +55,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f1f5f9', // bg-slate-50
-  },
-  header: {
-    backgroundColor: '#3b82f6', // bg-primary
-    paddingTop: 64, // pt-16
-    paddingHorizontal: 24, // px-6
-    paddingBottom: 24, // pb-6
-    borderBottomLeftRadius: 24, // rounded-b-3xl (adjusted for RN)
-    borderBottomRightRadius: 24,
-  },
-  headerTitle: {
-    fontSize: 24, // text-2xl
-    fontWeight: 'bold', // font-bold
-    color: 'white',
-    marginBottom: 4, // mt-1
-  },
-  headerSubtitle: {
-    fontSize: 14, // text-sm
-    color: 'rgba(255, 255, 255, 0.8)', // text-white/80
   },
   scrollContent: {
     paddingHorizontal: 16, // p-4
@@ -192,7 +180,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export const PaymentMethodScreen: React.FC = () => {
+export const PaymentMethodScreen: React.FC<PaymentMethodProps> = ({ navigation }) => {
   const [selectedMethod, setSelectedMethod] = useState('bank_transfer');
 
   const formatCurrency = (amount: number) => {
@@ -206,10 +194,10 @@ export const PaymentMethodScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Phương thức thanh toán</Text>
-        <Text style={styles.headerSubtitle}>Chọn cách thức thanh toán phù hợp</Text>
-      </View>
+      <ScreenHeader
+        title="Phương thức thanh toán"
+        onBack={() => navigation?.goBack()}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.sectionTitle}>Chọn phương thức</Text>
 

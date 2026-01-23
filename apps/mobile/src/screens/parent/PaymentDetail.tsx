@@ -7,6 +7,8 @@ import React from 'react'
 import { View, ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { getFeesByStudentId } from '../../mock-data'
 import { colors } from '../../theme'
+import { ScreenHeader } from '../../components/ui'
+import { useParentStore } from '../../stores'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { ParentHomeStackParamList } from '../../navigation/types'
 
@@ -16,19 +18,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
-  },
-  headerContainer: {
-    backgroundColor: '#2563eb',
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  headerText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
   },
   scrollContent: {
     flexGrow: 1,
@@ -164,14 +153,21 @@ const styles = StyleSheet.create({
   },
 })
 
-export const PaymentDetailScreen: React.FC<PaymentDetailProps> = ({ route }) => {
+export const PaymentDetailScreen: React.FC<PaymentDetailProps> = ({ route, navigation }) => {
   const { paymentId } = route.params
-  const fees = getFeesByStudentId('2') // Mock: using student ID 2
+  const { children, selectedChildId } = useParentStore()
+
+  // Use selected child or fall back to first child
+  const selectedChild = children.find(c => c.id === selectedChildId) || children[0]
+  const studentId = selectedChild?.id || '2' // Fallback to '2' for mock data compatibility
+
+  const fees = getFeesByStudentId(studentId)
   const fee = fees.find(f => f.id === paymentId)
 
   if (!fee) {
     return (
       <View style={styles.container}>
+        <ScreenHeader title="Chi tiết thanh toán" onBack={() => navigation?.goBack()} />
         <Text>Không tìm thấy thông tin thanh toán</Text>
       </View>
     )
@@ -207,9 +203,10 @@ export const PaymentDetailScreen: React.FC<PaymentDetailProps> = ({ route }) => 
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerText}>Chi tiết thanh toán</Text>
-      </View>
+      <ScreenHeader
+        title="Chi tiết thanh toán"
+        onBack={() => navigation?.goBack()}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Main Fee Card */}
         <View style={styles.feeCard}>
@@ -298,7 +295,7 @@ export const PaymentDetailScreen: React.FC<PaymentDetailProps> = ({ route }) => 
 
         {fee.status === 'paid' && (
           <TouchableOpacity
-            onPress={() => {}}
+            onPress={() => navigation.navigate('PaymentReceipt', { receiptId: fee.id })}
             style={styles.receiptButton}
           >
             <View style={styles.receiptButtonInner}>

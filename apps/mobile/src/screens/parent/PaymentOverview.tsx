@@ -12,7 +12,7 @@ import { ScreenHeader } from '../../components/ui';
 import type { ParentHomeStackNavigationProp } from '../../navigation/types';
 
 interface PaymentOverviewProps {
-  navigation: ParentHomeStackNavigationProp;
+  navigation?: ParentHomeStackNavigationProp;
 }
 
 const styles = StyleSheet.create({
@@ -199,7 +199,7 @@ export const PaymentOverviewScreen: React.FC<PaymentOverviewProps> = ({ navigati
     return (
       <TouchableOpacity
         key={fee.id}
-        onPress={() => (navigation as any).navigate('PaymentDetail', { feeId: fee.id })}
+        onPress={() => (navigation as any).navigate('PaymentDetail', { paymentId: fee.id })}
         activeOpacity={0.7}
         style={styles.feeCard}
       >
@@ -230,7 +230,7 @@ export const PaymentOverviewScreen: React.FC<PaymentOverviewProps> = ({ navigati
     <View style={styles.container}>
       <ScreenHeader
         title="Học phí"
-        onBack={() => navigation.goBack()}
+        onBack={() => navigation?.goBack()}
       />
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}

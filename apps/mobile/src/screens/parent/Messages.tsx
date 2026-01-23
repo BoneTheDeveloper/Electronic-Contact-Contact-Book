@@ -12,7 +12,7 @@ import type { ParentCommStackNavigationProp } from '../../navigation/types';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 interface MessagesScreenProps {
-  navigation: ParentCommStackNavigationProp;
+  navigation?: ParentCommStackNavigationProp;
 }
 
 interface Message {
