@@ -191,7 +191,7 @@ export const StudentScheduleScreen: React.FC = () => {
       <FlatList
         data={MOCK_SCHEDULE}
         renderItem={renderDay}
-        keyExtractor={(item) => item.date}
+        keyExtractor={(item: ScheduleDay) => item.date}
         contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />
@@ -263,7 +263,7 @@ export const StudentGradesScreen: React.FC = () => {
       <FlatList
         data={MOCK_GRADES}
         renderItem={renderGradeItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: any) => item.id}
         contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />
@@ -326,7 +326,7 @@ export const StudentAttendanceScreen: React.FC = () => {
       <FlatList
         data={MOCK_ATTENDANCE}
         renderItem={renderAttendanceItem}
-        keyExtractor={(item) => item.date}
+        keyExtractor={(item: any) => item.date}
         contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />
@@ -407,7 +407,7 @@ export const StudentTeacherFeedbackScreen: React.FC = () => {
       <FlatList
         data={MOCK_FEEDBACK}
         renderItem={renderFeedbackItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: any) => item.id}
         contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />
@@ -474,7 +474,7 @@ export const StudentLeaveRequestScreen: React.FC = () => {
       <FlatList
         data={MOCK_LEAVE_REQUESTS}
         renderItem={renderLeaveRequest}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: any) => item.id}
         contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
         ListFooterComponent={
@@ -548,7 +548,7 @@ export const StudentNewsScreen: React.FC = () => {
       <FlatList
         data={MOCK_NEWS}
         renderItem={renderNewsItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: any) => item.id}
         contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />
@@ -680,7 +680,7 @@ export const StudentPaymentScreen: React.FC = () => {
       <FlatList
         data={MOCK_PAYMENTS}
         renderItem={renderPaymentItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: any) => item.id}
         contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />
@@ -738,7 +738,7 @@ export const StudentStudyMaterialsScreen: React.FC = () => {
       <FlatList
         data={MOCK_MATERIALS}
         renderItem={renderMaterialItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: any) => item.id}
         contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />

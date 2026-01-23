@@ -92,7 +92,7 @@ export const ScheduleScreen: React.FC = () => {
       <FlatList
         data={MOCK_SCHEDULE}
         renderItem={renderDay}
-        keyExtractor={(item) => item.date}
+        keyExtractor={(item: ScheduleDay) => item.date}
         contentContainerClassName="p-4 pb-25"
         showsVerticalScrollIndicator={false}
       />

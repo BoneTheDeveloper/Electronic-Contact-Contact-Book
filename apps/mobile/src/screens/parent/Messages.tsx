@@ -9,6 +9,7 @@ import { useParentStore } from '../../stores';
 import { colors } from '../../theme';
 import { ScreenHeader } from '../../components/ui';
 import type { ParentCommStackNavigationProp } from '../../navigation/types';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 interface MessagesScreenProps {
   navigation: ParentCommStackNavigationProp;
@@ -67,10 +68,6 @@ const MOCK_MESSAGES: Message[] = [
     isOnline: false,
   },
 ];
-
-interface MessagesScreenProps {
-  navigation: NativeStackNavigationProp<any>;
-}
 
 const styles = StyleSheet.create({
   container: {
@@ -159,7 +156,7 @@ const styles = StyleSheet.create({
   teacherName: {
     color: '#111827',
     fontSize: 16,
-    fontWeight: 'extrabold',
+    fontWeight: '800',
   },
   messageTime: {
     color: '#9CA3AF',
@@ -247,7 +244,7 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({ navigation }) =>
       <FlatList
         data={MOCK_MESSAGES}
         renderItem={renderMessage}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Message) => item.id}
         contentContainerStyle={styles.flatListContent}
         showsVerticalScrollIndicator={false}
       />

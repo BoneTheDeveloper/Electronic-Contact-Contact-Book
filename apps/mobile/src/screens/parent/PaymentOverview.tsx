@@ -168,10 +168,6 @@ const STATUS_CONFIG = {
   overdue: { label: 'Quá hạn', color: '#EF4444', bgColor: '#FEE2E2' },
 };
 
-interface PaymentOverviewProps {
-  navigation: NativeStackNavigationProp<any>;
-}
-
 export const PaymentOverviewScreen: React.FC<PaymentOverviewProps> = ({ navigation }) => {
   const { children, selectedChildId } = useParentStore();
   const selectedChild = children.find(c => c.id === selectedChildId) || children[0];

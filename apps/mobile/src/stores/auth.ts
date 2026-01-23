@@ -57,7 +57,9 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
       .maybeSingle();
 
     log('IDENTIFIER_LOOKUP', 'Student lookup result:', { data, error });
-    if (data?.profiles?.email) return data.profiles.email;
+    // Type assertion for the joined profiles data
+    const profiles = data?.profiles as unknown as { email: string; status: string } | null;
+    if (profiles?.email) return profiles.email;
   }
 
   // 2. Check phone number (for parents)

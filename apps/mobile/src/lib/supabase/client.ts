@@ -15,6 +15,10 @@ declare global {
       EXPO_PUBLIC_SUPABASE_ANON_KEY?: string;
     }
   }
+
+  var process: {
+    env: NodeJS.ProcessEnv;
+  };
 }
 
 // Get environment variables from app.config.js or .env

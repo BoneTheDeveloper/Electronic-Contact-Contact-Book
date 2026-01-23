@@ -140,7 +140,7 @@ export const TeacherFeedbackScreen: React.FC = () => {
       <FlatList
         data={MOCK_FEEDBACK}
         renderItem={renderFeedback}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Feedback) => item.id}
         contentContainerClassName="p-4 pb-24"
         showsVerticalScrollIndicator={false}
       />

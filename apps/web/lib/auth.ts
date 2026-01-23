@@ -28,32 +28,28 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
   const supabase = await createClient();
   const normalizedId = identifier.trim().toUpperCase();
 
-  // 1. Check admin_code
+  // 1. Check admin_code (in admins table)
   if (normalizedId.startsWith('AD')) {
     const { data } = await supabase
-      .from('profiles')
-      .select('email')
+      .from('admins')
+      .select('profiles!inner(email)')
       .eq('admin_code', normalizedId)
-      .eq('role', 'admin')
-      .eq('status', 'active')
       .single();
 
-    const result = data as { email: string } | null;
-    if (result?.email) return result.email;
+    const result = data as { profiles: { email: string } } | null;
+    if (result?.profiles?.email) return result.profiles.email;
   }
 
-  // 2. Check employee_code (teacher)
+  // 2. Check employee_code (in teachers table)
   if (normalizedId.startsWith('TC')) {
     const { data } = await supabase
-      .from('profiles')
-      .select('email')
+      .from('teachers')
+      .select('profiles!inner(email)')
       .eq('employee_code', normalizedId)
-      .eq('role', 'teacher')
-      .eq('status', 'active')
       .single();
 
-    const result = data as { email: string } | null;
-    if (result?.email) return result.email;
+    const result = data as { profiles: { email: string } } | null;
+    if (result?.profiles?.email) return result.profiles.email;
   }
 
   // 3. Check student_code

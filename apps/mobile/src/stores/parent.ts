@@ -12,6 +12,7 @@ interface ChildData {
   classId: string;
   section: string;
   grade: number;
+  studentCode: string;
 }
 
 interface Fee {
@@ -45,6 +46,7 @@ interface ParentState {
   // Actions
   loadChildren: (parentId: string) => Promise<void>;
   selectChild: (childId: string) => void;
+  setSelectedChildId: (childId: string) => void;
   loadFees: (childId: string) => Promise<void>;
   loadMessages: (parentId: string) => Promise<void>;
   clearError: () => void;
@@ -76,6 +78,7 @@ export const useParentStore = create<ParentState>((set) => ({
           classId: 'CLASS10A',
           section: 'A',
           grade: 10,
+          studentCode: 'ST2024001',
         },
         {
           id: '5',
@@ -84,6 +87,7 @@ export const useParentStore = create<ParentState>((set) => ({
           classId: 'CLASS8B',
           section: 'B',
           grade: 8,
+          studentCode: 'ST2024002',
         },
       ];
 
@@ -98,6 +102,11 @@ export const useParentStore = create<ParentState>((set) => ({
 
   // Select child
   selectChild: (childId: string) => {
+    set({ selectedChildId: childId });
+  },
+
+  // Set selected child ID
+  setSelectedChildId: (childId: string) => {
     set({ selectedChildId: childId });
   },
 

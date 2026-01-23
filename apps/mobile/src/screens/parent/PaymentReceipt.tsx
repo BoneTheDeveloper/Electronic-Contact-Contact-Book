@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   },
   successAmount: {
     fontSize: 28,
-    fontWeight: 'extrabold',
+    fontWeight: '800',
     color: '#0284C7',
   },
   receiptCard: {
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   valueAmount: {
     color: '#0284C7',
     fontSize: 16,
-    fontWeight: 'extrabold',
+    fontWeight: '800',
   },
   shareButton: {
     backgroundColor: '#0284C7',

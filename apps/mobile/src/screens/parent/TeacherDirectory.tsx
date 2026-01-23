@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { View, FlatList, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, FlatList, TouchableOpacity, ScrollView, StyleSheet, Text } from 'react-native';
 import { mockTeachers } from '../../mock-data';
 
 interface Teacher {
@@ -127,37 +127,37 @@ export const TeacherDirectoryScreen: React.FC = () => {
         <View style={styles.teacherCardRow}>
           {/* Avatar */}
           <View style={styles.avatarContainer}>
-            <View style={styles.avatarText}>
+            <Text style={styles.avatarText}>
               {initials}
-            </View>
+            </Text>
           </View>
 
           {/* Teacher Info */}
           <View style={styles.teacherInfo}>
-            <View style={styles.teacherName}>
+            <Text style={styles.teacherName}>
               {item.name}
-            </View>
-            <View style={styles.teacherSubjects}>
+            </Text>
+            <Text style={styles.teacherSubjects}>
               {item.subjects.join(', ')}
-            </View>
+            </Text>
 
             {/* Contact Info */}
             <View style={styles.contactInfo}>
               <View style={styles.contactRow}>
-                <View style={styles.contactLabel}>
+                <Text style={styles.contactLabel}>
                   Email:
-                </View>
-                <View style={styles.contactValue}>
+                </Text>
+                <Text style={styles.contactValue}>
                   {item.email}
-                </View>
+                </Text>
               </View>
               <View style={styles.contactRow}>
-                <View style={styles.contactLabel}>
+                <Text style={styles.contactLabel}>
                   ĐT:
-                </View>
-                <View style={styles.contactValue}>
+                </Text>
+                <Text style={styles.contactValue}>
                   {item.phone}
-                </View>
+                </Text>
               </View>
             </View>
           </View>
@@ -170,19 +170,19 @@ export const TeacherDirectoryScreen: React.FC = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerTitle}>
+        <Text style={styles.headerTitle}>
           Danh bạ giáo viên
-        </View>
-        <View style={styles.headerSubtitle}>
+        </Text>
+        <Text style={styles.headerSubtitle}>
           Thông tin liên hệ giáo viên
-        </View>
+        </Text>
       </View>
 
       {/* Teacher List */}
       <FlatList
         data={mockTeachers}
         renderItem={renderTeacher}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Teacher) => item.id}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => <View style={styles.separator} />}

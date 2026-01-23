@@ -129,7 +129,7 @@ export const NotificationsScreen: React.FC = () => {
       <FlatList
         data={MOCK_NOTIFICATIONS}
         renderItem={renderNotification}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Notification) => item.id}
         contentContainerClassName="p-4 pb-[100px]"
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => <View className="h-px bg-gray-200 ml-[76px]" />}

@@ -3,8 +3,7 @@
 /**
  * Login Page
  *
- * SECURITY NOTICE: This is MOCK authentication.
- * Any password is accepted.
+ * REAL authentication using Supabase Auth
  *
  * Login identifiers:
  * - Admin: admin_code (AD001) or email
@@ -13,12 +12,15 @@
  * - Parent: phone number or email
  */
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { AuthBrandingPanel } from '@/components/auth-branding-panel'
 import { login } from '@/lib/auth'
 
 export default function LoginPage() {
+  const searchParams = useSearchParams()
+  const error = searchParams.get('error')
   const [role, setRole] = useState<'teacher' | 'admin'>('teacher')
   const [showPassword, setShowPassword] = useState(false)
 
@@ -46,6 +48,20 @@ export default function LoginPage() {
       {/* Right Login Panel */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white overflow-y-auto">
         <div className="w-full max-w-md">
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 bg-red-50 border-2 border-red-200 rounded-xl p-4">
+              <p className="text-sm font-semibold text-red-800 flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                {error}
+              </p>
+            </div>
+          )}
+
           {/* Header */}
           <div className="mb-10">
             <h2 className="text-4xl font-black text-gray-900 mb-2 tracking-tight">
