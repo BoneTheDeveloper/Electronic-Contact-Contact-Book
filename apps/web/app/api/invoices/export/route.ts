@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       case 'csv': {
         // Generate CSV
         const headers = include.join(',')
-        const rows = filteredInvoices.map(inv =>
+        const rows = filteredInvoices.map((inv: any) =>
           include.map((field: string) => {
             const value = inv[field as keyof typeof inv]
             // Escape quotes and wrap in quotes if contains comma
