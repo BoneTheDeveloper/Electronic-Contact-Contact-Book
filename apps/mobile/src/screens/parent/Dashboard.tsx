@@ -4,8 +4,8 @@
  * Wireframe-compliant design with SVG icons
  */
 
-import React from 'react';
-import { View, ScrollView, TouchableOpacity, Dimensions, Text, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, ScrollView, TouchableOpacity, Dimensions, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useAuthStore } from '../../stores';
 import { useParentStore } from '../../stores';
 import type { ParentHomeStackNavigationProp, ParentHomeStackParamList } from '../../navigation/types';
@@ -46,9 +46,60 @@ interface DashboardScreenProps {
 
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const { user } = useAuthStore();
-  const { children, selectedChildId } = useParentStore();
+  const { children, selectedChildId, loadChildren, isLoading, error } = useParentStore();
+
+  // Load children when dashboard mounts (for parent users)
+  useEffect(() => {
+    if (user?.role === 'parent' && user?.id && children.length === 0) {
+      loadChildren(user.id);
+    }
+  }, [user?.id, user?.role]);
 
   const selectedChild = children.find(c => c.id === selectedChildId) || children[0];
+
+  // Loading state
+  if (isLoading && children.length === 0) {
+    return (
+      <View style={styles.container}>
+        <View style={[styles.header, { backgroundColor: colors.primary }]}>
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.greeting}>Xin chào,</Text>
+              <Text style={styles.userName}>{user?.name || 'Phụ huynh'}</Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Đang tải thông tin...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Empty state
+  if (!isLoading && children.length === 0) {
+    return (
+      <View style={styles.container}>
+        <View style={[styles.header, { backgroundColor: colors.primary }]}>
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.greeting}>Xin chào,</Text>
+              <Text style={styles.userName}>{user?.name || 'Phụ huynh'}</Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.emptyContainer}>
+          <Icon name="user" size={64} color="#9CA3AF" />
+          <Text style={styles.emptyTitle}>Không tìm thấy học sinh</Text>
+          {error && <Text style={styles.errorText}>{error}</Text>}
+          <Text style={styles.emptyText}>
+            Vui lòng liên hệ văn phòng trường để được hỗ trợ.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   const getInitials = (name: string) => {
     const parts = name.split(' ').filter(p => p.length > 0);
@@ -362,5 +413,45 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     lineHeight: 20,
+  },
+  // Loading/Empty state styles
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+    backgroundColor: '#F9FAFB',
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#EF4444',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 8,
   },
 });

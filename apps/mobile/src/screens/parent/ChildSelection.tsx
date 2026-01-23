@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useParentStore } from '../../stores';
 import { ScreenHeader, Icon } from '../../components/ui';
 import type { ParentHomeStackNavigationProp } from '../../navigation/types';
@@ -15,8 +15,44 @@ interface ChildSelectionScreenProps {
 }
 
 export const ChildSelectionScreen: React.FC<ChildSelectionScreenProps> = ({ navigation }) => {
-  const { children, selectedChildId, setSelectedChildId } = useParentStore();
+  const { children, selectedChildId, setSelectedChildId, isLoading, error } = useParentStore();
   const [tempSelectedId, setTempSelectedId] = useState(selectedChildId);
+
+  // Loading state
+  if (isLoading && children.length === 0) {
+    return (
+      <View style={styles.container}>
+        <ScreenHeader
+          title="Chọn con em"
+          onBack={() => navigation?.goBack()}
+        />
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#0284C7" />
+          <Text style={styles.centerText}>Đang tải danh sách...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Empty state
+  if (!isLoading && children.length === 0) {
+    return (
+      <View style={styles.container}>
+        <ScreenHeader
+          title="Chọn con em"
+          onBack={() => navigation?.goBack()}
+        />
+        <View style={styles.centerContainer}>
+          <Icon name="user" size={64} color="#9CA3AF" />
+          <Text style={styles.centerTitle}>Không tìm thấy học sinh</Text>
+          {error && <Text style={styles.errorText}>{error}</Text>}
+          <Text style={styles.centerText}>
+            Vui lòng liên hệ văn phòng trường để được hỗ trợ.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   const getInitials = (name: string) => {
     const parts = name.split(' ').filter(p => p.length > 0);
@@ -209,5 +245,33 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     textTransform: 'uppercase',
     letterSpacing: 1,
+  },
+  // Loading/Empty state styles
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+    backgroundColor: '#F9FAFB',
+  },
+  centerText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  centerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#EF4444',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 16,
   },
 });

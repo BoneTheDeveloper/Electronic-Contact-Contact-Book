@@ -4,6 +4,8 @@
  */
 
 import { create } from 'zustand';
+import { getParentChildren } from '../lib/supabase/queries';
+import { saveSelectedChild, getSelectedChild } from '../lib/storage/childSelection';
 
 interface ChildData {
   id: string;
@@ -13,6 +15,8 @@ interface ChildData {
   section: string;
   grade: number;
   studentCode: string;
+  isPrimary?: boolean;
+  avatarUrl?: string;
 }
 
 interface Fee {
@@ -61,41 +65,43 @@ export const useParentStore = create<ParentState>((set) => ({
   isLoading: false,
   error: null,
 
-  // Load children
+  // Load children from database
   loadChildren: async (parentId: string) => {
     set({ isLoading: true, error: null });
 
     try {
-      // Simulate API delay
-      await new Promise<void>((resolve) => setTimeout(resolve, 500));
+      const children = await getParentChildren(parentId);
 
-      // Mock children data
-      const mockChildren: ChildData[] = [
-        {
-          id: '2',
-          name: 'Nguyen Van B',
-          rollNumber: 'STU001',
-          classId: 'CLASS10A',
-          section: 'A',
-          grade: 10,
-          studentCode: 'ST2024001',
-        },
-        {
-          id: '5',
-          name: 'Nguyen Thi C',
-          rollNumber: 'STU002',
-          classId: 'CLASS8B',
-          section: 'B',
-          grade: 8,
-          studentCode: 'ST2024002',
-        },
-      ];
+      if (children.length === 0) {
+        set({
+          isLoading: false,
+          error: 'No children found. Please contact school administration.',
+          children: [],
+        });
+        return;
+      }
 
-      set({ children: mockChildren, isLoading: false });
+      // Load saved selection or use default (primary child or first child)
+      const savedChildId = await getSelectedChild();
+      const primaryChild = children.find(c => c.isPrimary);
+      const defaultChildId =
+        savedChildId && children.find(c => c.id === savedChildId)
+          ? savedChildId
+          : (primaryChild?.id || children[0]?.id || null);
+
+      set({
+        children,
+        selectedChildId: defaultChildId,
+        isLoading: false,
+      });
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to load children',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to load children. Please check your connection.',
+        children: [],
       });
     }
   },
@@ -105,9 +111,10 @@ export const useParentStore = create<ParentState>((set) => ({
     set({ selectedChildId: childId });
   },
 
-  // Set selected child ID
-  setSelectedChildId: (childId: string) => {
+  // Set selected child ID and persist to AsyncStorage
+  setSelectedChildId: async (childId: string) => {
     set({ selectedChildId: childId });
+    await saveSelectedChild(childId);
   },
 
   // Load fees for selected child
