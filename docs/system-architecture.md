@@ -333,6 +333,12 @@ graph TD
    - Role-based access control (RBAC)
    - Session management with expiration
 
+   **Cookie Management** (Next.js App Router):
+   - No cookie mutations allowed during GET requests (page rendering)
+   - Cookie deletion only permitted in Server Actions (POST) or Route Handlers
+   - Invalid sessions return null, redirect via `requireAuth()` helper
+   - Recent fix: Removed `cookieStore.delete()` from `getUser()` to prevent App Router errors
+
 2. **Data Protection**:
    - HTTPS encryption for all communications
    - Password hashing with bcrypt

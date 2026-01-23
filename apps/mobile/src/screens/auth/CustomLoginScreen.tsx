@@ -18,6 +18,7 @@ import {
   Dimensions,
   Text,
   TextInput,
+  Alert,
   ActivityIndicator,
   Modal,
 } from 'react-native';
@@ -36,7 +37,7 @@ interface LoginScreenProps {
 }
 
 const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const { login, isLoading } = useAuthStore();
+  const { login, isLoading, clearError } = useAuthStore();
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('login');
   const [selectedRole, setSelectedRole] = useState<'parent' | 'student'>('parent');
   const [identifier, setIdentifier] = useState('');
@@ -58,10 +59,9 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
 
     try {
-      // For demo: map identifiers to emails
-      // Parent: phone number (0901234569) -> parent@school.edu
-      // Student: student code (ST2024001) -> student@school.edu
-      // For production, this would query Supabase to find user by code/phone
+      clearError();
+      console.log('[LOGIN] Attempting login with:', identifier);
+
       await login(identifier, password);
 
       // For student, simulate first login and show change password
@@ -71,7 +71,18 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         // Navigation handled by RootNavigator
       }
     } catch (err: any) {
-      setError(err.message || 'Đăng nhập thất bại');
+      console.error('[LOGIN] Error:', err);
+      const errorMsg = err.message || 'Đăng nhập thất bại';
+      setError(errorMsg);
+
+      // Show detailed alert
+      Alert.alert(
+        'Lỗi đăng nhập',
+        errorMsg,
+        [
+          { text: 'OK', onPress: () => console.log('[LOGIN] Error dismissed') }
+        ]
+      );
     }
   };
 
@@ -243,6 +254,12 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
       {/* Footer */}
       <View style={styles.footer}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('DebugLogs' as never)}
+          style={styles.debugButton}
+        >
+          <Text style={styles.debugButtonText}>🐛 Debug Logs</Text>
+        </TouchableOpacity>
         <Text style={styles.footerText}>Phiên bản 1.0.2 • Project 2 - HUST 2026</Text>
       </View>
     </View>
@@ -798,6 +815,17 @@ const styles = StyleSheet.create({
   footer: {
     marginTop: 24,
     alignItems: 'center',
+  },
+  debugButton: {
+    marginBottom: 12,
+    padding: 8,
+    backgroundColor: '#1E293B',
+    borderRadius: 8,
+  },
+  debugButtonText: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '600',
   },
   footerText: {
     fontSize: 10,

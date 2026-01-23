@@ -5,11 +5,108 @@
  */
 
 import React from 'react';
-import { View, ScrollView, FlatList, Dimensions, Pressable, Text } from 'react-native';
+import { View, ScrollView, FlatList, Dimensions, Pressable, Text, StyleSheet } from 'react-native';
 import { useStudentStore } from '../../stores';
 import { colors } from '../../theme';
 
 const { width } = Dimensions.get('window');
+
+const styles = StyleSheet.create({
+  // Common styles
+  flex1: { flex: 1 },
+  bgSlate50: { backgroundColor: '#f8fafc' },
+  bgSky600: { backgroundColor: '#0284c7' },
+  bgWhite: { backgroundColor: '#ffffff' },
+  shadowSm: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
+
+  // Text styles
+  textWhite: { color: '#ffffff' },
+  textWhite80: { color: 'rgba(255, 255, 255, 0.8)' },
+  textGray900: { color: '#111827' },
+  textGray700: { color: '#374151' },
+  textGray500: { color: '#6b7280' },
+  textGray400: { color: '#9ca3af' },
+  textGray600: { color: '#4b5563' },
+  textEmerald600: { color: '#059669' },
+  textAmber500: { color: '#f59e0b' },
+  textSky600: { color: '#0284c7' },
+  textBase: { fontSize: 16 },
+  textSm: { fontSize: 14 },
+  textXs: { fontSize: 12 },
+  text10px: { fontSize: 10 },
+  text11px: { fontSize: 11 },
+  textLg: { fontSize: 18 },
+  text2xl: { fontSize: 24 },
+  text3xl: { fontSize: 28 },
+  textExtrabold: { fontWeight: '800' },
+  fontBold: { fontWeight: '700' },
+  fontSemibold: { fontWeight: '600' },
+  fontMedium: { fontWeight: '500' },
+
+  // Flexbox and layout
+  flexRow: { flexDirection: 'row' },
+  flex1Row: { flex: 1, flexDirection: 'row' },
+  flexWrap: { flexWrap: 'wrap' },
+  itemsStart: { alignItems: 'flex-start' },
+  itemsCenter: { alignItems: 'center' },
+  justifyBetween: { justifyContent: 'space-between' },
+  justifyCenter: { justifyContent: 'center' },
+  gap1: { gap: 4 },
+  gap3: { gap: 12 },
+  gap4: { gap: 16 },
+  mb2: { marginBottom: 8 },
+  mb3: { marginBottom: 12 },
+  mb4: { marginBottom: 16 },
+  mb6: { marginBottom: 24 },
+  mt1: { marginTop: 4 },
+  mt05: { marginTop: 2 },
+  mt2: { marginTop: 8 },
+  mt4: { marginTop: 16 },
+  ml3: { marginLeft: 12 },
+  mr3: { marginRight: 12 },
+  px2: { paddingLeft: 8, paddingRight: 8 },
+  px3: { paddingLeft: 12, paddingRight: 12 },
+  px4: { paddingLeft: 16, paddingRight: 16 },
+  py1: { paddingTop: 4, paddingBottom: 4 },
+  py3: { paddingTop: 12, paddingBottom: 12 },
+  py4: { paddingTop: 16, paddingBottom: 16 },
+  pb6: { paddingBottom: 24 },
+  pt16: { paddingTop: 64 },
+  w24: { width: 96 },
+  h6: { height: 24 },
+  h7: { height: 28 },
+  w10: { width: 40 },
+  h10: { height: 40 },
+  w14: { width: 56 },
+  h14: { height: 56 },
+  rounded2xl: { borderRadius: 12 },
+  rounded3xl: { borderRadius: 16 },
+  roundedFull: { borderRadius: 9999 },
+  roundedXl: { borderRadius: 8 },
+  selfStart: { alignSelf: 'flex-start' },
+  leadingSnug: { lineHeight: 20 },
+  mb1: { marginBottom: 4 },
+
+  // Special styles
+  bgSky100: { backgroundColor: '#e0f2fe' },
+  bgGreen100: { backgroundColor: '#d1fae5' },
+  bgRed100: { backgroundColor: '#fee2e2' },
+  bgAmber100: { backgroundColor: '#fef3c7' },
+  bgEmerald60020: { backgroundColor: 'rgba(5, 150, 105, 0.2)' },
+  bgSky60020: { backgroundColor: 'rgba(2, 132, 199, 0.2)' },
+  bgEmerald600: { backgroundColor: '#059669' },
+  bgAmber50020: { backgroundColor: 'rgba(245, 158, 11, 0.2)' },
+  bgViolet50020: { backgroundColor: 'rgba(139, 92, 246, 0.2)' },
+  bgAmber500: { backgroundColor: '#f59e0b' },
+  bgViolet500: { backgroundColor: '#8b5cf6' },
+
+  // Other specific styles
+  contentContainerP4: { padding: 16 },
+  contentContainerP4Pb24: { padding: 16, paddingBottom: 96 },
+  w47Percent: { width: '47%' },
+  itemsCenterFlex1: { alignItems: 'center', flex: 1 },
+  textCenter: { textAlign: 'center' },
+});
 
 // ==================== SCHEDULE SCREEN ====================
 
@@ -55,38 +152,38 @@ export const StudentScheduleScreen: React.FC = () => {
   const { studentData } = useStudentStore();
 
   const renderPeriod = (period: Period, index: number) => (
-    <View key={index} className="flex-row items-start gap-3">
-      <View className="w-24">
-        <Text className="text-xs text-gray-500 font-medium">{period.time}</Text>
+    <View key={index} style={styles.flexRow}>
+      <View style={styles.w24}>
+        <Text style={[styles.textXs, styles.textGray500, styles.fontMedium]}>{period.time}</Text>
       </View>
-      <View className="flex-1 gap-1">
-        <Text className="text-base font-semibold text-gray-900">{period.subject}</Text>
-        <Text className="text-xs text-gray-500">{period.teacher}</Text>
-        <View className="self-start bg-sky-100 px-2 py-0.5 rounded-full h-6 items-center justify-center">
-          <Text className="text-[10px] text-sky-600 font-semibold">{period.room}</Text>
+      <View style={[{ flex: 1 }, styles.gap1]}>
+        <Text style={[styles.textBase, styles.fontSemibold, styles.textGray900]}>{period.subject}</Text>
+        <Text style={[styles.textXs, styles.textGray500]}>{period.teacher}</Text>
+        <View style={[styles.selfStart, styles.bgSky100, styles.px2, { height: 24, alignItems: 'center', justifyContent: 'center' }, styles.roundedFull]}>
+          <Text style={[styles.text10px, styles.textSky600, styles.fontSemibold]}>{period.room}</Text>
         </View>
       </View>
     </View>
   );
 
   const renderDay = ({ item }: { item: ScheduleDay }) => (
-    <View className="mb-4 rounded-2xl bg-white shadow-sm px-4 py-4">
-      <View className="flex-row justify-between items-center mb-4 pb-3 border-b border-gray-200">
-        <Text className="text-lg font-bold text-gray-900">{item.dayName}</Text>
-        <Text className="text-xs text-gray-500">{item.date}</Text>
+    <View style={[styles.mb4, styles.rounded2xl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py4]}>
+      <View style={[styles.flexRow, styles.justifyBetween, styles.itemsCenter, styles.mb4, { paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }]}>
+        <Text style={[styles.textLg, styles.fontBold, styles.textGray900]}>{item.dayName}</Text>
+        <Text style={[styles.textXs, styles.textGray500]}>{item.date}</Text>
       </View>
-      <View className="gap-3">
+      <View style={styles.gap3}>
         {item.periods.map((period, index) => renderPeriod(period, index))}
       </View>
     </View>
   );
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
-        <Text className="text-2xl font-bold text-white">Thời khóa biểu</Text>
+    <View style={[styles.flex1, styles.bgSlate50]}>
+      <View style={[styles.bgSky600, styles.pt16, { paddingLeft: 24, paddingRight: 24, paddingBottom: 24 }, styles.rounded3xl]}>
+        <Text style={[styles.text2xl, styles.fontBold, styles.textWhite]}>Thời khóa biểu</Text>
         {studentData && (
-          <Text className="text-sm text-white/80 mt-1">
+          <Text style={[styles.textSm, styles.textWhite80, styles.mt1]}>
             Lớp {studentData.grade}{studentData.section}
           </Text>
         )}
@@ -95,7 +192,7 @@ export const StudentScheduleScreen: React.FC = () => {
         data={MOCK_SCHEDULE}
         renderItem={renderDay}
         keyExtractor={(item) => item.date}
-        contentContainerClassName="p-4 pb-24"
+        contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -136,22 +233,22 @@ const MOCK_GRADES: GradeItem[] = [
 
 export const StudentGradesScreen: React.FC = () => {
   const renderGradeItem = ({ item }: { item: GradeItem }) => {
-    const bgColor = item.average >= 8 ? 'bg-green-100' : item.average >= 6.5 ? 'bg-amber-100' : 'bg-red-100';
-    const textColor = item.average >= 8 ? 'text-green-800' : item.average >= 6.5 ? 'text-amber-800' : 'text-red-800';
+    const bgColor = item.average >= 8 ? styles.bgGreen100 : item.average >= 6.5 ? styles.bgAmber100 : styles.bgRed100;
+    const textColor = item.average >= 8 ? styles.textGray600 : item.average >= 6.5 ? styles.textGray600 : styles.textGray600;
 
     return (
-      <View className="mb-4 rounded-2xl bg-white shadow-sm px-4 py-4">
-        <View className="flex-row justify-between items-center mb-3">
-          <Text className="text-base font-bold text-gray-900">{item.subject}</Text>
-          <View className={`px-3 py-1 rounded-full ${bgColor}`}>
-            <Text className={`text-base font-bold ${textColor}`}>{item.average.toFixed(1)}</Text>
+      <View style={[styles.mb4, styles.rounded2xl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py4]}>
+        <View style={[styles.flexRow, styles.justifyBetween, styles.itemsCenter, styles.mb3]}>
+          <Text style={[styles.textBase, styles.fontBold, styles.textGray900]}>{item.subject}</Text>
+          <View style={[styles.px3, styles.py1, styles.roundedFull, bgColor]}>
+            <Text style={[styles.textBase, styles.fontBold, textColor]}>{item.average.toFixed(1)}</Text>
           </View>
         </View>
-        <View className="h-px bg-gray-200 mb-3" />
+        <View style={{ height: 1, backgroundColor: '#e5e7eb', marginBottom: 12 }} />
         {item.grades.map((grade, index) => (
-          <View key={index} className="flex-row justify-between items-center mb-2">
-            <Text className="text-sm text-gray-500">{grade.type}</Text>
-            <Text className="text-sm font-semibold text-gray-900">{grade.score}/{grade.maxScore}</Text>
+          <View key={index} style={[styles.flexRow, styles.justifyBetween, styles.itemsCenter, styles.mb2]}>
+            <Text style={[styles.textSm, styles.textGray500]}>{grade.type}</Text>
+            <Text style={[styles.textSm, styles.fontSemibold, styles.textGray900]}>{grade.score}/{grade.maxScore}</Text>
           </View>
         ))}
       </View>
@@ -159,15 +256,15 @@ export const StudentGradesScreen: React.FC = () => {
   };
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
-        <Text className="text-2xl font-bold text-white">Bảng điểm môn học</Text>
+    <View style={[styles.flex1, styles.bgSlate50]}>
+      <View style={[styles.bgSky600, styles.pt16, { paddingLeft: 24, paddingRight: 24, paddingBottom: 24 }, styles.rounded3xl]}>
+        <Text style={[styles.text2xl, styles.fontBold, styles.textWhite]}>Bảng điểm môn học</Text>
       </View>
       <FlatList
         data={MOCK_GRADES}
         renderItem={renderGradeItem}
         keyExtractor={(item) => item.id}
-        contentContainerClassName="p-4 pb-24"
+        contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -194,11 +291,11 @@ const MOCK_ATTENDANCE: AttendanceRecord[] = [
 
 const getStatusConfig = (status: AttendanceRecord['status']) => {
   switch (status) {
-    case 'present': return { label: 'Có mặt', bgClass: 'bg-green-100', textClass: 'text-green-800' };
-    case 'absent': return { label: 'Vắng mặt', bgClass: 'bg-red-100', textClass: 'text-red-800' };
-    case 'late': return { label: 'Đi muộn', bgClass: 'bg-amber-100', textClass: 'text-amber-800' };
-    case 'excused': return { label: 'Có phép', bgClass: 'bg-sky-100', textClass: 'text-sky-800' };
-    default: return { label: status, bgClass: 'bg-gray-100', textClass: 'text-gray-700' };
+    case 'present': return { label: 'Có mặt', bgClass: styles.bgGreen100, textClass: styles.textGray600 };
+    case 'absent': return { label: 'Vắng mặt', bgClass: styles.bgRed100, textClass: styles.textGray600 };
+    case 'late': return { label: 'Đi muộn', bgClass: styles.bgAmber100, textClass: styles.textGray600 };
+    case 'excused': return { label: 'Có phép', bgClass: styles.bgSky100, textClass: styles.textSky600 };
+    default: return { label: status, bgClass: styles.bgGreen100, textClass: styles.textGray600 };
   }
 };
 
@@ -207,14 +304,14 @@ export const StudentAttendanceScreen: React.FC = () => {
     const config = getStatusConfig(item.status);
 
     return (
-      <View className="mb-3 rounded-xl bg-white shadow-sm px-4 py-3">
-        <View className="flex-row justify-between items-center">
+      <View style={[styles.mb3, styles.roundedXl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py3]}>
+        <View style={[styles.flexRow, styles.justifyBetween, styles.itemsCenter]}>
           <View>
-            <Text className="text-sm font-semibold text-gray-900">{item.date}</Text>
-            {item.reason && <Text className="text-xs text-gray-500 mt-0.5">{item.reason}</Text>}
+            <Text style={[styles.textSm, styles.fontSemibold, styles.textGray900]}>{item.date}</Text>
+            {item.reason && <Text style={[styles.textXs, styles.textGray500, styles.mt05]}>{item.reason}</Text>}
           </View>
-          <View className={`h-7 px-2 rounded-full items-center justify-center ${config.bgClass}`}>
-            <Text className={`text-[11px] font-bold uppercase ${config.textClass}`}>{config.label}</Text>
+          <View style={[styles.h7, styles.px2, styles.roundedFull, styles.itemsCenter, styles.justifyCenter, config.bgClass]}>
+            <Text style={[styles.text11px, styles.fontBold, { textTransform: 'uppercase' }, config.textClass]}>{config.label}</Text>
           </View>
         </View>
       </View>
@@ -222,15 +319,15 @@ export const StudentAttendanceScreen: React.FC = () => {
   };
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
-        <Text className="text-2xl font-bold text-white">Lịch sử điểm danh</Text>
+    <View style={[styles.flex1, styles.bgSlate50]}>
+      <View style={[styles.bgSky600, styles.pt16, { paddingLeft: 24, paddingRight: 24, paddingBottom: 24 }, styles.rounded3xl]}>
+        <Text style={[styles.text2xl, styles.fontBold, styles.textWhite]}>Lịch sử điểm danh</Text>
       </View>
       <FlatList
         data={MOCK_ATTENDANCE}
         renderItem={renderAttendanceItem}
         keyExtractor={(item) => item.date}
-        contentContainerClassName="p-4 pb-24"
+        contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -270,47 +367,48 @@ const MOCK_FEEDBACK: FeedbackItem[] = [
 export const StudentTeacherFeedbackScreen: React.FC = () => {
   const getFeedbackColor = (type: FeedbackItem['type']) => {
     switch (type) {
-      case 'positive': return 'bg-green-100';
-      case 'neutral': return 'bg-amber-100';
-      case 'concern': return 'bg-red-100';
-      default: return 'bg-gray-100';
+      case 'positive': return styles.bgGreen100;
+      case 'neutral': return styles.bgAmber100;
+      case 'concern': return styles.bgRed100;
+      default: return styles.bgGreen100;
     }
   };
 
   const renderFeedbackItem = ({ item }: { item: FeedbackItem }) => {
-    const initial = item.teacher.split(' ').slice(-1)[0][0];
+    const parts = item.teacher.split(' ').filter(p => p.length > 0);
+    const initial = parts.length > 0 ? (parts[parts.length - 1] || '').charAt(0) : '?';
 
     return (
-      <View className="mb-4 rounded-2xl bg-white shadow-sm px-4 py-4">
-        <View className="flex-row justify-between items-start mb-3">
-          <View className="flex-row items-center flex-1">
-            <View className="w-10 h-10 rounded-full bg-sky-100 items-center justify-center">
-              <Text className="text-sky-600 font-semibold">{initial}</Text>
+      <View style={[styles.mb4, styles.rounded2xl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py4]}>
+        <View style={[styles.flexRow, styles.justifyBetween, styles.itemsStart, styles.mb3]}>
+          <View style={[styles.flexRow, styles.itemsCenter, { flex: 1 }]}>
+            <View style={[styles.w10, styles.h10, styles.roundedFull, styles.bgSky100, styles.itemsCenter, styles.justifyCenter]}>
+              <Text style={[styles.textSky600, styles.fontSemibold]}>{initial}</Text>
             </View>
-            <View className="ml-3 flex-1">
-              <Text className="text-sm font-bold text-gray-900">{item.teacher}</Text>
-              <Text className="text-xs text-gray-500">{item.subject}</Text>
+            <View style={[styles.ml3, { flex: 1 }]}>
+              <Text style={[styles.textSm, styles.fontBold, styles.textGray900]}>{item.teacher}</Text>
+              <Text style={[styles.textXs, styles.textGray500]}>{item.subject}</Text>
             </View>
           </View>
-          <Text className="text-[11px] text-gray-400">{item.date}</Text>
+          <Text style={[styles.text11px, styles.textGray400]}>{item.date}</Text>
         </View>
-        <View className={`p-3 rounded-xl ${getFeedbackColor(item.type)}`}>
-          <Text className="text-sm text-gray-700 leading-snug">{item.content}</Text>
+        <View style={[styles.px3, styles.py3, styles.roundedXl, getFeedbackColor(item.type)]}>
+          <Text style={[styles.textSm, styles.textGray700, styles.leadingSnug]}>{item.content}</Text>
         </View>
       </View>
     );
   };
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
-        <Text className="text-2xl font-bold text-white">Nhận xét giáo viên</Text>
+    <View style={[styles.flex1, styles.bgSlate50]}>
+      <View style={[styles.bgSky600, styles.pt16, { paddingLeft: 24, paddingRight: 24, paddingBottom: 24 }, styles.rounded3xl]}>
+        <Text style={[styles.text2xl, styles.fontBold, styles.textWhite]}>Nhận xét giáo viên</Text>
       </View>
       <FlatList
         data={MOCK_FEEDBACK}
         renderItem={renderFeedbackItem}
         keyExtractor={(item) => item.id}
-        contentContainerClassName="p-4 pb-24"
+        contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -344,9 +442,9 @@ const MOCK_LEAVE_REQUESTS: LeaveRequest[] = [
 export const StudentLeaveRequestScreen: React.FC = () => {
   const getStatusConfig = (status: LeaveRequest['status']) => {
     switch (status) {
-      case 'approved': return { label: 'Đã duyệt', bgClass: 'bg-green-100', textClass: 'text-green-800' };
-      case 'rejected': return { label: 'Từ chối', bgClass: 'bg-red-100', textClass: 'text-red-800' };
-      case 'pending': return { label: 'Chờ duyệt', bgClass: 'bg-amber-100', textClass: 'text-amber-800' };
+      case 'approved': return { label: 'Đã duyệt', bgClass: styles.bgGreen100, textClass: styles.textGray600 };
+      case 'rejected': return { label: 'Từ chối', bgClass: styles.bgRed100, textClass: styles.textGray600 };
+      case 'pending': return { label: 'Chờ duyệt', bgClass: styles.bgAmber100, textClass: styles.textGray600 };
     }
   };
 
@@ -354,14 +452,14 @@ export const StudentLeaveRequestScreen: React.FC = () => {
     const config = getStatusConfig(item.status);
 
     return (
-      <View className="mb-3 rounded-xl bg-white shadow-sm px-4 py-3">
-        <View className="flex-row justify-between items-center">
+      <View style={[styles.mb3, styles.roundedXl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py3]}>
+        <View style={[styles.flexRow, styles.justifyBetween, styles.itemsCenter]}>
           <View>
-            <Text className="text-sm font-semibold text-gray-900">{item.date}</Text>
-            <Text className="text-xs text-gray-500 mt-0.5">{item.reason}</Text>
+            <Text style={[styles.textSm, styles.fontSemibold, styles.textGray900]}>{item.date}</Text>
+            <Text style={[styles.textXs, styles.textGray500, styles.mt05]}>{item.reason}</Text>
           </View>
-          <View className={`h-7 px-2 rounded-full items-center justify-center ${config.bgClass}`}>
-            <Text className={`text-[11px] font-bold uppercase ${config.textClass}`}>{config.label}</Text>
+          <View style={[styles.h7, styles.px2, styles.roundedFull, styles.itemsCenter, styles.justifyCenter, config.bgClass]}>
+            <Text style={[styles.text11px, styles.fontBold, { textTransform: 'uppercase' }, config.textClass]}>{config.label}</Text>
           </View>
         </View>
       </View>
@@ -369,19 +467,19 @@ export const StudentLeaveRequestScreen: React.FC = () => {
   };
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
-        <Text className="text-2xl font-bold text-white">Đơn xin nghỉ phép</Text>
+    <View style={[styles.flex1, styles.bgSlate50]}>
+      <View style={[styles.bgSky600, styles.pt16, { paddingLeft: 24, paddingRight: 24, paddingBottom: 24 }, styles.rounded3xl]}>
+        <Text style={[styles.text2xl, styles.fontBold, styles.textWhite]}>Đơn xin nghỉ phép</Text>
       </View>
       <FlatList
         data={MOCK_LEAVE_REQUESTS}
         renderItem={renderLeaveRequest}
         keyExtractor={(item) => item.id}
-        contentContainerClassName="p-4 pb-24"
+        contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
         ListFooterComponent={
-          <Pressable className="mt-4 bg-sky-600 rounded-xl py-3 items-center">
-            <Text className="text-white font-semibold text-base">+ Tạo đơn mới</Text>
+          <Pressable style={[styles.mt4, styles.bgSky600, styles.roundedXl, styles.py3, styles.itemsCenter]}>
+            <Text style={[styles.textWhite, styles.fontSemibold, styles.textBase]}>+ Tạo đơn mới</Text>
           </Pressable>
         }
       />
@@ -418,9 +516,9 @@ const MOCK_NEWS: NewsItem[] = [
 
 const getCategoryConfig = (category: NewsItem['category']) => {
   switch (category) {
-    case 'school': return { label: 'Nhà trường', bgClass: 'bg-blue-100' };
-    case 'class': return { label: 'Lớp học', bgClass: 'bg-sky-100' };
-    case 'activity': return { label: 'Hoạt động', bgClass: 'bg-purple-100' };
+    case 'school': return { label: 'Nhà trường', bgClass: styles.bgSky100 };
+    case 'class': return { label: 'Lớp học', bgClass: styles.bgSky100 };
+    case 'activity': return { label: 'Hoạt động', bgClass: styles.bgSky100 };
   }
 };
 
@@ -429,29 +527,29 @@ export const StudentNewsScreen: React.FC = () => {
     const config = getCategoryConfig(item.category);
 
     return (
-      <View className="mb-4 rounded-2xl bg-white shadow-sm px-4 py-4">
-        <View className="flex-row justify-between items-center mb-3">
-          <View className={`h-6 px-2 rounded-full items-center justify-center ${config.bgClass}`}>
-            <Text className="text-[10px] font-bold uppercase text-sky-600">{config.label}</Text>
+      <View style={[styles.mb4, styles.rounded2xl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py4]}>
+        <View style={[styles.flexRow, styles.justifyBetween, styles.itemsCenter, styles.mb3]}>
+          <View style={[styles.h6, styles.px2, styles.roundedFull, styles.itemsCenter, styles.justifyCenter, config.bgClass]}>
+            <Text style={[styles.text10px, styles.fontBold, { textTransform: 'uppercase' }, styles.textSky600]}>{config.label}</Text>
           </View>
-          <Text className="text-[11px] text-gray-400">{item.date}</Text>
+          <Text style={[styles.text11px, styles.textGray400]}>{item.date}</Text>
         </View>
-        <Text className="text-base font-bold text-gray-900 mb-2">{item.title}</Text>
-        <Text className="text-sm text-gray-500 leading-snug" numberOfLines={2}>{item.content}</Text>
+        <Text style={[styles.textBase, styles.fontBold, styles.textGray900, styles.mb2]}>{item.title}</Text>
+        <Text style={[styles.textSm, styles.textGray500, styles.leadingSnug]} numberOfLines={2}>{item.content}</Text>
       </View>
     );
   };
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
-        <Text className="text-2xl font-bold text-white">Tin tức & sự kiện</Text>
+    <View style={[styles.flex1, styles.bgSlate50]}>
+      <View style={[styles.bgSky600, styles.pt16, { paddingLeft: 24, paddingRight: 24, paddingBottom: 24 }, styles.rounded3xl]}>
+        <Text style={[styles.text2xl, styles.fontBold, styles.textWhite]}>Tin tức & sự kiện</Text>
       </View>
       <FlatList
         data={MOCK_NEWS}
         renderItem={renderNewsItem}
         keyExtractor={(item) => item.id}
-        contentContainerClassName="p-4 pb-24"
+        contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -479,47 +577,47 @@ export const StudentSummaryScreen: React.FC = () => {
 
   const getColorClass = (color: string) => {
     switch (color) {
-      case '#0284C7': return 'bg-sky-600/20';
-      case '#059669': return 'bg-emerald-600/20';
-      case '#F59E0B': return 'bg-amber-500/20';
-      case '#8B5CF6': return 'bg-violet-500/20';
-      default: return 'bg-gray-200';
+      case '#0284C7': return styles.bgSky60020;
+      case '#059669': return styles.bgEmerald60020;
+      case '#F59E0B': return styles.bgAmber50020;
+      case '#8B5CF6': return styles.bgViolet50020;
+      default: return { backgroundColor: '#e5e7eb' };
     }
   };
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
-        <Text className="text-2xl font-bold text-white">Kết quả tổng hợp</Text>
+    <View style={[styles.flex1, styles.bgSlate50]}>
+      <View style={[styles.bgSky600, styles.pt16, { paddingLeft: 24, paddingRight: 24, paddingBottom: 24 }, styles.rounded3xl]}>
+        <Text style={[styles.text2xl, styles.fontBold, styles.textWhite]}>Kết quả tổng hợp</Text>
       </View>
-      <ScrollView contentContainerClassName="p-4 pb-24" showsVerticalScrollIndicator={false}>
-        <View className="mb-4 rounded-2xl bg-white shadow-sm px-4 py-4">
-          <View className="flex-row flex-wrap justify-between">
+      <ScrollView contentContainerStyle={[styles.contentContainerP4Pb24]} showsVerticalScrollIndicator={false}>
+        <View style={[styles.mb4, styles.rounded2xl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py4]}>
+          <View style={[styles.flexWrap, styles.justifyBetween]}>
             {summaryData.map((item, index) => (
-              <View key={index} className="w-[47%] items-center mb-4">
-                <View className={`w-14 h-14 rounded-full justify-center items-center mb-2 ${getColorClass(item.color)}`}>
-                  <Text className="text-2xl">{item.icon}</Text>
+              <View key={index} style={[styles.w47Percent, styles.itemsCenterFlex1, styles.mb4]}>
+                <View style={[styles.w14, styles.h14, styles.roundedFull, styles.justifyCenter, styles.itemsCenter, styles.mb2, getColorClass(item.color)]}>
+                  <Text style={styles.text2xl}>{item.icon}</Text>
                 </View>
-                <Text className="text-xl font-extrabold text-gray-900 mb-1">{item.value}</Text>
-                <Text className="text-xs text-gray-500 text-center">{item.label}</Text>
+                <Text style={[styles.textExtrabold, styles.textGray900, styles.mb1]}>{item.value}</Text>
+                <Text style={[styles.textXs, styles.textGray500, styles.textCenter]}>{item.label}</Text>
               </View>
             ))}
           </View>
         </View>
 
-        <View className="rounded-2xl bg-white shadow-sm px-4 py-4">
-          <Text className="text-base font-bold text-gray-900 mb-4">Chi tiết học tập</Text>
-          <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-sm text-gray-500">Tổng số bài kiểm tra:</Text>
-            <Text className="text-sm font-semibold text-gray-900">24</Text>
+        <View style={[styles.rounded2xl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py4]}>
+          <Text style={[styles.textBase, styles.fontBold, styles.textGray900, styles.mb4]}>Chi tiết học tập</Text>
+          <View style={[styles.flexRow, styles.justifyBetween, styles.itemsCenter, styles.mb3]}>
+            <Text style={[styles.textSm, styles.textGray500]}>Tổng số bài kiểm tra:</Text>
+            <Text style={[styles.textSm, styles.fontSemibold, styles.textGray900]}>24</Text>
           </View>
-          <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-sm text-gray-500">Số bài đạt:</Text>
-            <Text className="text-sm font-semibold text-emerald-600">22</Text>
+          <View style={[styles.flexRow, styles.justifyBetween, styles.itemsCenter, styles.mb3]}>
+            <Text style={[styles.textSm, styles.textGray500]}>Số bài đạt:</Text>
+            <Text style={[styles.textSm, styles.fontSemibold, styles.textEmerald600]}>22</Text>
           </View>
-          <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-sm text-gray-500">Số bài cần cải thiện:</Text>
-            <Text className="text-sm font-semibold text-amber-500">2</Text>
+          <View style={[styles.flexRow, styles.justifyBetween, styles.itemsCenter, styles.mb3]}>
+            <Text style={[styles.textSm, styles.textGray500]}>Số bài cần cải thiện:</Text>
+            <Text style={[styles.textSm, styles.fontSemibold, styles.textAmber500]}>2</Text>
           </View>
         </View>
       </ScrollView>
@@ -544,9 +642,9 @@ const MOCK_PAYMENTS: PaymentItem[] = [
 
 const getPaymentStatusConfig = (status: PaymentItem['status']) => {
   switch (status) {
-    case 'paid': return { label: 'Đã thanh toán', bgClass: 'bg-green-100', textClass: 'text-green-800' };
-    case 'pending': return { label: 'Chờ thanh toán', bgClass: 'bg-amber-100', textClass: 'text-amber-800' };
-    case 'overdue': return { label: 'Quá hạn', bgClass: 'bg-red-100', textClass: 'text-red-800' };
+    case 'paid': return { label: 'Đã thanh toán', bgClass: styles.bgGreen100, textClass: styles.textGray600 };
+    case 'pending': return { label: 'Chờ thanh toán', bgClass: styles.bgAmber100, textClass: styles.textGray600 };
+    case 'overdue': return { label: 'Quá hạn', bgClass: styles.bgRed100, textClass: styles.textGray600 };
   }
 };
 
@@ -559,31 +657,31 @@ export const StudentPaymentScreen: React.FC = () => {
     const config = getPaymentStatusConfig(item.status);
 
     return (
-      <View className="mb-4 rounded-2xl bg-white shadow-sm px-4 py-4">
-        <View className="flex-row justify-between items-start mb-2">
-          <View className="flex-1">
-            <Text className="text-base font-semibold text-gray-900 mb-1">{item.title}</Text>
-            <Text className="text-xs text-gray-500">Hạn: {item.dueDate}</Text>
+      <View style={[styles.mb4, styles.rounded2xl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py4]}>
+        <View style={[styles.flexRow, styles.justifyBetween, styles.itemsStart, styles.mb2]}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.textBase, styles.fontSemibold, styles.textGray900, styles.mb1]}>{item.title}</Text>
+            <Text style={[styles.textXs, styles.textGray500]}>Hạn: {item.dueDate}</Text>
           </View>
-          <View className={`h-7 px-2 rounded-full items-center justify-center ${config.bgClass}`}>
-            <Text className={`text-[10px] font-bold uppercase ${config.textClass}`}>{config.label}</Text>
+          <View style={[styles.h7, styles.px2, styles.roundedFull, styles.itemsCenter, styles.justifyCenter, config.bgClass]}>
+            <Text style={[styles.text10px, styles.fontBold, { textTransform: 'uppercase' }, config.textClass]}>{config.label}</Text>
           </View>
         </View>
-        <Text className="text-lg font-extrabold text-sky-600 mt-2">{formatCurrency(item.amount)}</Text>
+        <Text style={[styles.textLg, styles.textExtrabold, styles.textSky600, styles.mt2]}>{formatCurrency(item.amount)}</Text>
       </View>
     );
   };
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
-        <Text className="text-2xl font-bold text-white">Học phí</Text>
+    <View style={[styles.flex1, styles.bgSlate50]}>
+      <View style={[styles.bgSky600, styles.pt16, { paddingLeft: 24, paddingRight: 24, paddingBottom: 24 }, styles.rounded3xl]}>
+        <Text style={[styles.text2xl, styles.fontBold, styles.textWhite]}>Học phí</Text>
       </View>
       <FlatList
         data={MOCK_PAYMENTS}
         renderItem={renderPaymentItem}
         keyExtractor={(item) => item.id}
-        contentContainerClassName="p-4 pb-24"
+        contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -616,16 +714,16 @@ const getMaterialIcon = (type: MaterialItem['type']) => {
 
 export const StudentStudyMaterialsScreen: React.FC = () => {
   const renderMaterialItem = ({ item }: { item: MaterialItem }) => (
-    <View className="mb-3 rounded-xl bg-white shadow-sm px-4 py-3">
-      <View className="flex-row items-center">
-        <Text className="text-3xl mr-3">{getMaterialIcon(item.type)}</Text>
-        <View className="flex-1">
-          <Text className="text-sm font-semibold text-gray-900 mb-1.5">{item.title}</Text>
-          <View className="flex-row items-center justify-between">
-            <View className="bg-sky-100 h-6 px-2 rounded-full items-center justify-center">
-              <Text className="text-[10px] text-sky-600 font-semibold">{item.subject}</Text>
+    <View style={[styles.mb3, styles.roundedXl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py3]}>
+      <View style={[styles.flexRow, styles.itemsCenter]}>
+        <Text style={[styles.text3xl, styles.mr3]}>{getMaterialIcon(item.type)}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.textSm, styles.fontSemibold, styles.textGray900, styles.mb1]}>{item.title}</Text>
+          <View style={[styles.flexRow, styles.itemsCenter, styles.justifyBetween]}>
+            <View style={[styles.bgSky100, styles.h6, styles.px2, styles.roundedFull, styles.itemsCenter, styles.justifyCenter]}>
+              <Text style={[styles.text10px, styles.textSky600, styles.fontSemibold]}>{item.subject}</Text>
             </View>
-            <Text className="text-[11px] text-gray-400">{item.date}</Text>
+            <Text style={[styles.text11px, styles.textGray400]}>{item.date}</Text>
           </View>
         </View>
       </View>
@@ -633,15 +731,15 @@ export const StudentStudyMaterialsScreen: React.FC = () => {
   );
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-sky-600 pt-16 px-6 pb-6 rounded-b-3xl">
-        <Text className="text-2xl font-bold text-white">Tài liệu học tập</Text>
+    <View style={[styles.flex1, styles.bgSlate50]}>
+      <View style={[styles.bgSky600, styles.pt16, { paddingLeft: 24, paddingRight: 24, paddingBottom: 24 }, styles.rounded3xl]}>
+        <Text style={[styles.text2xl, styles.fontBold, styles.textWhite]}>Tài liệu học tập</Text>
       </View>
       <FlatList
         data={MOCK_MATERIALS}
         renderItem={renderMaterialItem}
         keyExtractor={(item) => item.id}
-        contentContainerClassName="p-4 pb-24"
+        contentContainerStyle={[styles.contentContainerP4Pb24]}
         showsVerticalScrollIndicator={false}
       />
     </View>

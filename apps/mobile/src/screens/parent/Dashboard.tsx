@@ -4,18 +4,18 @@
  */
 
 import React from 'react';
-import { View, ScrollView, TouchableOpacity, Dimensions, Text } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Dimensions, Text, StyleSheet } from 'react-native';
 import { useAuthStore } from '../../stores';
 import { useParentStore } from '../../stores';
 import type { ParentHomeStackNavigationProp, ParentHomeStackParamList } from '../../navigation/types';
+import { colors } from '../../theme';
 
 const { width } = Dimensions.get('window');
 const ICON_SIZE = 80;
-const HORIZONTAL_GAP = 16; // gap-x-4 in wireframe
-const VERTICAL_GAP = 40;    // gap-y-10 in wireframe
-const CONTAINER_PADDING = 24; // paddingHorizontal from scrollContent
+const HORIZONTAL_GAP = 16;
+const VERTICAL_GAP = 40;
+const CONTAINER_PADDING = 24;
 
-// Valid routes from Dashboard - all in HomeStack after navigation fix
 type DashboardRoute = keyof ParentHomeStackParamList;
 
 interface ServiceIcon {
@@ -49,175 +49,137 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
   const selectedChild = children.find(c => c.id === selectedChildId) || children[0];
 
   const getInitials = (name: string) => {
-    const parts = name.split(' ');
-    return parts.length > 1
-      ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-      : name.slice(0, 2).toUpperCase();
+    const parts = name.split(' ').filter(p => p.length > 0);
+    if (parts.length === 0) return 'U';
+    if (parts.length === 1) return (parts[0] || '').slice(0, 2).toUpperCase();
+    const first = (parts[0] || '').charAt(0);
+    const last = (parts[parts.length - 1] || '').charAt(0);
+    return `${first}${last}`.toUpperCase();
+  };
+
+  const getIconEmoji = (icon: string) => {
+    const iconMap: Record<string, string> = {
+      'calendar': '📅',
+      'check-circle': '✓',
+      'account-check': '✓',
+      'file-document': '📄',
+      'message-reply': '💬',
+      'newspaper': '📰',
+      'chart-pie': '📊',
+      'account-group': '👥',
+      'cash': '💰',
+    };
+    return iconMap[icon] || '•';
   };
 
   const renderServiceIcon = (item: ServiceIcon) => {
     const containerWidth = (width - CONTAINER_PADDING * 2 - HORIZONTAL_GAP * 2) / 3;
 
-    const handlePress = () => {
-      navigation.navigate(item.route as any);
-    };
-
     return (
       <TouchableOpacity
         key={item.id}
-        className="items-center"
-        style={{ width: containerWidth, marginBottom: VERTICAL_GAP, paddingHorizontal: HORIZONTAL_GAP / 2 }}
-        onPress={handlePress}
+        style={[styles.iconContainer, { width: containerWidth, marginBottom: VERTICAL_GAP, paddingHorizontal: HORIZONTAL_GAP / 2 }]}
+        onPress={() => navigation.navigate(item.route as any)}
         activeOpacity={0.7}
       >
         <View
-          className="rounded-custom-28 bg-white justify-center items-center border border-gray-200"
-          style={{
-            width: ICON_SIZE,
-            height: ICON_SIZE,
-            borderColor: item.color,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.05,
-            shadowRadius: 2,
-            elevation: 2,
-          }}
+          style={[
+            styles.iconBox,
+            {
+              width: ICON_SIZE,
+              height: ICON_SIZE,
+              borderColor: item.color,
+              backgroundColor: '#FFFFFF',
+            },
+          ]}
         >
-          <View
-            className="rounded-full justify-center items-center"
-            style={{
-              width: 32,
-              height: 32,
-              backgroundColor: `${item.color}20`,
-            }}
-          >
-            <Text className="text-primary" style={{ fontSize: 20, color: item.color }}>
-              {item.icon === 'calendar' && '📅'}
-              {item.icon === 'check-circle' && '✓'}
-              {item.icon === 'account-check' && '✓'}
-              {item.icon === 'file-document' && '📄'}
-              {item.icon === 'message-reply' && '💬'}
-              {item.icon === 'newspaper' && '📰'}
-              {item.icon === 'chart-pie' && '📊'}
-              {item.icon === 'account-group' && '👥'}
-              {item.icon === 'cash' && '💰'}
+          <View style={[styles.iconInner, { backgroundColor: `${item.color}20` }]}>
+            <Text style={[styles.iconEmoji, { color: item.color }]}>
+              {getIconEmoji(item.icon)}
             </Text>
           </View>
         </View>
-        <Text className="text-gray-600 text-xs font-extrabold text-center uppercase mt-3 leading-tight tracking-wider">
-          {item.label}
-        </Text>
+        <Text style={styles.iconLabel}>{item.label}</Text>
       </TouchableOpacity>
     );
   };
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View style={styles.container}>
       {/* Header with gradient background */}
-      <View
-        className="bg-primary pt-16 px-6 pb-6"
-        style={{ borderBottomLeftRadius: 30, borderBottomRightRadius: 30 }}
-      >
-        <View className="flex-row justify-between items-start mb-6">
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+        <View style={styles.headerTop}>
           <View>
-            <Text className="text-white/80 text-xs font-semibold uppercase tracking-wider">
-              Xin chào,
-            </Text>
-            <Text className="text-white text-xl font-extrabold mt-1">
-              {user?.name || 'Phụ huynh'}
-            </Text>
+            <Text style={styles.greeting}>Xin chào,</Text>
+            <Text style={styles.userName}>{user?.name || 'Phụ huynh'}</Text>
           </View>
-          <TouchableOpacity className="relative">
-            <View
-              className="rounded-full justify-center items-center"
-              style={{
-                width: 40,
-                height: 40,
-                backgroundColor: 'rgba(255,255,255,0.2)',
-              }}
-            >
-              <Text className="text-white text-xl">🔔</Text>
+          <TouchableOpacity style={styles.notificationButton}>
+            <View style={styles.notificationIcon}>
+              <Text style={styles.notificationEmoji}>🔔</Text>
             </View>
-            <View
-              className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-error border-2 border-white justify-center items-center"
-            >
-              <Text className="text-error text-[9px] font-extrabold text-white">5</Text>
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>5</Text>
             </View>
           </TouchableOpacity>
         </View>
 
         {/* Child Selector Card */}
         {selectedChild && (
-          <View
-            className="rounded-3xl bg-white p-3 flex-row items-center"
-            style={{
-              elevation: 4,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-            }}
+          <TouchableOpacity
+            style={styles.childCard}
+            onPress={() => navigation.navigate('ChildSelection')}
+            activeOpacity={0.7}
           >
-            <View
-              className="rounded-full justify-center items-center bg-light-blue"
-              style={{ width: 44, height: 44 }}
-            >
-              <Text className="text-primary text-base font-bold" style={{ color: '#0284C7' }}>
+            <View style={[styles.avatar, { backgroundColor: '#E0F2FE' }]}>
+              <Text style={[styles.avatarText, { color: '#0284C7' }]}>
                 {getInitials(selectedChild.name)}
               </Text>
             </View>
-            <View className="flex-1 ml-3">
-              <Text className="text-gray-400 text-[9px] font-bold uppercase tracking-wider">
-                Đang theo dõi
-              </Text>
-              <Text className="text-gray-800 text-sm font-bold mt-0.5">
+            <View style={styles.childInfo}>
+              <Text style={styles.childLabel}>Đang theo dõi</Text>
+              <Text style={styles.childName}>
                 {selectedChild.name} • {selectedChild.grade}
                 {selectedChild.section}
               </Text>
             </View>
-            <View
-              className="rounded-full justify-center items-center bg-transparent"
-              style={{ width: 28, height: 28 }}
-            >
-              <Text className="text-gray-600 text-lg">▼</Text>
+            <View style={styles.dropdownIcon}>
+              <Text style={styles.dropdownArrow}>▼</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
       </View>
 
       {/* Service Icons Grid */}
       <ScrollView
-        className="flex-1"
-        contentContainerClassName="pt-10 pb-24 px-6"
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
         showsVerticalScrollIndicator={false}
       >
         <View
-          className="flex-row flex-wrap -mx-2 mb-8"
-          style={{ marginLeft: -HORIZONTAL_GAP / 2, marginRight: -HORIZONTAL_GAP / 2 }}
+          style={[
+            styles.iconsGrid,
+            { marginLeft: -HORIZONTAL_GAP / 2, marginRight: -HORIZONTAL_GAP / 2 },
+          ]}
         >
           {SERVICE_ICONS.map(renderServiceIcon)}
         </View>
 
         {/* News Preview Section */}
-        <View className="mt-2">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-gray-800 text-base font-bold">Thông báo mới</Text>
+        <View style={styles.newsSection}>
+          <View style={styles.newsHeader}>
+            <Text style={styles.newsTitle}>Thông báo mới</Text>
             <TouchableOpacity onPress={() => navigation.navigate('News')}>
-              <Text className="text-primary text-[10px] font-bold uppercase tracking-wider">
-                Xem tất cả
-              </Text>
+              <Text style={styles.seeAll}>Xem tất cả</Text>
             </TouchableOpacity>
           </View>
-          <View className="rounded-2xl bg-white border border-gray-100 p-4">
-            <View className="flex-row justify-between items-center mb-2">
-              <View className="bg-light-blue px-2 py-0.5 rounded-full">
-                <Text className="text-primary text-[8px] font-extrabold uppercase tracking-wider">
-                  Nhà trường
-                </Text>
+          <View style={styles.newsCard}>
+            <View style={styles.newsMeta}>
+              <View style={[styles.newsTag, { backgroundColor: '#E0F2FE' }]}>
+                <Text style={[styles.newsTagText, { color: '#0284C7' }]}>Nhà trường</Text>
               </View>
-              <Text className="text-gray-400 text-[9px] font-medium">10 phút trước</Text>
+              <Text style={styles.newsTime}>10 phút trước</Text>
             </View>
-            <Text className="text-gray-800 text-sm font-semibold leading-5" numberOfLines={2}>
+            <Text style={styles.newsText} numberOfLines={2}>
               Thông báo về việc nghỉ lễ Tết Nguyên Đán 2026...
             </Text>
           </View>
@@ -226,3 +188,222 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  header: {
+    paddingTop: 64,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 24,
+  },
+  greeting: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  userName: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '800',
+    marginTop: 4,
+  },
+  notificationButton: {
+    position: 'relative',
+  },
+  notificationIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notificationEmoji: {
+    fontSize: 20,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#EF4444',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notificationBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  childCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  childInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  childLabel: {
+    color: '#9CA3AF',
+    fontSize: 9,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  childName: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  dropdownIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dropdownArrow: {
+    color: '#6B7280',
+    fontSize: 16,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    paddingTop: 40,
+    paddingBottom: 96,
+    paddingHorizontal: 24,
+  },
+  iconsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 32,
+  },
+  iconContainer: {
+    alignItems: 'center',
+  },
+  iconBox: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  iconInner: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconEmoji: {
+    fontSize: 20,
+  },
+  iconLabel: {
+    color: '#6B7280',
+    fontSize: 10,
+    fontWeight: '800',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    marginTop: 12,
+    lineHeight: 14,
+    letterSpacing: 0.5,
+  },
+  newsSection: {
+    marginTop: 8,
+  },
+  newsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  newsTitle: {
+    color: '#1F2937',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  seeAll: {
+    color: '#0284C7',
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  newsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    padding: 16,
+  },
+  newsMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  newsTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 100,
+  },
+  newsTagText: {
+    fontSize: 8,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  newsTime: {
+    color: '#9CA3AF',
+    fontSize: 9,
+    fontWeight: '500',
+  },
+  newsText: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
+  },
+});

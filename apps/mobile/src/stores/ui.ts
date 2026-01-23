@@ -20,6 +20,7 @@ interface UIState {
   isDrawerOpen: boolean;
   notifications: Notification[];
   isDarkMode: boolean;
+  isBiometricEnabled: boolean;
 
   // Actions
   setLoading: (loading: boolean) => void;
@@ -28,6 +29,7 @@ interface UIState {
   showNotification: (notification: Omit<Notification, 'id'>) => void;
   removeNotification: (id: string) => void;
   toggleDarkMode: () => void;
+  toggleBiometric: () => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -38,6 +40,7 @@ export const useUIStore = create<UIState>()(
       isDrawerOpen: false,
       notifications: [],
       isDarkMode: false,
+      isBiometricEnabled: false,
 
       // Set loading state
       setLoading: (loading: boolean) => set({ isLoading: loading }),
@@ -75,11 +78,14 @@ export const useUIStore = create<UIState>()(
 
       // Toggle dark mode
       toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
+
+      // Toggle biometric authentication
+      toggleBiometric: () => set((state) => ({ isBiometricEnabled: !state.isBiometricEnabled })),
     }),
     {
       name: 'ui-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ isDarkMode: state.isDarkMode }), // Only persist dark mode
+      partialize: (state) => ({ isDarkMode: state.isDarkMode, isBiometricEnabled: state.isBiometricEnabled }), // Persist dark mode and biometric
     }
   )
 );

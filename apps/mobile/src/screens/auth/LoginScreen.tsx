@@ -47,11 +47,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
 
     try {
+      console.log('[LOGIN] Attempting login with:', identifier);
       clearError();
       await login(identifier, password);
       // Navigation will be handled automatically by RootNavigator based on role
     } catch (err) {
-      Alert.alert('Login Failed', error || 'Invalid credentials');
+      console.error('[LOGIN] Error:', err);
+      const errorMsg = error || 'Invalid credentials';
+      Alert.alert('Login Failed', errorMsg);
     }
   };
 
@@ -97,8 +100,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             />
             <RNText style={styles.inputHint}>
               Parents: phone number (0901234569){'\n'}
-              Students: student code (ST2024001){'\n'}
-              Teachers: employee code (TC001)
+              Students: student code (ST2024001)
             </RNText>
           </View>
 
@@ -148,12 +150,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             </RNText>
             <RNText style={styles.hintText}>
               • Student: ST2024001 or student@school.edu
-            </RNText>
-            <RNText style={styles.hintText}>
-              • Teacher: TC001 or teacher@school.edu
-            </RNText>
-            <RNText style={styles.hintText}>
-              • Admin: AD001 or admin@school.edu
             </RNText>
           </View>
         </View>

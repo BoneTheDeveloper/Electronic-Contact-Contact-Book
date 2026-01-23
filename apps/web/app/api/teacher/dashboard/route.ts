@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getTeacherStats, getLeaveRequests, getTeacherSchedule, getRegularAssessments, getTeacherClasses } from '@/lib/supabase/queries'
+import { getTeacherStats, getLeaveRequests, getTeacherSchedule, getRegularAssessments, getTeacherClasses, getGradeReviewRequests } from '@/lib/supabase/queries'
 
 export async function GET(request: Request) {
   try {
@@ -12,11 +12,11 @@ export async function GET(request: Request) {
     const homeroomClassId = homeroomClass?.id || '6A1'  // Dynamic fallback to grade 6
 
     const [stats, gradeReviews, leaveRequests, schedule, assessments, classes] = await Promise.all([
-      getTeacherStats(teacherId).catch(() => ({ teaching: 0, homeroom: 'N/A', gradeReviewRequests: 0, leaveRequests: 0, pendingGrades: 0 })),
-      getGradeReviewRequests().catch(() => []),
+      getTeacherStats(teacherId || '').catch(() => ({ teaching: 0, homeroom: 0, students: 0, pendingAttendance: 0, pendingGrades: 0, gradeReviewRequests: 0, leaveRequests: 0, todaySchedule: [] })),
+      getGradeReviewRequests(teacherId || '').catch(() => []),
       getLeaveRequests(homeroomClassId).catch(() => []),  // Use dynamic classId
-      getTeacherSchedule(teacherId).catch(() => []),
-      getRegularAssessments(teacherId).catch(() => []),
+      getTeacherSchedule(teacherId || '').catch(() => []),
+      getRegularAssessments(teacherId || '').catch(() => []),
       Promise.resolve(teacherClasses),
     ])
 
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
       success: false,
       error: 'Failed to load dashboard data',
       data: {
-        stats: { teaching: 0, homeroom: 'N/A', gradeReviewRequests: 0, leaveRequests: 0, pendingGrades: 0 },
+        stats: { teaching: 0, homeroom: 0, students: 0, pendingAttendance: 0, pendingGrades: 0, gradeReviewRequests: 0, leaveRequests: 0, todaySchedule: [] },
         gradeReviews: [],
         leaveRequests: [],
         classes: [],

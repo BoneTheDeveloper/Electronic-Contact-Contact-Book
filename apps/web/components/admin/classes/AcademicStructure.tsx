@@ -8,6 +8,7 @@ import { AddClassModal } from './modals/AddClassModal'
 import { AddSubjectModal } from './modals/AddSubjectModal'
 import { EditClassModal } from './modals/EditClassModal'
 import type { Class } from '@/lib/types'
+import type { MockClass } from '@/lib/mock-data'
 
 interface ApiResponse<T> {
   success: boolean

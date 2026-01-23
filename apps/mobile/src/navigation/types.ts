@@ -43,6 +43,7 @@ export type ParentTabParamList = {
 // Parent Home Stack (includes all screens accessible from Dashboard)
 export type ParentHomeStackParamList = {
   Dashboard: undefined;
+  ChildSelection: undefined;
   Schedule: undefined;
   Grades: undefined;
   Attendance: undefined;
@@ -80,7 +81,14 @@ export type ParentCommStackNavigationProp = NativeStackNavigationProp<ParentComm
 // Parent Profile Stack
 export type ParentProfileStackParamList = {
   Profile: undefined;
+  UpdateProfile: undefined;
+  ChangePassword: undefined;
+  BiometricAuth: undefined;
+  FAQ: undefined;
+  Support: undefined;
 };
+
+export type ParentProfileStackNavigationProp = NativeStackNavigationProp<ParentProfileStackParamList>;
 
 // ============================================================================
 // Student Tab - Student user tabs
@@ -110,7 +118,14 @@ export type StudentHomeStackNavigationProp = NativeStackNavigationProp<StudentHo
 // Student Profile Stack
 export type StudentProfileStackParamList = {
   Profile: undefined;
+  UpdateProfile: undefined;
+  ChangePassword: undefined;
+  BiometricAuth: undefined;
+  FAQ: undefined;
+  Support: undefined;
 };
+
+export type StudentProfileStackNavigationProp = NativeStackNavigationProp<StudentProfileStackParamList>;
 
 // ============================================================================
 // Generic Navigation Props

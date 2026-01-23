@@ -21,11 +21,11 @@ export function MessagesClient({
   const [selectedConversationId, setSelectedConversationId] = useState<string | undefined>(initialSelectedConversationId)
   const [messages, setMessages] = useState<Message[]>(initialMessages)
 
-  const handleSelectConversation = useCallback(async (id: string) => {
+  const handleSelectConversation = useCallback((id: string) => {
     setSelectedConversationId(id)
-    // In real implementation, fetch messages from API
-    const msgs = await import('@/lib/mock-data').then(m => m.getConversationMessages(id))
-    setMessages(msgs)
+    // TODO: Implement API call to fetch conversation messages
+    // const msgs = await fetchMessages(id)
+    setMessages([])
   }, [])
 
   const handleSendMessage = useCallback((content: string) => {

@@ -324,6 +324,14 @@ EMAIL_SERVER_PASSWORD=your-email-password
 - **Scripts Added**: `check:boolean-props`, `validate`
 - **Known Limitation**: ESLint custom plugin requires published package; standalone script works perfectly
 
+### Recent Cookie Modification Fix ✅
+- **Status**: Completed (January 23, 2026)
+- **Issue**: Next.js App Router forbids cookie mutations during GET requests
+- **Fix**: Removed `cookieStore.delete()` from `getUser()` function (2 locations)
+- **Implementation**: Added architectural comments explaining cookie mutation rules
+- **Result**: Invalid sessions now return null and trigger redirect via `requireAuth()`
+- **Files Changed**: `apps/web/lib/auth.ts`
+
 ### Phase 03: ⏳ New Architecture Compatibility
 - **Status**: Pending
 - **Estimated**: Q1 2026

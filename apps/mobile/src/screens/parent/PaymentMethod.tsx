@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { View, ScrollView, Pressable, TouchableOpacity, Text } from 'react-native';
+import { View, ScrollView, Pressable, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 interface PaymentMethod {
   id: string;
@@ -45,6 +45,153 @@ const PAYMENT_METHODS: PaymentMethod[] = [
   },
 ];
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f1f5f9', // bg-slate-50
+  },
+  header: {
+    backgroundColor: '#3b82f6', // bg-primary
+    paddingTop: 64, // pt-16
+    paddingHorizontal: 24, // px-6
+    paddingBottom: 24, // pb-6
+    borderBottomLeftRadius: 24, // rounded-b-3xl (adjusted for RN)
+    borderBottomRightRadius: 24,
+  },
+  headerTitle: {
+    fontSize: 24, // text-2xl
+    fontWeight: 'bold', // font-bold
+    color: 'white',
+    marginBottom: 4, // mt-1
+  },
+  headerSubtitle: {
+    fontSize: 14, // text-sm
+    color: 'rgba(255, 255, 255, 0.8)', // text-white/80
+  },
+  scrollContent: {
+    paddingHorizontal: 16, // p-4
+    paddingBottom: 96, // pb-24
+  },
+  sectionTitle: {
+    fontSize: 16, // text-base
+    fontWeight: 'bold', // font-bold
+    color: '#1f2937', // text-gray-800
+    marginBottom: 12, // mb-3
+    marginTop: 8, // mt-2
+  },
+  paymentMethodCard: {
+    marginBottom: 12, // mb-3
+    borderRadius: 12, // rounded-xl
+    backgroundColor: 'white',
+    borderWidth: 2,
+    borderColor: 'transparent', // border-transparent
+  },
+  paymentMethodCardSelected: {
+    borderColor: '#3b82f6', // border-primary
+    backgroundColor: '#e0f2fe', // bg-sky-50
+  },
+  paymentMethodContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16, // p-4
+  },
+  paymentMethodLeft: {
+    flex: 1,
+    marginRight: 12, // mr-3
+  },
+  paymentMethodName: {
+    fontSize: 16, // text-base
+    fontWeight: 'bold', // font-bold
+    color: '#1f2937', // text-gray-800
+    marginBottom: 4, // mb-1
+  },
+  paymentMethodDescription: {
+    fontSize: 12, // text-xs
+    color: '#6b7280', // text-gray-500
+    lineHeight: 16, // leading-4
+    marginBottom: 4, // mb-1
+  },
+  paymentMethodFee: {
+    fontSize: 12, // text-xs
+    color: '#f59e0b', // text-warning
+    fontWeight: '600', // font-semibold
+  },
+  radioButtonContainer: {
+    width: 24, // w-6
+    height: 24, // h-6
+    borderRadius: 12, // rounded-full
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioButtonBorder: {
+    borderColor: '#d1d5db', // border-gray-300
+  },
+  radioButtonSelected: {
+    borderColor: '#3b82f6', // border-primary
+    backgroundColor: '#3b82f6', // bg-primary
+  },
+  radioButtonDot: {
+    width: 12, // w-3
+    height: 12, // h-3
+    borderRadius: 6, // rounded-full
+    backgroundColor: 'white',
+  },
+  feeSummaryContainer: {
+    marginTop: 16, // mt-4
+    marginBottom: 16, // mb-4
+    borderRadius: 12, // rounded-xl
+    backgroundColor: 'white',
+    padding: 16, // p-4
+  },
+  feeSummaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8, // mb-2
+  },
+  feeSummaryLabel: {
+    fontSize: 14, // text-sm
+    color: '#6b7280', // text-gray-500
+  },
+  feeSummaryAmount: {
+    fontSize: 14, // text-sm
+    fontWeight: '600', // font-semibold
+    color: '#1f2937', // text-gray-800
+  },
+  feeSummaryTotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 8, // pt-2
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb', // border-gray-200
+  },
+  feeSummaryTotalLabel: {
+    fontSize: 16, // text-base
+    fontWeight: 'bold', // font-bold
+    color: '#1f2937', // text-gray-800
+  },
+  feeSummaryTotalAmount: {
+    fontSize: 18, // text-lg
+    fontWeight: '900', // font-extrabold
+    color: '#3b82f6', // text-primary
+  },
+  continueButton: {
+    marginTop: 8, // mt-2
+    backgroundColor: '#3b82f6', // bg-primary
+    height: 40, // py-2.5
+    borderRadius: 8, // rounded-lg
+    alignItems: 'center',
+  },
+  continueButtonText: {
+    fontSize: 16, // text-base
+    fontWeight: 'bold', // font-bold
+    color: 'white',
+  },
+});
+
 export const PaymentMethodScreen: React.FC = () => {
   const [selectedMethod, setSelectedMethod] = useState('bank_transfer');
 
@@ -58,35 +205,37 @@ export const PaymentMethodScreen: React.FC = () => {
   const selectedMethodData = PAYMENT_METHODS.find(m => m.id === selectedMethod);
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-primary pt-16 px-6 pb-6 rounded-b-3xl">
-        <Text className="text-2xl font-bold text-white">Phương thức thanh toán</Text>
-        <Text className="text-sm text-white/80 mt-1">Chọn cách thức thanh toán phù hợp</Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Phương thức thanh toán</Text>
+        <Text style={styles.headerSubtitle}>Chọn cách thức thanh toán phù hợp</Text>
       </View>
-      <ScrollView contentContainerClassName="p-4 pb-24">
-        <Text className="text-base font-bold text-gray-800 mb-3 mt-2">Chọn phương thức</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.sectionTitle}>Chọn phương thức</Text>
 
         {PAYMENT_METHODS.map((method) => (
           <Pressable
             key={method.id}
             onPress={() => setSelectedMethod(method.id)}
-            className={`mb-3 rounded-xl bg-white border-2 ${
-              selectedMethod === method.id ? 'border-primary bg-sky-50' : 'border-transparent'
-            }`}
+            style={[
+              styles.paymentMethodCard,
+              selectedMethod === method.id && styles.paymentMethodCardSelected
+            ]}
           >
-            <View className="flex-row justify-between items-center p-4">
-              <View className="flex-1 mr-3">
-                <Text className="text-base font-bold text-gray-800 mb-1">{method.name}</Text>
-                <Text className="text-xs text-gray-500 leading-4 mb-1">{method.description}</Text>
+            <View style={styles.paymentMethodContent}>
+              <View style={styles.paymentMethodLeft}>
+                <Text style={styles.paymentMethodName}>{method.name}</Text>
+                <Text style={styles.paymentMethodDescription}>{method.description}</Text>
                 {method.fee > 0 && (
-                  <Text className="text-xs text-warning font-semibold">Phí dịch vụ: {formatCurrency(method.fee)}</Text>
+                  <Text style={styles.paymentMethodFee}>Phí dịch vụ: {formatCurrency(method.fee)}</Text>
                 )}
               </View>
-              <View className={`w-6 h-6 rounded-full border-2 ${
-                selectedMethod === method.id ? 'border-primary bg-primary' : 'border-gray-300'
-              } items-center justify-center`}>
+              <View style={[
+                styles.radioButtonContainer,
+                selectedMethod === method.id ? styles.radioButtonSelected : styles.radioButtonBorder
+              ]}>
                 {selectedMethod === method.id && (
-                  <View className="w-3 h-3 rounded-full bg-white" />
+                  <View style={styles.radioButtonDot} />
                 )}
               </View>
             </View>
@@ -95,18 +244,18 @@ export const PaymentMethodScreen: React.FC = () => {
 
         {/* Fee Summary */}
         {selectedMethodData && selectedMethodData.fee > 0 && (
-          <View className="mt-4 mb-4 rounded-xl bg-white p-4">
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-sm text-gray-500">Số tiền thanh toán:</Text>
-              <Text className="text-sm font-semibold text-gray-800">5,000,000 VND</Text>
+          <View style={styles.feeSummaryContainer}>
+            <View style={styles.feeSummaryRow}>
+              <Text style={styles.feeSummaryLabel}>Số tiền thanh toán:</Text>
+              <Text style={styles.feeSummaryAmount}>5,000,000 VND</Text>
             </View>
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-sm text-gray-500">Phí dịch vụ:</Text>
-              <Text className="text-sm font-semibold text-gray-800">{formatCurrency(selectedMethodData.fee)}</Text>
+            <View style={styles.feeSummaryRow}>
+              <Text style={styles.feeSummaryLabel}>Phí dịch vụ:</Text>
+              <Text style={styles.feeSummaryAmount}>{formatCurrency(selectedMethodData.fee)}</Text>
             </View>
-            <View className="flex-row justify-between items-center pt-2 border-t border-gray-200">
-              <Text className="text-base font-bold text-gray-800">Tổng cộng:</Text>
-              <Text className="text-lg font-extrabold text-primary">
+            <View style={styles.feeSummaryTotal}>
+              <Text style={styles.feeSummaryTotalLabel}>Tổng cộng:</Text>
+              <Text style={styles.feeSummaryTotalAmount}>
                 {formatCurrency(5000000 + selectedMethodData.fee)}
               </Text>
             </View>
@@ -115,9 +264,9 @@ export const PaymentMethodScreen: React.FC = () => {
 
         <TouchableOpacity
           onPress={() => {}}
-          className="mt-2 bg-primary py-2.5 rounded-lg items-center"
+          style={styles.continueButton}
         >
-          <Text className="text-base font-bold text-white">Tiếp tục</Text>
+          <Text style={styles.continueButtonText}>Tiếp tục</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>

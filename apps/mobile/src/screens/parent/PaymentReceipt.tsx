@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { View, ScrollView, Share, TouchableOpacity, Text } from 'react-native';
+import { View, ScrollView, Share, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { colors } from '../../theme';
 
 interface ReceiptData {
@@ -28,6 +28,168 @@ const MOCK_RECEIPT: ReceiptData = {
   studentName: 'Nguyễn Hoàng B',
   studentClass: '10A',
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  header: {
+    backgroundColor: '#0284C7',
+    paddingTop: 64,
+    paddingBottom: 24,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 8,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 96,
+  },
+  successContainer: {
+    alignItems: 'center',
+    paddingTop: 32,
+  },
+  successCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#dcfce7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  successIcon: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    color: '#16a34a',
+  },
+  successTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  successAmount: {
+    fontSize: 28,
+    fontWeight: 'extrabold',
+    color: '#0284C7',
+  },
+  receiptCard: {
+    marginBottom: 16,
+    borderRadius: 16,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 1,
+    borderColor: '#e5e7eb',
+    borderWidth: 1,
+  },
+  receiptContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  receiptHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  receiptTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  receiptId: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#e5e7eb',
+    marginVertical: 16,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.05,
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  label: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+    width: 100,
+  },
+  value: {
+    fontSize: 14,
+    color: '#1f2937',
+    fontWeight: '600',
+    textAlign: 'right',
+    flex: 1,
+    marginLeft: 16,
+  },
+  valueAmount: {
+    color: '#0284C7',
+    fontSize: 16,
+    fontWeight: 'extrabold',
+  },
+  shareButton: {
+    backgroundColor: '#0284C7',
+    borderRadius: 12,
+    paddingVertical: 12,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  shareButtonText: {
+    color: 'white',
+    fontWeight: '600',
+  },
+  pdfButton: {
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    paddingVertical: 12,
+    marginBottom: 12,
+    alignItems: 'center',
+    borderColor: '#0284C7',
+    borderWidth: 2,
+  },
+  pdfButtonText: {
+    color: '#0284C7',
+    fontWeight: '600',
+  },
+  homeButton: {
+    borderRadius: 12,
+    paddingVertical: 12,
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  homeButtonText: {
+    color: '#4b5563',
+    fontWeight: '500',
+  },
+});
 
 export const PaymentReceiptScreen: React.FC = () => {
   const formatCurrency = (amount: number) => {
@@ -59,91 +221,87 @@ export const PaymentReceiptScreen: React.FC = () => {
   };
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View style={styles.container}>
       {/* Header */}
-      <View className="bg-[#0284C7] pt-16 px-6 pb-6 rounded-b-3xl">
-        <Text className="text-2xl font-bold text-white">Biên lai thanh toán</Text>
-        <Text className="text-sm text-white/80 mt-1">Xác nhận thanh toán thành công</Text>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Biên lai thanh toán</Text>
+        <Text style={styles.headerSubtitle}>Xác nhận thanh toán thành công</Text>
       </View>
 
-      <ScrollView contentContainerClassName="p-4 pb-24">
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Success Icon */}
-        <View className="items-center py-8">
-          <View className="w-20 h-20 rounded-full bg-green-100 justify-center items-center mb-4">
-            <Text className="text-5xl text-green-600 font-bold">✓</Text>
+        <View style={styles.successContainer}>
+          <View style={styles.successCircle}>
+            <Text style={styles.successIcon}>✓</Text>
           </View>
-          <Text className="text-xl font-bold text-gray-800 mb-2">Thanh toán thành công!</Text>
-          <Text className="text-2xl font-extrabold text-[#0284C7]">
+          <Text style={styles.successTitle}>Thanh toán thành công!</Text>
+          <Text style={styles.successAmount}>
             {formatCurrency(MOCK_RECEIPT.amount)}
           </Text>
         </View>
 
         {/* Receipt Card */}
-        <View className="mb-4 rounded-2xl bg-white shadow-sm border border-gray-200">
-          <View className="p-4">
+        <View style={styles.receiptCard}>
+          <View style={styles.receiptContent}>
             {/* Header */}
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-lg font-bold text-gray-800">Biên lai</Text>
-              <Text className="text-sm text-gray-500 font-medium">#{MOCK_RECEIPT.id}</Text>
+            <View style={styles.receiptHeader}>
+              <Text style={styles.receiptTitle}>Biên lai</Text>
+              <Text style={styles.receiptId}>#{MOCK_RECEIPT.id}</Text>
             </View>
 
             {/* Divider */}
-            <View className="h-px bg-gray-200 my-4" />
+            <View style={styles.divider} />
 
             {/* Payment Info */}
-            <View className="mb-2">
-              <Text className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
-                Thông tin thanh toán
-              </Text>
-              <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-sm text-gray-500 font-medium">Loại khoản:</Text>
-                <Text className="text-sm text-gray-800 font-semibold text-right flex-1 ml-4">
+            <View>
+              <Text style={styles.sectionTitle}>Thông tin thanh toán</Text>
+              <View style={styles.rowContainer}>
+                <Text style={styles.label}>Loại khoản:</Text>
+                <Text style={styles.value}>
                   {MOCK_RECEIPT.type}
                 </Text>
               </View>
-              <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-sm text-gray-500 font-medium">Số tiền:</Text>
-                <Text className="text-base font-extrabold text-[#0284C7] text-right flex-1 ml-4">
+              <View style={styles.rowContainer}>
+                <Text style={styles.label}>Số tiền:</Text>
+                <Text style={[styles.value, styles.valueAmount]}>
                   {formatCurrency(MOCK_RECEIPT.amount)}
                 </Text>
               </View>
-              <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-sm text-gray-500 font-medium">Ngày thanh toán:</Text>
-                <Text className="text-sm text-gray-800 font-semibold text-right flex-1 ml-4">
+              <View style={styles.rowContainer}>
+                <Text style={styles.label}>Ngày thanh toán:</Text>
+                <Text style={styles.value}>
                   {formatDate(MOCK_RECEIPT.paymentDate)}
                 </Text>
               </View>
-              <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-sm text-gray-500 font-medium">Phương thức:</Text>
-                <Text className="text-sm text-gray-800 font-semibold text-right flex-1 ml-4">
+              <View style={styles.rowContainer}>
+                <Text style={styles.label}>Phương thức:</Text>
+                <Text style={styles.value}>
                   {MOCK_RECEIPT.paymentMethod}
                 </Text>
               </View>
-              <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-sm text-gray-500 font-medium">Mã giao dịch:</Text>
-                <Text className="text-sm text-gray-800 font-semibold text-right flex-1 ml-4">
+              <View style={styles.rowContainer}>
+                <Text style={styles.label}>Mã giao dịch:</Text>
+                <Text style={styles.value}>
                   {MOCK_RECEIPT.transactionId}
                 </Text>
               </View>
             </View>
 
             {/* Divider */}
-            <View className="h-px bg-gray-200 my-4" />
+            <View style={styles.divider} />
 
             {/* Student Info */}
-            <View className="mb-2">
-              <Text className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
-                Thông tin học sinh
-              </Text>
-              <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-sm text-gray-500 font-medium">Họ và tên:</Text>
-                <Text className="text-sm text-gray-800 font-semibold text-right flex-1 ml-4">
+            <View>
+              <Text style={styles.sectionTitle}>Thông tin học sinh</Text>
+              <View style={styles.rowContainer}>
+                <Text style={styles.label}>Họ và tên:</Text>
+                <Text style={styles.value}>
                   {MOCK_RECEIPT.studentName}
                 </Text>
               </View>
-              <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-sm text-gray-500 font-medium">Lớp:</Text>
-                <Text className="text-sm text-gray-800 font-semibold text-right flex-1 ml-4">
+              <View style={styles.rowContainer}>
+                <Text style={styles.label}>Lớp:</Text>
+                <Text style={styles.value}>
                   {MOCK_RECEIPT.studentClass}
                 </Text>
               </View>
@@ -154,23 +312,23 @@ export const PaymentReceiptScreen: React.FC = () => {
         {/* Action Buttons */}
         <TouchableOpacity
           onPress={handleShare}
-          className="bg-[#0284C7] rounded-xl py-3 mb-3 items-center"
+          style={styles.shareButton}
         >
-          <Text className="text-white font-semibold">Chia sẻ biên lai</Text>
+          <Text style={styles.shareButtonText}>Chia sẻ biên lai</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => {}}
-          className="border-2 border-[#0284C7] rounded-xl py-3 mb-3 items-center bg-transparent"
+          style={styles.pdfButton}
         >
-          <Text className="text-[#0284C7] font-semibold">Tải về PDF</Text>
+          <Text style={styles.pdfButtonText}>Tải về PDF</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => {}}
-          className="rounded-xl py-3 mt-2 items-center"
+          style={styles.homeButton}
         >
-          <Text className="text-gray-600 font-medium">Về trang chủ</Text>
+          <Text style={styles.homeButtonText}>Về trang chủ</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>

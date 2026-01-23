@@ -7,8 +7,6 @@
  * Login identifiers:
  * - Parent: phone number or email
  * - Student: student_code (ST2024001) or email
- * - Teacher: employee_code (TC001) or email
- * - Admin: admin_code (AD001) or email
  */
 
 import { create } from 'zustand';
@@ -16,16 +14,12 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import from shared-types
-import type { User, UserRole, Student, Parent, Teacher, Admin } from '@school-management/shared-types';
+import type { User, UserRole } from '@school-management/shared-types';
 import { supabase } from '@/lib/supabase/client';
-import { logInfo, logWarn, logError, logDebug } from '@/lib/logger';
 
-// Debug logger using custom logger
-const log = {
-  info: (tag: string, ...args: any[]) => logInfo(`AUTH:${tag}`, args.join(' ')),
-  warn: (tag: string, ...args: any[]) => logWarn(`AUTH:${tag}`, args.join(' ')),
-  error: (tag: string, ...args: any[]) => logError(`AUTH:${tag}`, args.join(' ')),
-  debug: (tag: string, ...args: any[]) => logDebug(`AUTH:${tag}`, args.join(' ')),
+// Debug logger
+const log = (tag: string, ...args: any[]) => {
+  console.log(`[AUTH:${tag}]`, ...args);
 };
 
 interface AuthState {
@@ -52,40 +46,12 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
 
   log('IDENTIFIER_LOOKUP', `Looking up identifier: "${identifier}" (normalized: "${normalizedId}")`);
 
-  // 1. Check admin_code
-  if (normalizedId.startsWith('AD')) {
-    log('IDENTIFIER_LOOKUP', 'Checking admin_code...');
-    const { data, error } = await supabase
-      .from('admins')
-      .select('email, profiles!inner(status)')
-      .eq('admin_code', normalizedId)
-      .eq('profiles.status', 'active')
-      .maybeSingle();
-
-    log('IDENTIFIER_LOOKUP', 'Admin lookup result:', { data, error });
-    if (data?.email) return data.email;
-  }
-
-  // 2. Check employee_code
-  if (normalizedId.startsWith('TC')) {
-    log('IDENTIFIER_LOOKUP', 'Checking employee_code...');
-    const { data, error } = await supabase
-      .from('teachers')
-      .select('email, profiles!inner(status)')
-      .eq('employee_code', normalizedId)
-      .eq('profiles.status', 'active')
-      .maybeSingle();
-
-    log('IDENTIFIER_LOOKUP', 'Teacher lookup result:', { data, error });
-    if (data?.email) return data.email;
-  }
-
-  // 3. Check student_code
+  // 1. Check student_code
   if (normalizedId.startsWith('ST')) {
     log('IDENTIFIER_LOOKUP', 'Checking student_code...');
     const { data, error } = await supabase
       .from('students')
-      .select('profiles!inner(email, status)')
+      .select('profiles!students_id_fkey(email, status)')
       .eq('student_code', normalizedId)
       .eq('profiles.status', 'active')
       .maybeSingle();
@@ -94,7 +60,7 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
     if (data?.profiles?.email) return data.profiles.email;
   }
 
-  // 4. Check phone number (for parents)
+  // 2. Check phone number (for parents)
   const cleanPhone = identifier.replace(/\s/g, '');
   if (/^\d{10,11}$/.test(cleanPhone)) {
     log('IDENTIFIER_LOOKUP', `Checking phone: ${cleanPhone}`);
@@ -110,14 +76,15 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
     if (data?.email) return data.email;
   }
 
-  // 5. Check email directly
+  // 3. Check email directly (for both students and parents)
   if (identifier.includes('@')) {
     log('IDENTIFIER_LOOKUP', `Checking email: ${identifier.toLowerCase()}`);
     const { data, error } = await supabase
       .from('profiles')
-      .select('email')
+      .select('email, role')
       .eq('email', identifier.toLowerCase())
       .eq('status', 'active')
+      .in('role', ['student', 'parent'])
       .maybeSingle();
 
     log('IDENTIFIER_LOOKUP', 'Email lookup result:', { data, error });

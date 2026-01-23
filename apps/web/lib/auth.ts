@@ -38,7 +38,8 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
       .eq('status', 'active')
       .single();
 
-    if (data?.email) return data.email;
+    const result = data as { email: string } | null;
+    if (result?.email) return result.email;
   }
 
   // 2. Check employee_code (teacher)
@@ -51,7 +52,8 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
       .eq('status', 'active')
       .single();
 
-    if (data?.email) return data.email;
+    const result = data as { email: string } | null;
+    if (result?.email) return result.email;
   }
 
   // 3. Check student_code
@@ -62,7 +64,8 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
       .eq('student_code', normalizedId)
       .single();
 
-    if (data?.profiles?.email) return data.profiles.email;
+    const result = data as { profiles: { email: string } } | null;
+    if (result?.profiles?.email) return result.profiles.email;
   }
 
   // 4. Check phone number (for parents)
@@ -76,7 +79,8 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
       .eq('status', 'active')
       .single();
 
-    if (data?.email) return data.email;
+    const result = data as { email: string } | null;
+    if (result?.email) return result.email;
   }
 
   // 5. Check email directly
@@ -88,7 +92,8 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
       .eq('status', 'active')
       .single();
 
-    if (data?.email) return data.email;
+    const result = data as { email: string } | null;
+    if (result?.email) return result.email;
   }
 
   return null;
@@ -110,11 +115,13 @@ async function getUserProfile(userId: string): Promise<User | null> {
     return null;
   }
 
+  const profile = data as { id: string; email: string; role: string; full_name?: string };
+
   return {
-    id: data.id,
-    email: data.email,
-    name: data.full_name || data.email.split('@')[0],
-    role: data.role as UserRole,
+    id: profile.id,
+    email: profile.email,
+    name: profile.full_name || profile.email.split('@')[0],
+    role: profile.role as UserRole,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -219,6 +226,8 @@ export async function logout() {
   await supabase.auth.signOut();
 
   // Clear auth cookie
+  // NOTE: Cookie deletion allowed here during POST (Server Action)
+  // but NOT in getUser() during GET (page rendering)
   const cookieStore = await cookies();
   cookieStore.delete(AUTH_COOKIE_NAME);
 
@@ -228,6 +237,10 @@ export async function logout() {
 /**
  * Get current authenticated user from cookie
  * Validates session with Supabase
+ *
+ * NOTE: Cannot delete cookies here - Next.js App Router forbids cookie mutations
+ * during GET requests (page rendering). Invalid sessions return null and trigger
+ * redirect via requireAuth(). Cookie cleanup happens in logout() Server Action.
  */
 export async function getUser(): Promise<User | null> {
   const cookieStore = await cookies();
@@ -245,15 +258,13 @@ export async function getUser(): Promise<User | null> {
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
-      // Session expired, clear cookie
-      cookieStore.delete(AUTH_COOKIE_NAME);
+      // Session expired - return null, let requireAuth handle redirect
       return null;
     }
 
     return user;
   } catch {
-    // Invalid cookie format
-    cookieStore.delete(AUTH_COOKIE_NAME);
+    // Invalid cookie format - return null, let requireAuth handle redirect
     return null;
   }
 }

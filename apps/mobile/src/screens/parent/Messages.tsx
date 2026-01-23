@@ -4,10 +4,15 @@
  */
 
 import React from 'react';
-import { View, FlatList, TouchableOpacity, Text } from 'react-native';
+import { View, FlatList, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useParentStore } from '../../stores';
 import { colors } from '../../theme';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { ScreenHeader } from '../../components/ui';
+import type { ParentCommStackNavigationProp } from '../../navigation/types';
+
+interface MessagesScreenProps {
+  navigation: ParentCommStackNavigationProp;
+}
 
 interface Message {
   id: string;
@@ -67,6 +72,116 @@ interface MessagesScreenProps {
   navigation: NativeStackNavigationProp<any>;
 }
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  headerChildInfo: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0284C7',
+    textTransform: 'uppercase',
+  },
+  messageContainer: {
+    marginBottom: 12,
+    borderRadius: 12,
+  },
+  messageUnread: {
+    backgroundColor: '#F0F9FF',
+    borderWidth: 1,
+    borderColor: '#0EA5E9',
+  },
+  messageRead: {
+    backgroundColor: 'white',
+  },
+  messageContent: {
+    flexDirection: 'row',
+    padding: 12,
+    paddingTop: 8,
+    paddingBottom: 8,
+  },
+  avatarContainer: {
+    marginRight: 12,
+    position: 'relative',
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    backgroundColor: '#E0F2FE',
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+  onlineIndicator: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 14,
+    height: 14,
+    backgroundColor: '#22C55E',
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  unreadBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 20,
+    height: 20,
+    backgroundColor: colors.error,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 20,
+  },
+  unreadBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  messageTextContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  messageHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  teacherName: {
+    color: '#111827',
+    fontSize: 16,
+    fontWeight: 'extrabold',
+  },
+  messageTime: {
+    color: '#9CA3AF',
+    fontSize: 12,
+  },
+  subject: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 4,
+    color: colors.primary,
+  },
+  lastMessage: {
+    color: '#4B5563',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  flatListContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 96,
+  },
+});
+
 export const MessagesScreen: React.FC<MessagesScreenProps> = ({ navigation }) => {
   const { children, selectedChildId } = useParentStore();
   const selectedChild = children.find(c => c.id === selectedChildId) || children[0];
@@ -75,53 +190,42 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({ navigation }) =>
     <TouchableOpacity
       onPress={() => (navigation as any).navigate('ChatDetail', { messageId: item.id })}
       activeOpacity={0.7}
-      className={`mb-3 rounded-2xl ${item.unreadCount > 0 ? 'bg-sky-50 border border-sky-600' : 'bg-white'}`}
+      style={[
+        styles.messageContainer,
+        item.unreadCount > 0 ? styles.messageUnread : styles.messageRead,
+      ]}
     >
-      <View className="flex-row p-3 py-2">
-        <View className="relative mr-3">
-          <View
-            className="rounded-full justify-center items-center"
-            style={{ width: 56, height: 56, backgroundColor: '#E0F2FE' }}
-          >
-            <Text className="text-base font-bold" style={{ color: colors.primary }}>
+      <View style={styles.messageContent}>
+        <View style={styles.avatarContainer}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
               {item.teacherAvatar}
             </Text>
           </View>
           {item.isOnline && (
-            <View
-              className="absolute bottom-0.5 right-0.5 rounded-full border-2 border-white"
-              style={{ width: 14, height: 14, backgroundColor: '#22C55E' }}
-            />
+            <View style={styles.onlineIndicator} />
           )}
           {item.unreadCount > 0 && (
-            <View
-              className="absolute -top-1 -right-1 rounded-full justify-center items-center"
-              style={{
-                width: 20,
-                height: 20,
-                backgroundColor: colors.error,
-                minWidth: 20,
-              }}
-            >
-              <Text className="text-white text-[10px] font-bold">
+            <View style={styles.unreadBadge}>
+              <Text style={styles.unreadBadgeText}>
                 {item.unreadCount > 9 ? '9+' : item.unreadCount}
               </Text>
             </View>
           )}
         </View>
-        <View className="flex-1 justify-center">
-          <View className="flex-row justify-between items-center mb-1">
-            <Text className="text-gray-900 text-base font-extrabold">
+        <View style={styles.messageTextContainer}>
+          <View style={styles.messageHeader}>
+            <Text style={styles.teacherName}>
               {item.teacherName}
             </Text>
-            <Text className="text-gray-400 text-xs">
+            <Text style={styles.messageTime}>
               {item.time}
             </Text>
           </View>
-          <Text className="text-xs font-semibold mb-1" style={{ color: colors.primary }}>
+          <Text style={styles.subject}>
             {item.subject}
           </Text>
-          <Text className="text-gray-600 text-[13px] leading-[18px]" numberOfLines={2}>
+          <Text style={styles.lastMessage} numberOfLines={2}>
             {item.lastMessage}
           </Text>
         </View>
@@ -130,23 +234,21 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({ navigation }) =>
   );
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View
-        className="bg-primary pt-16 px-6 pb-6"
-        style={{ borderBottomLeftRadius: 20, borderBottomRightRadius: 20, backgroundColor: colors.primary }}
-      >
-        <Text className="text-white text-2xl font-extrabold">Tin nhắn</Text>
-        {selectedChild && (
-          <Text className="text-white/80 text-sm mt-1">
-            {selectedChild.name} • Lớp {selectedChild.grade}{selectedChild.section}
+    <View style={styles.container}>
+      <ScreenHeader
+        title="Tin nhắn"
+        showBackButton={false}
+        rightComponent={selectedChild ? (
+          <Text style={styles.headerChildInfo}>
+            {selectedChild.grade}{selectedChild.section}
           </Text>
-        )}
-      </View>
+        ) : undefined}
+      />
       <FlatList
         data={MOCK_MESSAGES}
         renderItem={renderMessage}
         keyExtractor={(item) => item.id}
-        contentContainerClassName="p-4 pb-24"
+        contentContainerStyle={styles.flatListContent}
         showsVerticalScrollIndicator={false}
       />
     </View>

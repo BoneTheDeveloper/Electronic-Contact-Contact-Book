@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getStudentsByClass } from '@/lib/supabase/queries'
+import { getStudentsByClass, getClassManagementData } from '@/lib/supabase/queries'
 
 export async function GET(
   request: Request,

@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuthStore } from '../stores';
@@ -12,16 +13,10 @@ import AuthNavigator from './AuthNavigator';
 import ParentTabs from './ParentTabs';
 import StudentTabs from './StudentTabs';
 
-// Placeholder screens for other roles
-const TeacherDashboard = () => null;
-const AdminDashboard = () => null;
-
 export type RootStackParamList = {
   Auth: undefined;
   Parent: undefined;
   Student: undefined;
-  Teacher: undefined;
-  Admin: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -29,8 +24,16 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const RootNavigator: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore();
 
+  console.log('[RootNavigator] Render:', { isAuthenticated, userRole: user?.role });
+
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      linking={undefined}
+      documentTitle={{
+        formatter: (options, route) =>
+          `${route?.name ?? 'EContact'} - EContact School`,
+      }}
+    >
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated ? (
           <Stack.Screen name="Auth" component={AuthNavigator} />
@@ -38,10 +41,9 @@ const RootNavigator: React.FC = () => {
           <Stack.Screen name="Parent" component={ParentTabs} />
         ) : user?.role === 'student' ? (
           <Stack.Screen name="Student" component={StudentTabs} />
-        ) : user?.role === 'teacher' ? (
-          <Stack.Screen name="Teacher" component={TeacherDashboard} />
         ) : (
-          <Stack.Screen name="Admin" component={AdminDashboard} />
+          // Fallback to auth if role is not parent or student
+          <Stack.Screen name="Auth" component={AuthNavigator} />
         )}
       </Stack.Navigator>
     </NavigationContainer>

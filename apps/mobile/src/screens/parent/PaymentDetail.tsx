@@ -4,13 +4,165 @@
  */
 
 import React from 'react'
-import { View, ScrollView, Text, TouchableOpacity } from 'react-native'
+import { View, ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { getFeesByStudentId } from '../../mock-data'
 import { colors } from '../../theme'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { ParentHomeStackParamList } from '../../navigation/types'
 
 type PaymentDetailProps = NativeStackScreenProps<ParentHomeStackParamList, 'PaymentDetail'>
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  headerContainer: {
+    backgroundColor: '#2563eb',
+    paddingTop: 60,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 16,
+    paddingBottom: 100,
+  },
+  feeCard: {
+    marginBottom: 16,
+    borderRadius: 16,
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  feeCardInner: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  feeTypeText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  statusBadge: {
+    height: 28,
+    paddingHorizontal: 8,
+    borderRadius: 14,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  amountText: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#2563eb',
+    marginBottom: 20,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#e5e7eb',
+    marginBottom: 16,
+  },
+  labelText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  valueText: {
+    fontSize: 14,
+    color: '#1f2937',
+    fontWeight: '600',
+  },
+  studentCard: {
+    marginBottom: 16,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#f3f4f6',
+  },
+  studentCardInner: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  studentCardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 12,
+  },
+  primaryButton: {
+    marginBottom: 12,
+    backgroundColor: '#2563eb',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  primaryButtonInner: {
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  secondaryButton: {
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: '#2563eb',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  secondaryButtonInner: {
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2563eb',
+  },
+  receiptButton: {
+    borderWidth: 2,
+    borderColor: '#2563eb',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  receiptButtonInner: {
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  receiptButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2563eb',
+  },
+})
 
 export const PaymentDetailScreen: React.FC<PaymentDetailProps> = ({ route }) => {
   const { paymentId } = route.params
@@ -19,7 +171,7 @@ export const PaymentDetailScreen: React.FC<PaymentDetailProps> = ({ route }) => 
 
   if (!fee) {
     return (
-      <View className="flex-1 bg-slate-50">
+      <View style={styles.container}>
         <Text>Không tìm thấy thông tin thanh toán</Text>
       </View>
     )
@@ -54,47 +206,46 @@ export const PaymentDetailScreen: React.FC<PaymentDetailProps> = ({ route }) => 
   const config = STATUS_CONFIG[fee.status]
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-blue-600 pt-15 px-6 pb-6 rounded-b-3xl">
-        <Text className="text-2xl font-bold text-white">Chi tiết thanh toán</Text>
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerText}>Chi tiết thanh toán</Text>
       </View>
-      <ScrollView contentContainerClassName="p-4 pb-25">
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Main Fee Card */}
-        <View className="mb-4 rounded-2xl bg-white shadow-md">
-          <View className="p-4">
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-lg font-bold text-gray-800">{FEE_TYPE_LABELS[fee.type]}</Text>
+        <View style={styles.feeCard}>
+          <View style={styles.feeCardInner}>
+            <View style={styles.rowContainer}>
+              <Text style={styles.feeTypeText}>{FEE_TYPE_LABELS[fee.type]}</Text>
               <View
-                className="h-7 px-2 rounded-full flex justify-center items-center"
-                style={{ backgroundColor: config.bgColor }}
+                style={[styles.statusBadge, { backgroundColor: config.bgColor }]}
               >
-                <Text className="text-xs font-bold uppercase" style={{ color: config.color }}>
+                <Text style={[styles.statusText, { color: config.color }]}>
                   {config.label}
                 </Text>
               </View>
             </View>
-            <Text className="text-3xl font-extrabold text-blue-600 mb-5">
+            <Text style={styles.amountText}>
               {formatCurrency(fee.amount)}
             </Text>
 
-            <View className="h-px bg-gray-200 mb-4" />
+            <View style={styles.divider} />
 
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-sm text-gray-500 font-medium">Mã khoản:</Text>
-              <Text className="text-sm text-gray-800 font-semibold">#{fee.id}</Text>
+            <View style={styles.rowContainer}>
+              <Text style={styles.labelText}>Mã khoản:</Text>
+              <Text style={styles.valueText}>#{fee.id}</Text>
             </View>
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-sm text-gray-500 font-medium">Ngày tạo:</Text>
-              <Text className="text-sm text-gray-800 font-semibold">01/01/2026</Text>
+            <View style={styles.rowContainer}>
+              <Text style={styles.labelText}>Ngày tạo:</Text>
+              <Text style={styles.valueText}>01/01/2026</Text>
             </View>
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-sm text-gray-500 font-medium">Hạn chót:</Text>
-              <Text className="text-sm text-gray-800 font-semibold">{formatDate(fee.dueDate)}</Text>
+            <View style={styles.rowContainer}>
+              <Text style={styles.labelText}>Hạn chót:</Text>
+              <Text style={styles.valueText}>{formatDate(fee.dueDate)}</Text>
             </View>
             {fee.paidDate && (
-              <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-sm text-gray-500 font-medium">Ngày thanh toán:</Text>
-                <Text className="text-sm text-gray-800 font-semibold">
+              <View style={styles.rowContainer}>
+                <Text style={styles.labelText}>Ngày thanh toán:</Text>
+                <Text style={styles.valueText}>
                   {formatDate(fee.paidDate)}
                 </Text>
               </View>
@@ -103,20 +254,20 @@ export const PaymentDetailScreen: React.FC<PaymentDetailProps> = ({ route }) => 
         </View>
 
         {/* Student Info Card */}
-        <View className="mb-4 rounded-xl bg-white border border-gray-100">
-          <View className="p-4">
-            <Text className="text-base font-bold text-gray-800 mb-3">Thông tin học sinh</Text>
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-sm text-gray-500 font-medium">Họ và tên:</Text>
-              <Text className="text-sm text-gray-800 font-semibold">Nguyễn Hoàng B</Text>
+        <View style={styles.studentCard}>
+          <View style={styles.studentCardInner}>
+            <Text style={styles.studentCardTitle}>Thông tin học sinh</Text>
+            <View style={styles.rowContainer}>
+              <Text style={styles.labelText}>Họ và tên:</Text>
+              <Text style={styles.valueText}>Nguyễn Hoàng B</Text>
             </View>
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-sm text-gray-500 font-medium">Lớp:</Text>
-              <Text className="text-sm text-gray-800 font-semibold">10A</Text>
+            <View style={styles.rowContainer}>
+              <Text style={styles.labelText}>Lớp:</Text>
+              <Text style={styles.valueText}>10A</Text>
             </View>
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-sm text-gray-500 font-medium">Năm học:</Text>
-              <Text className="text-sm text-gray-800 font-semibold">2025-2026</Text>
+            <View style={styles.rowContainer}>
+              <Text style={styles.labelText}>Năm học:</Text>
+              <Text style={styles.valueText}>2025-2026</Text>
             </View>
           </View>
         </View>
@@ -126,18 +277,18 @@ export const PaymentDetailScreen: React.FC<PaymentDetailProps> = ({ route }) => 
           <>
             <TouchableOpacity
               onPress={() => {}}
-              className="mb-3 bg-blue-600 rounded-xl overflow-hidden"
+              style={styles.primaryButton}
             >
-              <View className="py-2 items-center justify-center">
-                <Text className="text-base font-bold text-white">Thanh toán ngay</Text>
+              <View style={styles.primaryButtonInner}>
+                <Text style={styles.primaryButtonText}>Thanh toán ngay</Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {}}
-              className="mb-3 border-2 border-blue-600 rounded-xl overflow-hidden"
+              style={styles.secondaryButton}
             >
-              <View className="py-2 items-center justify-center">
-                <Text className="text-base font-semibold text-blue-600">
+              <View style={styles.secondaryButtonInner}>
+                <Text style={styles.secondaryButtonText}>
                   Chọn phương thức thanh toán
                 </Text>
               </View>
@@ -148,10 +299,10 @@ export const PaymentDetailScreen: React.FC<PaymentDetailProps> = ({ route }) => 
         {fee.status === 'paid' && (
           <TouchableOpacity
             onPress={() => {}}
-            className="border-2 border-blue-600 rounded-xl overflow-hidden"
+            style={styles.receiptButton}
           >
-            <View className="py-2 items-center justify-center flex-row gap-2">
-              <Text className="text-base font-semibold text-blue-600">Xem biên lai</Text>
+            <View style={styles.receiptButtonInner}>
+              <Text style={styles.receiptButtonText}>Xem biên lai</Text>
             </View>
           </TouchableOpacity>
         )}

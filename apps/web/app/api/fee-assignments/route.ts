@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
         total_students: totalStudents,
         total_amount: totalAmount,
         status: 'draft'
-      })
+      } as any) // Type cast to bypass Supabase type inference issue
       .select()
       .single()
 

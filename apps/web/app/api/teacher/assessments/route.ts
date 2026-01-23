@@ -7,7 +7,15 @@ export async function GET(request: Request) {
   const classId = searchParams.get('classId') || undefined
   const status = searchParams.get('status') as 'evaluated' | 'pending' | 'needs-attention' | undefined
 
-  const assessments = await getRegularAssessments(teacherId, { classId, status })
+  // Filter assessments based on query params (done client-side for now)
+  let assessments = await getRegularAssessments(teacherId)
+
+  if (classId) {
+    assessments = assessments.filter(a => a.classId === classId)
+  }
+  if (status) {
+    assessments = assessments.filter(a => a.status === status)
+  }
 
   return NextResponse.json({
     success: true,

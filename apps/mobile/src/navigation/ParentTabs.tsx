@@ -7,7 +7,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, Text } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import Svg, { Path, Polyline, Circle } from 'react-native-svg';
 import { useUIStore } from '../stores';
 import {
@@ -18,11 +18,20 @@ import {
   TeacherFeedbackScreen,
   SummaryScreen,
   LeaveRequestScreen,
+  ChildSelectionScreen,
 } from '../screens/parent';
 import { PaymentOverviewScreen, PaymentDetailScreen, PaymentMethodScreen, PaymentReceiptScreen } from '../screens/parent';
 import { MessagesScreen, NotificationsScreen, NewsScreen } from '../screens/parent';
 import { TeacherDirectoryScreen } from '../screens/parent';
-import type { ParentTabParamList, ParentHomeStackParamList } from './types';
+import {
+  ProfileScreen,
+  UpdateProfileScreen,
+  ChangePasswordScreen,
+  BiometricAuthScreen,
+  FAQScreen,
+  SupportScreen,
+} from '../screens/profile';
+import type { ParentTabParamList, ParentHomeStackParamList, ParentProfileStackParamList } from './types';
 
 // Home Stack (Dashboard + all service screens accessible from dashboard)
 // Including News and Payment screens for dashboard navigation
@@ -30,6 +39,7 @@ const HomeStack = createNativeStackNavigator<ParentHomeStackParamList>();
 const HomeStackNavigator = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
     <HomeStack.Screen name="Dashboard" component={DashboardScreen} />
+    <HomeStack.Screen name="ChildSelection" component={ChildSelectionScreen} />
     <HomeStack.Screen name="Schedule" component={ScheduleScreen} />
     <HomeStack.Screen name="Grades" component={GradesScreen} />
     <HomeStack.Screen name="Attendance" component={AttendanceScreen} />
@@ -56,23 +66,22 @@ const CommStackNavigator = () => (
   </CommStack.Navigator>
 );
 
-// Profile Stack (placeholder for now)
-const ProfileStack = createNativeStackNavigator();
-const ProfileScreen = () => (
-  <View className="flex-1 justify-center items-center bg-slate-50">
-    <Text className="text-lg font-extrabold text-gray-800">Profile Screen</Text>
-    <Text className="text-sm text-gray-500 mt-2">Coming soon...</Text>
-  </View>
-);
+// Profile Stack with all profile screens
+const ProfileStack = createNativeStackNavigator<ParentProfileStackParamList>();
 const ProfileStackNavigator = () => (
   <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
     <ProfileStack.Screen name="Profile" component={ProfileScreen} />
+    <ProfileStack.Screen name="UpdateProfile" component={UpdateProfileScreen} />
+    <ProfileStack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+    <ProfileStack.Screen name="BiometricAuth" component={BiometricAuthScreen} />
+    <ProfileStack.Screen name="FAQ" component={FAQScreen} />
+    <ProfileStack.Screen name="Support" component={SupportScreen} />
   </ProfileStack.Navigator>
 );
 
 // Custom Tab Bar Icons
 const HomeIcon = ({ focused }: { focused: boolean }) => (
-  <View className="items-center">
+  <View style={styles.iconContainer}>
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
       <Path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke={focused ? '#0284C7' : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
       <Polyline points="9 22 9 12 15 12 15 22" stroke={focused ? '#0284C7' : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
@@ -81,16 +90,16 @@ const HomeIcon = ({ focused }: { focused: boolean }) => (
 );
 
 const MessageIcon = ({ focused, hasBadge }: { focused: boolean; hasBadge?: boolean }) => (
-  <View className="items-center">
+  <View style={styles.iconContainer}>
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
       <Path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke={focused ? '#0284C7' : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
     </Svg>
-    {hasBadge && <View className="absolute top-[-2px] right-[-4px] w-[10px] h-[10px] rounded-[5px] bg-red-500 border-2 border-white" />}
+    {hasBadge && <View style={styles.badge} />}
   </View>
 );
 
 const ProfileIcon = ({ focused }: { focused: boolean }) => (
-  <View className="items-center">
+  <View style={styles.iconContainer}>
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
       <Path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke={focused ? '#0284C7' : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
       <Circle cx="12" cy="7" r="4" stroke={focused ? '#0284C7' : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
@@ -159,3 +168,20 @@ const ParentTabs: React.FC = () => {
 };
 
 export default ParentTabs;
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    alignItems: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: -4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#EF4444',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+});

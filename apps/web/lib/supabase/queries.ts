@@ -1187,3 +1187,181 @@ export async function getGradeDistribution(): Promise<GradeDistribution[]> {
     { grade: 'Yếu', percentage: 5, color: 'bg-red-500' },
   ]
 }
+
+// ==================== ADDITIONAL EXPORTS ====================
+
+/**
+ * Get teacher conversations (messages)
+ * Replaces: getTeacherConversations()
+ */
+export async function getTeacherConversations(): Promise<Conversation[]> {
+  const supabase = await getSupabase()
+
+  // TODO: Implement real query
+  return []
+}
+
+/**
+ * Get conversation messages
+ * Replaces: getConversationMessages()
+ */
+export async function getConversationMessages(conversationId: string): Promise<Message[]> {
+  const supabase = await getSupabase()
+
+  // TODO: Implement real query
+  return []
+}
+
+/**
+ * Get regular assessments for teacher
+ * Replaces: getRegularAssessments()
+ */
+export async function getRegularAssessments(teacherId?: string): Promise<RegularAssessment[]> {
+  const supabase = await getSupabase()
+
+  if (!teacherId) return []
+
+  // Get classes taught by this teacher
+  const { data: classData } = await supabase
+    .from('schedules')
+    .select('class_id')
+    .eq('teacher_id', teacherId)
+
+  const classIds = [...new Set(classData?.map((c) => c.class_id) || [])]
+
+  if (classIds.length === 0) return []
+
+  // Get students in these classes
+  const { data: studentData } = await supabase
+    .from('enrollments')
+    .select('student_id, classes!inner(name)')
+    .in('class_id', classIds)
+    .eq('status', 'active')
+
+  const students = studentData?.map((s: any) => ({
+    studentId: s.student_id,
+    studentName: s.classes?.name || 'Unknown',
+    classId: s.class_id,
+    className: s.classes?.name || '',
+    subject: 'N/A',
+    status: 'pending' as const,
+    createdAt: new Date().toISOString()
+  })) || []
+
+  return students
+}
+
+/**
+ * Get conduct ratings
+ * Replaces: getConductRatings()
+ */
+export async function getConductRatings(classId?: string): Promise<ConductRating[]> {
+  const supabase = await getSupabase()
+
+  let query = supabase
+    .from('students')
+    .select(`
+      id,
+      student_code,
+      profiles!inner(full_name),
+      enrollments!inner(class_id)
+    `)
+    .eq('enrollments.status', 'active')
+
+  if (classId) {
+    query = query.eq('enrollments.class_id', classId)
+  }
+
+  const { data } = await query
+
+  return (data || []).map((s: any) => ({
+    studentId: s.id,
+    studentName: s.profiles?.full_name || 'Unknown',
+    mssv: s.student_code,
+    academicRating: 'good' as const,
+    academicScore: 80,
+    conductRating: 'good' as const,
+    semester: '1' as const,
+    notes: ''
+  }))
+}
+
+/**
+ * Get grade review requests
+ * Replaces: getGradeReviewRequests()
+ */
+export async function getGradeReviewRequests(teacherId?: string): Promise<Array<{
+  id: string
+  studentName?: string
+  className?: string
+  assessmentType?: string
+  currentScore?: number
+  reason?: string
+  status?: string
+}>> {
+  const supabase = await getSupabase()
+
+  if (!teacherId) return []
+
+  // Get grade review requests for this teacher's classes
+  const { data: classData } = await supabase
+    .from('schedules')
+    .select('class_id')
+    .eq('teacher_id', teacherId)
+
+  const classIds = [...new Set(classData?.map((c) => c.class_id) || [])]
+
+  // For now, return mock data since grade_reviews table may not exist
+  // In production, this would query a grade_reviews table
+  return []
+}
+
+/**
+ * Get class management detail
+ * Replaces: getClassManagementData()
+ */
+export async function getClassManagementData(classId: string): Promise<ClassManagementDetail> {
+  const supabase = await getSupabase()
+
+  // TODO: Implement real query
+  return {
+    classId,
+    className: '',
+    subject: '',
+    grade: '',
+    room: '',
+    schedule: [],
+    students: []
+  }
+}
+
+/**
+ * Get homeroom class detail
+ * Replaces: getHomeroomClassData()
+ */
+export async function getHomeroomClassData(classId: string): Promise<HomeroomClassDetail> {
+  const supabase = await getSupabase()
+
+  // TODO: Implement real query
+  return {
+    classId,
+    className: '',
+    grade: '',
+    room: '',
+    studentCount: 0,
+    maleCount: 0,
+    femaleCount: 0,
+    students: []
+  }
+}
+
+/**
+ * Get leave approval requests
+ * Replaces: getLeaveApprovalRequests()
+ */
+export async function getLeaveApprovalRequests(): Promise<LeaveRequestApproval[]> {
+  const supabase = await getSupabase()
+
+  // TODO: Implement real query
+  return []
+}

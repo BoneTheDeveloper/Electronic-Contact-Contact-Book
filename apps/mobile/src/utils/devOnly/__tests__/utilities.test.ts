@@ -107,6 +107,12 @@ function testScreenChecklist() {
   // Test 5: Screen structure validation
   console.log('Test 5: Screen structure validation');
   const firstScreen = SCREEN_CHECKLIST[0];
+
+  if (!firstScreen) {
+    console.log('  ❌ FAIL: SCREEN_CHECKLIST is empty\n');
+    return;
+  }
+
   const hasValidStructure =
     typeof firstScreen.path === 'string' &&
     typeof firstScreen.name === 'string' &&

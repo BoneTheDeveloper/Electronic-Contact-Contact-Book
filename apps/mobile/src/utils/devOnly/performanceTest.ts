@@ -85,8 +85,8 @@ export const measureNavigation = async (
   return measurePerformance(
     `Navigate to ${route}`,
     async () => {
-      // @ts-expect-error - Dynamic navigation for testing
-      navigation.navigate(route, params);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (navigation.navigate as any)(route, params);
       // Wait for transition to complete
       await new Promise<void>((resolve) => setTimeout(resolve, 100));
     },

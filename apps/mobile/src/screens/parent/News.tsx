@@ -4,8 +4,14 @@
  */
 
 import React from 'react';
-import { View, ScrollView, Text, Pressable } from 'react-native';
+import { View, ScrollView, Text, Pressable, StyleSheet } from 'react-native';
 import { colors } from '../../theme';
+import { ScreenHeader } from '../../components/ui';
+import type { ParentHomeStackNavigationProp } from '../../navigation/types';
+
+interface NewsScreenProps {
+  navigation: ParentHomeStackNavigationProp;
+}
 
 interface NewsItem {
   id: string;
@@ -70,7 +76,92 @@ const CATEGORY_TEXT_COLORS: Record<string, string> = {
   'Cộng đồng': '#DB2777',
 };
 
-export const NewsScreen: React.FC = () => {
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  scrollContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingBottom: 100,
+  },
+  newsItem: {
+    marginBottom: 16,
+    borderRadius: 16,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  newsItemUnread: {
+    borderWidth: 2,
+    borderColor: '#0284C7',
+  },
+  newsContent: {
+    padding: 16,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  categoryBadge: {
+    height: 26,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  dateText: {
+    fontSize: 11,
+    color: '#9ca3af',
+    fontWeight: '500',
+  },
+  newsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 8,
+    lineHeight: 22,
+  },
+  newsContentText: {
+    fontSize: 14,
+    color: '#4b5563',
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  unreadIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  unreadDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#0284C7',
+    marginRight: 8,
+  },
+  unreadText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#0284C7',
+  },
+});
+
+export const NewsScreen: React.FC<NewsScreenProps> = ({ navigation }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -83,47 +174,52 @@ export const NewsScreen: React.FC = () => {
   };
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-[#0284C7] pt-[60px] px-6 pb-6 rounded-b-[20px]">
-        <Text className="text-[24px] font-bold text-white">Tin tức & Sự kiện</Text>
-        <Text className="text-[14px] text-white/80 mt-1">Cập nhật thông tin từ nhà trường</Text>
-      </View>
+    <View style={styles.container}>
+      <ScreenHeader
+        title="Tin tức & Sự kiện"
+        onBack={() => navigation.goBack()}
+      />
       <ScrollView
-        className="px-4 pb-[100px]"
+        style={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {MOCK_NEWS.map((item) => (
           <Pressable
             key={item.id}
-            className={`mb-4 rounded-[16px] bg-white shadow-md ${
-              !item.read ? 'border-2 border-[#0284C7]' : ''
-            }`}
+            style={[
+              styles.newsItem,
+              !item.read && styles.newsItemUnread
+            ]}
           >
-            <View className="p-4">
-              <View className="flex-row justify-between items-center mb-3">
+            <View style={styles.newsContent}>
+              <View style={styles.headerRow}>
                 <View
-                  className="h-[26px] px-2 rounded-md justify-center items-center"
-                  style={{ backgroundColor: CATEGORY_COLORS[item.category] }}
+                  style={[
+                    styles.categoryBadge,
+                    { backgroundColor: CATEGORY_COLORS[item.category] }
+                  ]}
                 >
                   <Text
-                    className="text-[10px] font-bold uppercase"
-                    style={{ color: CATEGORY_TEXT_COLORS[item.category] }}
+                    style={[
+                      styles.categoryText,
+                      { color: CATEGORY_TEXT_COLORS[item.category] }
+                    ]}
                   >
                     {item.category}
                   </Text>
                 </View>
-                <Text className="text-[11px] text-gray-400 font-medium">{formatDate(item.date)}</Text>
+                <Text style={styles.dateText}>{formatDate(item.date)}</Text>
               </View>
-              <Text className="text-[16px] font-bold text-gray-800 mb-2 leading-[22px]" numberOfLines={2}>
+              <Text style={styles.newsTitle} numberOfLines={2}>
                 {item.title}
               </Text>
-              <Text className="text-[14px] text-gray-600 leading-[20px] mb-2" numberOfLines={3}>
+              <Text style={styles.newsContentText} numberOfLines={3}>
                 {item.content}
               </Text>
               {!item.read && (
-                <View className="flex-row items-center mt-2">
-                  <View className="w-[6px] h-[6px] rounded-full bg-[#0284C7] mr-2" />
-                  <Text className="text-[11px] font-semibold text-[#0284C7]">Chưa đọc</Text>
+                <View style={styles.unreadIndicator}>
+                  <View style={styles.unreadDot} />
+                  <Text style={styles.unreadText}>Chưa đọc</Text>
                 </View>
               )}
             </View>

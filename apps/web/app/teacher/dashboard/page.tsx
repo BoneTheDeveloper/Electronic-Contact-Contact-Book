@@ -16,6 +16,7 @@ import {
   getLeaveRequests,
   getTeacherSchedule,
   getTeacherClasses,
+  getRegularAssessments,
   type TeacherStats,
 } from '@/lib/supabase/queries'
 import { requireAuth } from '@/lib/auth'
@@ -96,27 +97,34 @@ async function fetchDashboardData(): Promise<DashboardData> {
     todaySchedule: [],
   }
 
-  const [stats, leaveRequests, schedule, classes] = await Promise.all([
+  const [stats, leaveRequests, schedule, classes, regularAssessments] = await Promise.all([
     getTeacherStats(teacherId).catch(() => defaultStats),
     getLeaveRequests(homeroomClassId).catch(() => []),
     getTeacherSchedule(teacherId).catch(() => []),
     Promise.resolve(teacherClasses),
+    getRegularAssessments(teacherId).catch(() => []),
   ])
+
+  // Calculate assessment stats
+  const evaluated = regularAssessments.filter((a) => a.status === 'evaluated').length
+  const pending = regularAssessments.filter((a) => a.status === 'pending').length
+  const positive = regularAssessments.filter((a: WithRating) => a.rating && a.rating >= 4).length
+  const needsAttention = regularAssessments.filter((a) => a.status === 'needs-attention').length
 
   return {
     stats: {
       ...stats,
       homeroomClassId,
     },
-    gradeReviews: [], // TODO: Implement getGradeReviewRequests in Supabase queries
+    gradeReviews: [],
     leaveRequests: (leaveRequests || []).filter((r: WithStatus) => r.status === 'pending'),
     schedule: schedule || [],
     classes: classes || [],
     assessments: {
-      evaluated: 0, // TODO: Implement getRegularAssessments in Supabase queries
-      pending: 0,
-      positive: 0,
-      needsAttention: 0,
+      evaluated,
+      pending,
+      positive,
+      needsAttention,
     },
   }
 }

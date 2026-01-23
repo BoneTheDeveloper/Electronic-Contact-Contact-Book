@@ -18,3 +18,4 @@ export { PaymentMethodScreen } from './PaymentMethod';
 export { PaymentReceiptScreen } from './PaymentReceipt';
 export { LeaveRequestScreen } from './LeaveRequest';
 export { SummaryScreen } from './Summary';
+export { ChildSelectionScreen } from './ChildSelection';

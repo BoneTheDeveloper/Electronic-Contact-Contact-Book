@@ -10,7 +10,7 @@ export default async function ConductPage() {
   const homeroomClass = classes.find(c => c.isHomeroom)
 
   const initialRatings = homeroomClass
-    ? await getConductRatings(homeroomClass.id, '2')
+    ? await getConductRatings(homeroomClass.id)
     : []
 
   if (initialRatings.length === 0) {
