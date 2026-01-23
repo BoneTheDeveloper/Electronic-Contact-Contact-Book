@@ -8,8 +8,12 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:run": "turbo run test:run",
+    "validate": "pnpm lint && pnpm test:run",
     "clean": "turbo run clean && rm -rf node_modules",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "prepare": "husky install"
   },
   "keywords": [
     "school",
@@ -23,6 +27,7 @@
   "devDependencies": {
     "@supabase/supabase-js": "^2.91.0",
     "eslint": "^8.56.0",
+    "husky": "^9.1.7",
     "pg": "^8.17.2",
     "prettier": "^3.1.1",
     "turbo": "^1.11.0",
