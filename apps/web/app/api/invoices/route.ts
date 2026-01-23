@@ -22,8 +22,8 @@ export async function GET(request: NextRequest) {
     if (classId) {
       const students = await (await import('@/lib/supabase/queries')).getStudents()
       const classStudentIds = students
-        .filter(s => s.grade === classId)
-        .map(s => s.id)
+        .filter((s: any) => s.grade === classId)
+        .map((s: any) => s.id)
       invoices = invoices.filter((inv: Invoice) => classStudentIds.includes(inv.studentId))
     }
 

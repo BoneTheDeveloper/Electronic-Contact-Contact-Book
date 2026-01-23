@@ -35,16 +35,16 @@ export async function GET(request: Request) {
   let filteredGrades = [...mockGrades]
 
   if (classId) {
-    filteredGrades = filteredGrades.filter(g => g.classId === classId)
+    filteredGrades = filteredGrades.filter((g: any) => g.classId === classId)
   }
   if (subject) {
-    filteredGrades = filteredGrades.filter(g => g.subject === subject)
+    filteredGrades = filteredGrades.filter((g: any) => g.subject === subject)
   }
   if (letterGrade) {
-    filteredGrades = filteredGrades.filter(g => g.letterGrade === letterGrade)
+    filteredGrades = filteredGrades.filter((g: any) => g.letterGrade === letterGrade)
   }
   if (search) {
-    filteredGrades = filteredGrades.filter(g =>
+    filteredGrades = filteredGrades.filter((g: any) =>
       g.studentName.toLowerCase().includes(search.toLowerCase())
     )
   }
@@ -52,12 +52,12 @@ export async function GET(request: Request) {
   // Calculate statistics
   const stats = {
     totalStudents: filteredGrades.length,
-    averageScore: filteredGrades.reduce((sum, g) => sum + g.average, 0) / filteredGrades.length || 0,
-    gradeA: filteredGrades.filter(g => g.letterGrade === 'A').length,
-    gradeB: filteredGrades.filter(g => g.letterGrade === 'B').length,
-    gradeC: filteredGrades.filter(g => g.letterGrade === 'C').length,
-    gradeD: filteredGrades.filter(g => g.letterGrade === 'D').length,
-    gradeF: filteredGrades.filter(g => g.letterGrade === 'F').length,
+    averageScore: filteredGrades.reduce((sum: number, g: any) => sum + g.average, 0) / filteredGrades.length || 0,
+    gradeA: filteredGrades.filter((g: any) => g.letterGrade === 'A').length,
+    gradeB: filteredGrades.filter((g: any) => g.letterGrade === 'B').length,
+    gradeC: filteredGrades.filter((g: any) => g.letterGrade === 'C').length,
+    gradeD: filteredGrades.filter((g: any) => g.letterGrade === 'D').length,
+    gradeF: filteredGrades.filter((g: any) => g.letterGrade === 'F').length,
   }
 
   return NextResponse.json({

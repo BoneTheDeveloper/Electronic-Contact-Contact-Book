@@ -64,27 +64,27 @@ export async function GET(request: Request) {
   let filteredInvoices = [...mockInvoices]
 
   if (status) {
-    filteredInvoices = filteredInvoices.filter(i => i.status === status)
+    filteredInvoices = filteredInvoices.filter((i: any) => i.status === status)
   }
   if (search) {
-    filteredInvoices = filteredInvoices.filter(i =>
+    filteredInvoices = filteredInvoices.filter((i: any) =>
       i.studentName.toLowerCase().includes(search.toLowerCase()) ||
       i.id.toLowerCase().includes(search.toLowerCase())
     )
   }
 
   // Calculate statistics
-  const totalAmount = filteredInvoices.reduce((sum, i) => sum + i.amount, 0)
+  const totalAmount = filteredInvoices.reduce((sum: number, i: any) => sum + i.amount, 0)
   const collectedAmount = filteredInvoices
-    .filter(i => i.status === 'paid')
-    .reduce((sum, i) => sum + i.amount, 0)
+    .filter((i: any) => i.status === 'paid')
+    .reduce((sum: number, i: any) => sum + i.amount, 0)
   const collectionRate = totalAmount > 0 ? Math.round((collectedAmount / totalAmount) * 100) : 0
 
   const stats = {
     totalAmount,
     collectedAmount,
-    pendingCount: filteredInvoices.filter(i => i.status === 'pending').length,
-    overdueCount: filteredInvoices.filter(i => i.status === 'overdue').length,
+    pendingCount: filteredInvoices.filter((i: any) => i.status === 'pending').length,
+    overdueCount: filteredInvoices.filter((i: any) => i.status === 'overdue').length,
     collectionRate,
   }
 

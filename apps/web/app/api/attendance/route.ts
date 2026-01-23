@@ -31,13 +31,13 @@ export async function GET(request: Request) {
   let filteredAttendance = [...mockAttendance]
 
   if (classId) {
-    filteredAttendance = filteredAttendance.filter(a => a.classId === classId)
+    filteredAttendance = filteredAttendance.filter((a: any) => a.classId === classId)
   }
   if (status) {
-    filteredAttendance = filteredAttendance.filter(a => a.status === status)
+    filteredAttendance = filteredAttendance.filter((a: any) => a.status === status)
   }
   if (search) {
-    filteredAttendance = filteredAttendance.filter(a =>
+    filteredAttendance = filteredAttendance.filter((a: any) =>
       a.studentName.toLowerCase().includes(search.toLowerCase())
     )
   }
@@ -45,12 +45,12 @@ export async function GET(request: Request) {
   // Calculate statistics
   const stats = {
     total: filteredAttendance.length,
-    present: filteredAttendance.filter(a => a.status === 'present').length,
-    absent: filteredAttendance.filter(a => a.status === 'absent').length,
-    late: filteredAttendance.filter(a => a.status === 'late').length,
-    excused: filteredAttendance.filter(a => a.status === 'excused').length,
+    present: filteredAttendance.filter((a: any) => a.status === 'present').length,
+    absent: filteredAttendance.filter((a: any) => a.status === 'absent').length,
+    late: filteredAttendance.filter((a: any) => a.status === 'late').length,
+    excused: filteredAttendance.filter((a: any) => a.status === 'excused').length,
     rate: filteredAttendance.length > 0
-      ? Math.round((filteredAttendance.filter(a => a.status === 'present').length / filteredAttendance.length) * 100)
+      ? Math.round((filteredAttendance.filter((a: any) => a.status === 'present').length / filteredAttendance.length) * 100)
       : 0,
   }
 

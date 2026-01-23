@@ -11,10 +11,10 @@ export async function GET(request: Request) {
   let assessments = await getRegularAssessments(teacherId)
 
   if (classId) {
-    assessments = assessments.filter(a => a.classId === classId)
+    assessments = assessments.filter((a: any) => a.classId === classId)
   }
   if (status) {
-    assessments = assessments.filter(a => a.status === status)
+    assessments = assessments.filter((a: any) => a.status === status)
   }
 
   return NextResponse.json({
