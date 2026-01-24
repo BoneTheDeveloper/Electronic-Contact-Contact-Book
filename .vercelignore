@@ -1,0 +1,5 @@
+apps/mobile
+apps/web/.next
+apps/web/out
+node_modules
+.turbo
