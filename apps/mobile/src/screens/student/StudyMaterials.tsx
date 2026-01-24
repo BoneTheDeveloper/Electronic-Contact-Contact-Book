@@ -5,6 +5,13 @@
 
 import React, { useState } from 'react';
 import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput, Pressable } from 'react-native';
+import { useStudentStore } from '../../stores';
+import { Icon } from '../../components/ui';
+import type { StudentHomeStackNavigationProp } from '../../navigation/types';
+
+interface StudyMaterialsScreenProps {
+  navigation?: StudentHomeStackNavigationProp;
+}
 
 interface MaterialItem {
   id: string;
@@ -34,7 +41,7 @@ const FILE_TYPE_CONFIG = {
   img: { icon: '🖼️', color: '#10B981', bg: 'bg-green-50' },
 };
 
-export const StudentStudyMaterialsScreen: React.FC = () => {
+export const StudentStudyMaterialsScreen: React.FC<StudyMaterialsScreenProps> = ({ navigation }) => {
   const { student } = useStudentStore();
 
   const [selectedSubject, setSelectedSubject] = useState('Tất cả');
@@ -68,8 +75,15 @@ export const StudentStudyMaterialsScreen: React.FC = () => {
   return (
     <View style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
       <View style={{ backgroundColor: '#0284C7', paddingTop: 60, paddingHorizontal: 24, paddingBottom: 24, borderBottomLeftRadius: 30, borderBottomRightRadius: 30 }}>
-        <Text style={{ fontSize: 20, fontWeight: '800', color: 'white' }}>Tài liệu học tập</Text>
-        <Text style={{ fontSize: 12, color: '#E0F2FE', marginTop: 2 }}>Tài liệu từ giáo viên</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+          <TouchableOpacity style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' }} onPress={() => navigation?.goBack()}>
+            <Icon name="arrow-left" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 20, fontWeight: '800', color: 'white' }}>Tài liệu học tập</Text>
+            <Text style={{ fontSize: 12, color: '#E0F2FE', marginTop: 2 }}>Tài liệu từ giáo viên</Text>
+          </View>
+        </View>
       </View>
 
       <ScrollView style={{ flex: 1, padding: 24, paddingBottom: 140 }} showsVerticalScrollIndicator={false}>

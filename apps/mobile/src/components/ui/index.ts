@@ -17,5 +17,5 @@ export { AvatarInitials } from './AvatarInitials';
 export type { ButtonProps } from './Button';
 export type { CardProps } from './Card';
 export type { ScreenHeaderProps } from './ScreenHeader';
-export type { IconProps } from './Icon';
+export type { IconProps, IconName } from './Icon';
 export type { PickerOption } from './GradePicker';

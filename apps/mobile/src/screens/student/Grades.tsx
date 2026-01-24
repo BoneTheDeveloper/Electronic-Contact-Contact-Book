@@ -9,6 +9,12 @@ import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput, ActivityInd
 import { useStudentStore } from '../../stores';
 import { useAuthStore } from '../../stores';
 import { GradePicker } from '../../components/ui/GradePicker';
+import { Icon } from '../../components/ui';
+import type { StudentHomeStackNavigationProp } from '../../navigation/types';
+
+interface GradesScreenProps {
+  navigation?: StudentHomeStackNavigationProp;
+}
 
 interface SubjectGradeData {
   subjectId: string;
@@ -88,7 +94,7 @@ const APPEAL_REASONS = [
   { label: 'Khác', value: 'other' },
 ];
 
-export const StudentGradesScreen: React.FC = () => {
+export const StudentGradesScreen: React.FC<GradesScreenProps> = ({ navigation }) => {
   const { user } = useAuthStore();
   const { grades, isLoading, error, loadGrades } = useStudentStore();
 
@@ -261,7 +267,10 @@ export const StudentGradesScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <View>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation?.goBack()}>
+            <Icon name="arrow-left" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+          <View style={styles.headerTextContainer}>
             <Text style={styles.headerTitle}>Bảng điểm môn học</Text>
             <Text style={styles.headerSubtitle}>Năm học 2025 - 2026</Text>
           </View>
@@ -571,8 +580,19 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    gap: 16,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
   },
   headerTitle: {
     fontSize: 20,

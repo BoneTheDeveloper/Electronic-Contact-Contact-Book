@@ -2,12 +2,19 @@
  * Attendance Screen
  * Attendance history with month selector and weekly calendar grid
  * Uses real Supabase data via student store
+ * Proper StyleSheet styling
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator, StyleSheet, type ViewStyle } from 'react-native';
 import { useStudentStore } from '../../stores';
 import { useAuthStore } from '../../stores';
+import { Icon } from '../../components/ui';
+import type { StudentHomeStackNavigationProp } from '../../navigation/types';
+
+interface AttendanceScreenProps {
+  navigation?: StudentHomeStackNavigationProp;
+}
 
 interface WeekAttendanceData {
   weekNumber: number;
@@ -117,7 +124,7 @@ const getMonthFilter = (month: string): string => {
   return `${year}-${String(monthNum).padStart(2, '0')}`;
 };
 
-export const StudentAttendanceScreen: React.FC = () => {
+export const StudentAttendanceScreen: React.FC<AttendanceScreenProps> = ({ navigation }) => {
   const { user } = useAuthStore();
   const { attendance, isLoading, error, loadAttendance } = useStudentStore();
 
@@ -153,19 +160,19 @@ export const StudentAttendanceScreen: React.FC = () => {
   const DayCell: React.FC<{ dayName: string; status: 'present' | 'absent' | 'weekend' | null }> = ({ dayName, status }) => {
     if (status === 'weekend') {
       return (
-        <View className="flex-col items-center py-2">
-          <Text className="text-[8px] font-black text-gray-400 uppercase mb-1">{dayName}</Text>
-          <View className="w-7 h-7 bg-gray-100 rounded-lg" />
+        <View style={styles.dayCell}>
+          <Text style={styles.dayCellLabel}>{dayName}</Text>
+          <View style={styles.dayCellBoxWeekend} />
         </View>
       );
     }
 
     if (status === 'present') {
       return (
-        <View className="flex-col items-center py-2">
-          <Text className="text-[8px] font-black text-gray-400 uppercase mb-1">{dayName}</Text>
-          <View className="w-7 h-7 bg-emerald-100 rounded-lg items-center justify-center">
-            <Text className="text-emerald-600 text-sm">✓</Text>
+        <View style={styles.dayCell}>
+          <Text style={styles.dayCellLabel}>{dayName}</Text>
+          <View style={styles.dayCellBoxPresent}>
+            <Text style={styles.dayCellPresent}>✓</Text>
           </View>
         </View>
       );
@@ -173,10 +180,10 @@ export const StudentAttendanceScreen: React.FC = () => {
 
     if (status === 'absent') {
       return (
-        <View className="flex-col items-center py-2">
-          <Text className="text-[8px] font-black text-gray-400 uppercase mb-1">{dayName}</Text>
-          <View className="w-7 h-7 bg-rose-100 rounded-lg items-center justify-center">
-            <Text className="text-rose-600 text-sm font-bold">✕</Text>
+        <View style={styles.dayCell}>
+          <Text style={styles.dayCellLabel}>{dayName}</Text>
+          <View style={styles.dayCellBoxAbsent}>
+            <Text style={styles.dayCellAbsent}>✕</Text>
           </View>
         </View>
       );
@@ -188,9 +195,9 @@ export const StudentAttendanceScreen: React.FC = () => {
   // Loading state
   if (isLoading && attendance.length === 0) {
     return (
-      <View className="flex-1 bg-slate-50 justify-center items-center">
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0284C7" />
-        <Text className="mt-4 text-sm text-gray-500">Đang tải dữ liệu...</Text>
+        <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
       </View>
     );
   }
@@ -198,18 +205,18 @@ export const StudentAttendanceScreen: React.FC = () => {
   // Error state
   if (error && attendance.length === 0) {
     return (
-      <View className="flex-1 bg-slate-50 justify-center items-center px-6">
-        <View className="w-20 h-20 bg-rose-100 rounded-full items-center justify-center mb-4">
-          <Text className="text-rose-600 text-3xl">⚠</Text>
+      <View style={styles.errorContainer}>
+        <View style={styles.errorIconContainer}>
+          <Text style={styles.errorIcon}>⚠</Text>
         </View>
-        <Text className="text-gray-800 font-extrabold text-lg mb-2">Lỗi tải dữ liệu</Text>
-        <Text className="text-gray-500 text-sm text-center mb-6">{error}</Text>
+        <Text style={styles.errorTitle}>Lỗi tải dữ liệu</Text>
+        <Text style={styles.errorMessage}>{error}</Text>
         <TouchableOpacity
           onPress={handleReload}
           disabled={refreshing}
-          className={`bg-[#0284C7] py-3 px-8 rounded-xl ${refreshing ? 'opacity-50' : ''}`}
+          style={[styles.retryButton, refreshing && styles.retryButtonDisabled]}
         >
-          <Text className="text-white font-extrabold text-sm">
+          <Text style={styles.retryButtonText}>
             {refreshing ? 'Đang tải...' : 'Thử lại'}
           </Text>
         </TouchableOpacity>
@@ -218,103 +225,501 @@ export const StudentAttendanceScreen: React.FC = () => {
   }
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View style={styles.container}>
       {/* Header */}
-      <View className="bg-gradient-to-br from-[#0284C7] to-[#0369A1] pt-[60px] px-6 pb-6 rounded-b-[30px]">
-        <View className="flex-row justify-between items-start">
-          <View>
-            <Text className="text-[20px] font-extrabold text-white">Lịch sử điểm danh</Text>
-            <Text className="text-[12px] text-blue-100 font-medium mt-0.5">Theo dõi attendance học sinh</Text>
+      <View style={styles.headerBg}>
+        <View style={styles.headerContent}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation?.goBack()}>
+            <Icon name="arrow-left" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerTitle}>Lịch sử điểm danh</Text>
+            <Text style={styles.headerSubtitle}>Theo dõi attendance học sinh</Text>
           </View>
           <TouchableOpacity
             onPress={handleReload}
             disabled={refreshing}
-            className={`w-10 h-10 bg-white/20 rounded-full items-center justify-center ${refreshing ? 'opacity-50' : ''}`}
+            style={[styles.refreshButton, refreshing && styles.refreshButtonDisabled]}
           >
-            <Text className={`text-white ${refreshing ? 'animate-spin' : ''}`}>{refreshing ? '⟳' : '↻'}</Text>
+            <Text style={[styles.refreshIcon, refreshing && styles.refreshIconSpinning]}>
+              {refreshing ? '⟳' : '↻'}
+            </Text>
           </TouchableOpacity>
         </View>
         {error && (
-          <View className="mt-3 bg-rose-500/20 px-3 py-2 rounded-lg">
-            <Text className="text-rose-100 text-xs">{error}</Text>
+          <View style={styles.errorBanner}>
+            <Text style={styles.errorBannerText}>{error}</Text>
           </View>
         )}
       </View>
 
-      <ScrollView className="px-6 pt-6 pb-[140px]" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Summary Stats */}
-        <View className="flex-row gap-3 mb-6">
-          <View className="flex-1 bg-emerald-50 p-3 rounded-2xl border border-emerald-100">
-            <Text className="text-emerald-600 text-[9px] font-black uppercase tracking-wider mb-1">Có mặt</Text>
-            <Text className="text-emerald-700 text-2xl font-extrabold">{presentCount}</Text>
-            <Text className="text-emerald-500 text-[9px] font-medium">ngày</Text>
+        <View style={styles.statsContainer}>
+          <View style={styles.statCardPresent}>
+            <Text style={styles.statLabelPresent}>Có mặt</Text>
+            <Text style={styles.statValuePresent}>{presentCount}</Text>
+            <Text style={styles.statUnit}>ngày</Text>
           </View>
-          <View className="flex-1 bg-rose-50 p-3 rounded-2xl border border-rose-100">
-            <Text className="text-rose-600 text-[9px] font-black uppercase tracking-wider mb-1">Vắng mặt</Text>
-            <Text className="text-rose-700 text-2xl font-extrabold">{absentCount}</Text>
-            <Text className="text-rose-500 text-[9px] font-medium">ngày</Text>
+          <View style={styles.statCardAbsent}>
+            <Text style={styles.statLabelAbsent}>Vắng mặt</Text>
+            <Text style={styles.statValueAbsent}>{absentCount}</Text>
+            <Text style={styles.statUnit}>ngày</Text>
           </View>
-          <View className="flex-1 bg-amber-50 p-3 rounded-2xl border border-amber-100">
-            <Text className="text-amber-600 text-[9px] font-black uppercase tracking-wider mb-1">Có phép</Text>
-            <Text className="text-amber-700 text-2xl font-extrabold">{excusedCount}</Text>
-            <Text className="text-amber-500 text-[9px] font-medium">ngày</Text>
+          <View style={styles.statCardExcused}>
+            <Text style={styles.statLabelExcused}>Có phép</Text>
+            <Text style={styles.statValueExcused}>{excusedCount}</Text>
+            <Text style={styles.statUnit}>ngày</Text>
           </View>
         </View>
 
         {/* Month Selector */}
-        <View className="flex-row space-x-2 mb-5 overflow-x-scroll">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.monthSelectorScroll}
+          contentContainerStyle={styles.monthSelectorContent}
+        >
           {(['10', '11', '12', '1'] as const).map((month) => (
             <TouchableOpacity
               key={month}
               onPress={() => setSelectedMonth(month)}
-              className={`px-4 py-2 rounded-xl ${selectedMonth === month ? 'bg-[#0284C7]' : 'bg-white border border-gray-200'}`}
+              style={[
+                styles.monthTab,
+                selectedMonth === month ? styles.monthTabActive : styles.monthTabInactive,
+              ] as ViewStyle}
             >
-              <Text className={`text-xs font-black ${selectedMonth === month ? 'text-white' : 'text-gray-400'}`}>
+              <Text style={[
+                styles.monthTabText,
+                selectedMonth === month ? styles.monthTabTextActive : styles.monthTabTextInactive,
+              ]}>
                 Tháng {month}
               </Text>
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
 
         {/* Attendance Calendar */}
-        <Text className="text-gray-800 font-extrabold text-sm mb-3">Chi tiết điểm danh</Text>
+        <Text style={styles.sectionTitle}>Chi tiết điểm danh</Text>
 
-        <View className="space-y-3">
-          {weeklyData.map((week) => (
-            <View key={week.weekNumber} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-              <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-gray-800 font-bold text-sm">Tuần 0{week.weekNumber} ({week.dateRange})</Text>
-                <View className={`px-2 py-1 rounded-full ${week.presentCount === week.totalCount ? 'bg-emerald-100' : 'bg-rose-100'}`}>
-                  <Text className={`text-[9px] font-black uppercase ${week.presentCount === week.totalCount ? 'text-emerald-700' : 'text-rose-700'}`}>
-                    {week.presentCount}/{week.totalCount} ngày
-                  </Text>
+        <View style={styles.weekList}>
+          {weeklyData.map((week) => {
+            const isPerfectAttendance = week.presentCount === week.totalCount;
+            return (
+              <View key={week.weekNumber} style={styles.weekCard}>
+                <View style={styles.weekHeader}>
+                  <Text style={styles.weekTitle}>Tuần 0{week.weekNumber} ({week.dateRange})</Text>
+                  <View style={[
+                    styles.weekBadge,
+                    { backgroundColor: isPerfectAttendance ? '#ECFDF5' : '#FEF2F2' }
+                  ]}>
+                    <Text style={[
+                      styles.weekBadgeText,
+                      { color: isPerfectAttendance ? '#059669' : '#DC2626' }
+                    ]}>
+                      {week.presentCount}/{week.totalCount} ngày
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.weekDaysRow}>
+                  {week.days.map((day, index) => (
+                    <DayCell key={index} dayName={day.dayName} status={day.status} />
+                  ))}
                 </View>
               </View>
-              <View className="flex-row justify-between gap-1">
-                {week.days.map((day, index) => (
-                  <DayCell key={index} dayName={day.dayName} status={day.status} />
-                ))}
-              </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
 
         {/* Legend */}
-        <View className="flex-row justify-center space-x-6 pt-4">
-          <View className="flex-row items-center space-x-2">
-            <View className="w-4 h-4 bg-emerald-100 rounded-lg items-center justify-center">
-              <Text className="text-emerald-600 text-xs">✓</Text>
+        <View style={styles.legend}>
+          <View style={styles.legendItem}>
+            <View style={styles.legendIconPresent}>
+              <Text style={styles.legendIconTextPresent}>✓</Text>
             </View>
-            <Text className="text-[10px] font-black text-gray-500 uppercase">Có mặt</Text>
+            <Text style={styles.legendText}>Có mặt</Text>
           </View>
-          <View className="flex-row items-center space-x-2">
-            <View className="w-4 h-4 bg-rose-100 rounded-lg items-center justify-center">
-              <Text className="text-rose-600 text-xs font-bold">✕</Text>
+          <View style={styles.legendItem}>
+            <View style={styles.legendIconAbsent}>
+              <Text style={styles.legendIconTextAbsent}>✕</Text>
             </View>
-            <Text className="text-[10px] font-black text-gray-500 uppercase">Vắng</Text>
+            <Text style={styles.legendText}>Vắng</Text>
           </View>
         </View>
       </ScrollView>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  headerBg: {
+    backgroundColor: '#0284C7',
+    paddingTop: 60,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
+    alignItems: 'flex-start',
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  headerSubtitle: {
+    color: 'rgba(224, 242, 254, 0.9)',
+    fontSize: 12,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  refreshButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  refreshButtonDisabled: {
+    opacity: 0.5,
+  },
+  refreshIcon: {
+    color: '#FFFFFF',
+    fontSize: 18,
+  },
+  refreshIconSpinning: {
+    // Animation would require Animated API
+  },
+  errorBanner: {
+    marginTop: 12,
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  errorBannerText: {
+    color: '#FEE2E2',
+    fontSize: 12,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 140,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  statCardPresent: {
+    flex: 1,
+    backgroundColor: '#ECFDF5',
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  statLabelPresent: {
+    color: '#059669',
+    fontSize: 9,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  statValuePresent: {
+    color: '#047857',
+    fontSize: 24,
+    fontWeight: '800',
+  },
+  statCardAbsent: {
+    flex: 1,
+    backgroundColor: '#FEF2F2',
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  statLabelAbsent: {
+    color: '#DC2626',
+    fontSize: 9,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  statValueAbsent: {
+    color: '#B91C1C',
+    fontSize: 24,
+    fontWeight: '800',
+  },
+  statCardExcused: {
+    flex: 1,
+    backgroundColor: '#FFFBEB',
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  statLabelExcused: {
+    color: '#D97706',
+    fontSize: 9,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  statValueExcused: {
+    color: '#B45309',
+    fontSize: 24,
+    fontWeight: '800',
+  },
+  statUnit: {
+    fontSize: 9,
+    fontWeight: '500',
+  },
+  monthSelectorScroll: {
+    marginBottom: 20,
+  },
+  monthSelectorContent: {
+    gap: 8,
+  },
+  monthTab: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  monthTabActive: {
+    backgroundColor: '#0284C7',
+  },
+  monthTabInactive: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  monthTabText: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  monthTabTextActive: {
+    color: '#FFFFFF',
+  },
+  monthTabTextInactive: {
+    color: '#9CA3AF',
+  },
+  sectionTitle: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '800',
+    marginBottom: 12,
+  },
+  weekList: {
+    gap: 12,
+  },
+  weekCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  weekHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  weekTitle: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  weekBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  weekBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  weekDaysRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 4,
+  },
+  dayCell: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  dayCellLabel: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: '#9CA3AF',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  dayCellBoxWeekend: {
+    width: 28,
+    height: 28,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+  },
+  dayCellBoxPresent: {
+    width: 28,
+    height: 28,
+    backgroundColor: '#ECFDF5',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dayCellPresent: {
+    color: '#059669',
+    fontSize: 14,
+  },
+  dayCellBoxAbsent: {
+    width: 28,
+    height: 28,
+    backgroundColor: '#FEF2F2',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dayCellAbsent: {
+    color: '#DC2626',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  legend: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 24,
+    paddingTop: 16,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  legendIconPresent: {
+    width: 16,
+    height: 16,
+    backgroundColor: '#ECFDF5',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  legendIconTextPresent: {
+    color: '#059669',
+    fontSize: 12,
+  },
+  legendIconAbsent: {
+    width: 16,
+    height: 16,
+    backgroundColor: '#FEF2F2',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  legendIconTextAbsent: {
+    color: '#DC2626',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  legendText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#6B7280',
+    textTransform: 'uppercase',
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  errorContainer: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  errorIconContainer: {
+    width: 80,
+    height: 80,
+    backgroundColor: '#FEF2F2',
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  errorIcon: {
+    color: '#DC2626',
+    fontSize: 30,
+  },
+  errorTitle: {
+    color: '#1F2937',
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  errorMessage: {
+    color: '#6B7280',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  retryButton: {
+    backgroundColor: '#0284C7',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+  },
+  retryButtonDisabled: {
+    opacity: 0.5,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+});

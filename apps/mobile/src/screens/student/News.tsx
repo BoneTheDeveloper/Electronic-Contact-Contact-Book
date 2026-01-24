@@ -3,8 +3,7 @@
  */
 import React, { useState } from 'react';
 import { View, ScrollView, Text, Pressable, StyleSheet } from 'react-native';
-import { Svg } from 'react-native-svg';
-import { Path } from 'react-native-svg';
+import { Svg, Path, Rect } from 'react-native-svg';
 import type { StudentHomeStackNavigationProp } from '../../navigation/types';
 
 interface NewsItem {

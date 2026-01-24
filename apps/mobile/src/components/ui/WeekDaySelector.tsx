@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, type ViewStyle, type TextStyle } from 'react-native';
 
 // Vietnamese weekday labels
 const WEEKDAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
@@ -57,32 +57,33 @@ export const WeekDaySelector: React.FC<WeekDaySelectorProps> = ({
         const isSelected = selectedDay === dayNum;
         const today = isToday(index);
 
+        const dayTabStyle: ViewStyle = isSelected
+          ? StyleSheet.compose(styles.dayTab, styles.dayTabSelected) as ViewStyle
+          : today && !isSelected
+          ? StyleSheet.compose(styles.dayTab, styles.dayTabToday) as ViewStyle
+          : styles.dayTab;
+
+        const weekdayLabelStyle: TextStyle = isSelected
+          ? StyleSheet.compose(styles.weekdayLabel, styles.weekdayLabelSelected) as TextStyle
+          : styles.weekdayLabel;
+
+        const dayNumberStyle: TextStyle = isSelected
+          ? StyleSheet.compose(styles.dayNumber, styles.dayNumberSelected) as TextStyle
+          : today && !isSelected
+          ? StyleSheet.compose(styles.dayNumber, styles.dayNumberToday) as TextStyle
+          : styles.dayNumber;
+
         return (
           <TouchableOpacity
             key={label}
-            style={[
-              styles.dayTab,
-              isSelected && styles.dayTabSelected,
-              today && !isSelected && styles.dayTabToday,
-            ]}
+            style={dayTabStyle}
             onPress={() => onChange(dayNum)}
             activeOpacity={0.7}
           >
-            <Text
-              style={[
-                styles.weekdayLabel,
-                isSelected && styles.weekdayLabelSelected,
-              ]}
-            >
+            <Text style={weekdayLabelStyle}>
               {label}
             </Text>
-            <Text
-              style={[
-                styles.dayNumber,
-                isSelected && styles.dayNumberSelected,
-                today && !isSelected && styles.dayNumberToday,
-              ]}
-            >
+            <Text style={dayNumberStyle}>
               {getDayNumber(index)}
             </Text>
             {today && !isSelected && <View style={styles.todayDot} />}

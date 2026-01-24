@@ -3,7 +3,7 @@
  * Wireframe-matched design with 3x3 function grid and bottom nav
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { View, ScrollView, TouchableOpacity, Dimensions, Text, StyleSheet } from 'react-native';
 import { useAuthStore } from '../../stores';
 import { useStudentStore } from '../../stores';
@@ -13,9 +13,6 @@ import type { StudentHomeStackNavigationProp } from '../../navigation/types';
 
 const { width } = Dimensions.get('window');
 const ICON_SIZE = 80;
-const HORIZONTAL_GAP = 16;
-const VERTICAL_GAP = 48;
-const CONTAINER_PADDING = 24;
 
 interface ServiceIcon {
   id: string;
@@ -45,7 +42,6 @@ interface DashboardScreenProps {
 export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const { user } = useAuthStore();
   const { studentData } = useStudentStore();
-  const [activeTab, setActiveTab] = useState<'home' | 'profile'>('home');
 
   const getInitials = (name?: string) => {
     if (!name) return 'SV';
@@ -58,12 +54,14 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
   };
 
   const renderServiceIcon = (item: ServiceIcon) => {
-    const containerWidth = (width - CONTAINER_PADDING * 2 - HORIZONTAL_GAP * 2) / 3;
+    // Width calculation: (screenWidth - paddingHorizontal*2 - gaps*2) / 3
+    // paddingHorizontal is 24*2 = 48, gaps are 12*2 = 24
+    const containerWidth = Math.floor((width - 48 - 24) / 3);
 
     return (
       <TouchableOpacity
         key={item.id}
-        style={[styles.iconContainer, { width: containerWidth, marginBottom: VERTICAL_GAP }]}
+        style={[styles.iconContainer, { width: containerWidth }]}
         onPress={() => navigation?.navigate(item.route as keyof StudentHomeStackParamList)}
         activeOpacity={0.92}
       >
@@ -116,39 +114,6 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
           {STUDENT_SERVICE_ICONS.map(renderServiceIcon)}
         </View>
       </ScrollView>
-
-      {/* Bottom Navigation Bar */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => setActiveTab('home')}
-          activeOpacity={0.7}
-        >
-          <Icon
-            name="home"
-            size={26}
-            color={activeTab === 'home' ? '#0284C7' : '#D1D5DB'}
-          />
-          <Text style={[styles.navLabel, activeTab === 'home' && styles.navLabelActive]}>
-            Trang chủ
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => setActiveTab('profile')}
-          activeOpacity={0.7}
-        >
-          <Icon
-            name="account"
-            size={26}
-            color={activeTab === 'profile' ? '#0284C7' : '#D1D5DB'}
-          />
-          <Text style={[styles.navLabel, activeTab === 'profile' && styles.navLabelActive]}>
-            Cá nhân
-          </Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -237,13 +202,14 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     paddingTop: 40,
-    paddingBottom: 128,
+    paddingBottom: 80,
     paddingHorizontal: 24,
   },
   iconsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    gap: 12,
+    rowGap: 32,
   },
   iconContainer: {
     alignItems: 'center',
@@ -272,37 +238,5 @@ const styles = StyleSheet.create({
     marginTop: 12,
     lineHeight: 14,
     letterSpacing: 0.5,
-  },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingHorizontal: 64,
-    paddingVertical: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  navItem: {
-    alignItems: 'center',
-  },
-  navLabel: {
-    color: '#D1D5DB',
-    fontSize: 10,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    marginTop: 4,
-  },
-  navLabelActive: {
-    color: '#0284C7',
   },
 });

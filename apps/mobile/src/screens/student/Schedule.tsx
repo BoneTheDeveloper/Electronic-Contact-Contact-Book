@@ -1,13 +1,20 @@
 /**
  * Schedule Screen
  * Class timetable display with week day selector and period cards
- * Uses real Supabase data via student store
+ * Matches wireframe design with back button and bottom nav
  */
 
 import React, { useState, useEffect, useMemo } from "react";
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { useStudentStore } from "../../stores";
 import { useAuthStore } from "../../stores";
+import { Icon } from "../../components/ui";
+import { WeekDaySelector } from "../../components/ui";
+import type { StudentHomeStackNavigationProp } from "../../navigation/types";
+
+interface ScheduleScreenProps {
+  navigation?: StudentHomeStackNavigationProp;
+}
 
 interface Period {
   id: string;
@@ -18,7 +25,7 @@ interface Period {
   teacher: string;
   room: string;
   session: "morning" | "afternoon";
-  color: string;
+  color: { bg: string; text: string };
 }
 
 interface DaySchedule {
@@ -29,31 +36,35 @@ interface DaySchedule {
   periods: Period[];
 }
 
-// Day names mapping
+// Subject colors
+const SUBJECT_COLORS: Record<string, { bg: string; text: string }> = {
+  "Toán": { bg: '#EFF6FF', text: '#1D4ED8' },
+  "Toán học": { bg: '#EFF6FF', text: '#1D4ED8' },
+  "Ngữ văn": { bg: '#FAF5FF', text: '#9333EA' },
+  "Văn": { bg: '#FAF5FF', text: '#9333EA' },
+  "Tiếng Anh": { bg: '#ECFDF5', text: '#059669' },
+  "Anh": { bg: '#ECFDF5', text: '#059669' },
+  "Vật lý": { bg: '#EEF2FF', text: '#4F46E5' },
+  "Lý": { bg: '#EEF2FF', text: '#4F46E5' },
+  "Hóa học": { bg: '#FEF3C7', text: '#D97706' },
+  "Hóa": { bg: '#FEF3C7', text: '#D97706' },
+  "Lịch sử": { bg: '#FEF2F2', text: '#DC2626' },
+  "Sử": { bg: '#FEF2F2', text: '#DC2626' },
+  "Địa lý": { bg: '#ECFEFF', text: '#0891B2' },
+  "Địa": { bg: '#ECFEFF', text: '#0891B2' },
+  "Sinh học": { bg: '#F0FDF4', text: '#16A34A' },
+  "Sinh": { bg: '#F0FDF4', text: '#16A34A' },
+};
+
+// Day names mapping (only 5 days for wireframe)
 const DAY_INFO = [
   { dayOfWeek: 1, dayLabel: "T2", dayName: "Thứ Hai" },
   { dayOfWeek: 2, dayLabel: "T3", dayName: "Thứ Ba" },
   { dayOfWeek: 3, dayLabel: "T4", dayName: "Thứ Tư" },
   { dayOfWeek: 4, dayLabel: "T5", dayName: "Thứ Năm" },
   { dayOfWeek: 5, dayLabel: "T6", dayName: "Thứ Sáu" },
-  { dayOfWeek: 6, dayLabel: "T7", dayName: "Thứ Bảy" },
-  { dayOfWeek: 7, dayLabel: "CN", dayName: "Chủ Nhật" },
 ];
 
-// Subject colors
-const SUBJECT_COLORS: Record<string, string> = {
-  "Toán": "bg-blue-100 text-blue-600",
-  "Ngữ văn": "bg-purple-100 text-purple-600",
-  "Tiếng Anh": "bg-emerald-100 text-emerald-600",
-  "Anh": "bg-emerald-100 text-emerald-600",
-  "Vật lý": "bg-indigo-100 text-indigo-600",
-  "Hóa học": "bg-amber-100 text-amber-600",
-  "Lịch sử": "bg-rose-100 text-rose-600",
-  "Địa lý": "bg-cyan-100 text-cyan-600",
-  "Sinh học": "bg-green-100 text-green-600",
-};
-
-// Get subject short name
 const getSubjectShort = (subjectName: string): string => {
   const shortNames: Record<string, string> = {
     "Toán học": "Toán",
@@ -71,46 +82,44 @@ const getSubjectShort = (subjectName: string): string => {
   return shortNames[subjectName] || subjectName.substring(0, 3);
 };
 
-// Get subject color
-const getSubjectColor = (subjectName: string): string => {
-  return SUBJECT_COLORS[subjectName] || "bg-gray-100 text-gray-600";
+const getSubjectColor = (subjectName: string): { bg: string; text: string } => {
+  return SUBJECT_COLORS[subjectName] || { bg: '#F3F4F6', text: '#6B7280' };
 };
 
-// Get day number for current week
 const getDayNumber = (dayOfWeek: number): number => {
   const now = new Date();
-  const currentDay = now.getDay() || 7; // 0 = Sunday -> 7
+  const currentDay = now.getDay() || 7;
   const diff = dayOfWeek - currentDay;
   const targetDate = new Date(now);
   targetDate.setDate(now.getDate() + diff);
   return targetDate.getDate();
 };
 
-export const StudentScheduleScreen: React.FC = () => {
+const getWeekRange = (): string => {
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  const day = startOfWeek.getDay();
+  const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+  startOfWeek.setDate(diff);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 4);
+  return `Từ ${startOfWeek.getDate()}/${startOfWeek.getMonth() + 1} đến ${endOfWeek.getDate()}/${endOfWeek.getMonth() + 1}/${endOfWeek.getFullYear()}`;
+};
+
+export const StudentScheduleScreen: React.FC<ScheduleScreenProps> = ({ navigation }) => {
   const { user } = useAuthStore();
   const { studentData, schedule, isLoading, loadSchedule } = useStudentStore();
 
-  const [selectedDayIndex, setSelectedDayIndex] = useState(0); // 0 = Monday (T2)
+  const [selectedDay, setSelectedDay] = useState(1); // 1-5 (T2-T6)
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState<'home' | 'messages' | 'profile'>('home');
 
-  // Load schedule when student data is available
-  useEffect(() => {
-    if (user?.id && user?.role === 'student') {
-      // First load student data to get classId
-      if (!studentData) {
-        // We need to load student profile first
-        // For now, use a default loading approach
-      }
-    }
-  }, [user?.id]);
-
-  // Load schedule when classId is available
   useEffect(() => {
     if (studentData?.classId) {
       loadSchedule(studentData.classId);
     }
   }, [studentData?.classId]);
 
-  // Group schedule by day of week
   const weekSchedule = useMemo(() => {
     const dayMap = new Map<number, Period[]>();
 
@@ -119,7 +128,6 @@ export const StudentScheduleScreen: React.FC = () => {
         dayMap.set(item.dayOfWeek, []);
       }
 
-      // Determine session based on period (1-5 morning, 6-10 afternoon)
       const session = item.periodId <= 5 ? "morning" : "afternoon";
       const timeRange = getTimeRange(item.periodId);
       const color = getSubjectColor(item.subjectName);
@@ -130,7 +138,7 @@ export const StudentScheduleScreen: React.FC = () => {
         time: timeRange,
         subject: item.subjectName,
         subjectShort: getSubjectShort(item.subjectName),
-        teacher: `GV ${item.subjectName}`, // Would need teacher name from profiles
+        teacher: `GV ${item.subjectName}`,
         room: item.room || "Phòng học",
         session,
         color,
@@ -146,11 +154,10 @@ export const StudentScheduleScreen: React.FC = () => {
     }));
   }, [schedule]);
 
-  const selectedSchedule = weekSchedule[selectedDayIndex];
+  const selectedSchedule = weekSchedule.find(d => d.dayOfWeek === selectedDay) || weekSchedule[0]!;
   const morningPeriods = selectedSchedule.periods.filter((p) => p.session === "morning");
   const afternoonPeriods = selectedSchedule.periods.filter((p) => p.session === "afternoon");
 
-  // Get time range for period
   function getTimeRange(periodId: number): string {
     const times: Record<number, string> = {
       1: "07:00 - 07:45",
@@ -167,142 +174,351 @@ export const StudentScheduleScreen: React.FC = () => {
     return times[periodId] || "--:-- - --:--";
   }
 
-  const renderPeriodCard = (period: Period) => (
-    <View
-      key={period.id}
-      className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mb-3"
-    >
-      <View className="flex-row justify-between items-start">
-        <View className="flex-1">
-          <View className="flex-row items-center gap-2 mb-1">
-            <View
-              className={`px-2 py-0.5 rounded-full ${
-                period.session === "morning"
-                  ? "bg-orange-100 text-orange-600"
-                  : "bg-sky-100 text-sky-600"
-              }`}
-            >
-              <Text className="text-[8px] font-black uppercase">
-                Tiết {period.periodNumber}
-              </Text>
-            </View>
-            <Text className="text-gray-400 text-[9px] font-medium">
-              {period.time}
-            </Text>
-          </View>
-          <Text className="text-gray-800 font-bold text-base mb-0.5">
-            {period.subject}
-          </Text>
-          <Text className="text-gray-500 text-xs font-medium">
-            {period.room}
-          </Text>
-        </View>
-        <View
-          className={`w-10 h-10 rounded-xl items-center justify-center ${period.color.split(" ")[0]}`}
-        >
-          <Text
-            className={`font-black text-sm ${period.color.split(" ")[1]}`}
-          >
-            {period.subjectShort}
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
+  const handleDayChange = (day: number) => {
+    setSelectedDay(day);
+    const index = DAY_INFO.findIndex(d => d.dayOfWeek === day);
+    setSelectedDayIndex(index >= 0 ? index : 0);
+  };
 
-  const renderDaySelector = () => (
-    <View className="bg-white p-2 rounded-2xl shadow-sm border border-gray-100 mb-6">
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View className="flex-row">
-          {weekSchedule.map((day, index) => (
-            <TouchableOpacity
-              key={day.dayOfWeek}
-              onPress={() => setSelectedDayIndex(index)}
-              className={`flex-1 py-2 rounded-xl mx-1 w-14 items-center ${
-                selectedDayIndex === index ? "bg-[#0284C7]" : ""
-              }`}
-            >
-              <Text
-                className={`text-[9px] font-black uppercase ${
-                  selectedDayIndex === index ? "text-white" : "text-gray-400"
-                }`}
-              >
-                {day.dayLabel}
-              </Text>
-              <Text
-                className={`text-sm font-bold ${
-                  selectedDayIndex === index ? "text-white" : "text-gray-400"
-                }`}
-              >
-                {day.dayNumber}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-    </View>
-  );
-
-  const renderSessionHeader = (title: string, colorClass: string) => (
-    <View className="flex-row items-center gap-2 mb-3 mt-6">
-      <View className={`w-2 h-2 ${colorClass} rounded-full`} />
-      <Text className="text-gray-800 font-extrabold text-sm">{title}</Text>
-    </View>
-  );
-
-  // Loading state
   if (isLoading && schedule.length === 0) {
     return (
-      <View className="flex-1 bg-[#F8FAFC] justify-center items-center">
-        <ActivityIndicator size="large" color="#0284C7" />
-        <Text className="mt-4 text-sm text-gray-500">Đang tải thời khóa biểu...</Text>
+      <View style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0284C7" />
+          <Text style={styles.loadingText}>Đang tải thời khóa biểu...</Text>
+        </View>
       </View>
     );
   }
 
+  const weekStart = new Date();
+  const dayOfWeek = weekStart.getDay();
+  const diff = weekStart.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+  weekStart.setDate(diff);
+
   return (
-    <View className="flex-1 bg-[#F8FAFC]">
-      <View className="bg-[#0284C7] pt-16 px-6 pb-4 rounded-b-3xl">
-        <View className="flex-row items-center gap-4">
-          <View className="flex-1">
-            <Text className="text-white text-xl font-extrabold">
-              Thời khóa biểu
-            </Text>
-            <Text className="text-blue-100 text-xs font-medium mt-0.5">
-              {studentData?.className || "Lớp học"}
-            </Text>
+    <View style={styles.container}>
+      {/* Header with Back Button */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation?.goBack()}>
+            <Icon name="arrow-left" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerTitle}>Thời khóa biểu</Text>
+            <Text style={styles.headerSubtitle}>{getWeekRange()}</Text>
           </View>
         </View>
       </View>
 
+      {/* Main Content */}
       <ScrollView
-        className="flex-1 px-6 pt-6"
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {renderDaySelector()}
+        {/* Week Day Selector - Using shared component */}
+        <View style={styles.daySelectorContainer}>
+          <WeekDaySelector
+            selectedDay={selectedDay}
+            weekStart={weekStart}
+            onChange={handleDayChange}
+          />
+        </View>
 
+        {/* Morning Section */}
         {morningPeriods.length > 0 && (
           <>
-            {renderSessionHeader("BUỔI SÁNG", "bg-orange-500")}
+            <View style={styles.sessionHeader}>
+              <View style={[styles.sessionDot, { backgroundColor: '#F97316' }]} />
+              <Text style={styles.sessionTitle}>BUỔI SÁNG</Text>
+            </View>
             {morningPeriods.map(renderPeriodCard)}
           </>
         )}
 
+        {/* Afternoon Section */}
         {afternoonPeriods.length > 0 && (
           <>
-            {renderSessionHeader("BUỔI CHIỀU", "bg-sky-500")}
+            <View style={styles.sessionHeader}>
+              <View style={[styles.sessionDot, { backgroundColor: '#0EA5E9' }]} />
+              <Text style={styles.sessionTitle}>BUỔI CHIỀU</Text>
+            </View>
             {afternoonPeriods.map(renderPeriodCard)}
           </>
         )}
 
         {morningPeriods.length === 0 && afternoonPeriods.length === 0 && (
-          <View className="items-center justify-center py-20">
-            <Text className="text-gray-400 text-sm">Không có lịch học</Text>
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>Không có lịch học</Text>
           </View>
         )}
 
-        <View className="h-32" />
+        <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* Bottom Navigation Bar */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity
+          style={styles.navItem}
+          activeOpacity={0.7}
+        >
+          <Icon name="home" size={24} color={activeTab === 'home' ? '#0284C7' : '#D1D5DB'} />
+          <Text style={[styles.navLabel, activeTab === 'home' && styles.navLabelActive]}>Trang chủ</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navItem}
+          activeOpacity={0.7}
+        >
+          <View style={styles.messageIconContainer}>
+            <Icon name="message" size={24} color="#D1D5DB" />
+            <View style={styles.messageBadge} />
+          </View>
+          <Text style={styles.navLabel}>Tin nhắn</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navItem}
+          activeOpacity={0.7}
+        >
+          <Icon name="account" size={24} color={activeTab === 'profile' ? '#0284C7' : '#D1D5DB'} />
+          <Text style={[styles.navLabel, activeTab === 'profile' && styles.navLabelActive]}>Cá nhân</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
+
+  function renderPeriodCard(period: Period) {
+    return (
+      <View key={period.id} style={styles.periodCard}>
+        <View style={styles.periodCardHeader}>
+          <View style={styles.periodInfo}>
+            <View style={styles.periodBadges}>
+              <View style={[
+                styles.periodBadge,
+                { backgroundColor: period.session === "morning" ? '#FFF7ED' : '#E0F2FE' }
+              ]}>
+                <Text style={[
+                  styles.periodBadgeText,
+                  { color: period.session === "morning" ? '#F97316' : '#0EA5E9' }
+                ]}>
+                  Tiết {period.periodNumber}
+                </Text>
+              </View>
+              <Text style={styles.periodTime}>{period.time}</Text>
+            </View>
+            <Text style={styles.subjectName}>{period.subject}</Text>
+            <Text style={styles.periodDetails}>{period.teacher} • {period.room}</Text>
+          </View>
+          <View style={[styles.subjectIcon, { backgroundColor: period.color.bg }]}>
+            <Text style={[styles.subjectIconText, { color: period.color.text }]}>
+              {period.subjectShort}
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  header: {
+    paddingTop: 64,
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+    backgroundColor: '#0284C7',
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  headerSubtitle: {
+    color: 'rgba(224, 242, 254, 0.9)',
+    fontSize: 11,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 140,
+  },
+  daySelectorContainer: {
+    marginBottom: 24,
+  },
+  sessionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  sessionDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  sessionTitle: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  periodCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  periodCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  periodInfo: {
+    flex: 1,
+  },
+  periodBadges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  periodBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  periodBadgeText: {
+    fontSize: 8,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  periodTime: {
+    color: '#9CA3AF',
+    fontSize: 9,
+    fontWeight: '500',
+  },
+  subjectName: {
+    color: '#1F2937',
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  periodDetails: {
+    color: '#6B7280',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  subjectIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  subjectIconText: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 80,
+  },
+  emptyStateText: {
+    color: '#9CA3AF',
+    fontSize: 14,
+  },
+  bottomSpacer: {
+    height: 32,
+  },
+  bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingHorizontal: 40,
+    paddingVertical: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  navItem: {
+    alignItems: 'center',
+  },
+  navLabel: {
+    color: '#D1D5DB',
+    fontSize: 9,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    marginTop: 4,
+  },
+  navLabelActive: {
+    color: '#0284C7',
+  },
+  messageIconContainer: {
+    position: 'relative',
+  },
+  messageBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#EF4444',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+});

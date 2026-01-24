@@ -13,6 +13,8 @@ import {
   ScrollView,
   StyleSheet,
   Dimensions,
+  type ViewStyle,
+  type TextStyle,
 } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -96,25 +98,27 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       const disabled = isDateDisabled(day);
       const selected = isSelectedDate(day);
 
+      const dayCellStyle: ViewStyle = selected
+        ? StyleSheet.compose(styles.dayCell, styles.dayCellSelected) as ViewStyle
+        : disabled
+        ? StyleSheet.compose(styles.dayCell, styles.dayCellDisabled) as ViewStyle
+        : styles.dayCell;
+
+      const dayTextStyle: TextStyle = selected
+        ? StyleSheet.compose(styles.dayText, styles.dayTextSelected) as TextStyle
+        : disabled
+        ? StyleSheet.compose(styles.dayText, styles.dayTextDisabled) as TextStyle
+        : styles.dayText;
+
       days.push(
         <TouchableOpacity
           key={day}
-          style={[
-            styles.dayCell,
-            selected && styles.dayCellSelected,
-            disabled && styles.dayCellDisabled,
-          ]}
+          style={dayCellStyle}
           onPress={() => !disabled && handleDateSelect(day)}
           disabled={disabled}
           activeOpacity={0.7}
         >
-          <Text
-            style={[
-              styles.dayText,
-              selected && styles.dayTextSelected,
-              disabled && styles.dayTextDisabled,
-            ]}
-          >
+          <Text style={dayTextStyle}>
             {day}
           </Text>
         </TouchableOpacity>

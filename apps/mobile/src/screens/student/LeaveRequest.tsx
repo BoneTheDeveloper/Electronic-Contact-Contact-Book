@@ -1,11 +1,17 @@
 /**
  * Leave Request Screen
  * Submit absence request form with tabs for new request and history
+ * Proper StyleSheet styling
  */
 
 import React, { useState } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput } from 'react-native';
-import { useStudentStore } from '../../stores';
+import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput, StyleSheet, type ViewStyle } from 'react-native';
+import { Icon } from '../../components/ui';
+import type { StudentHomeStackNavigationProp } from '../../navigation/types';
+
+interface LeaveRequestScreenProps {
+  navigation?: StudentHomeStackNavigationProp;
+}
 
 interface LeaveRequestItem {
   id: string;
@@ -24,9 +30,7 @@ const LEAVE_REASONS = [
   'Khác',
 ];
 
-export const StudentLeaveRequestScreen: React.FC = () => {
-  const { studentData } = useStudentStore();
-  
+export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState<'new' | 'history'>('new');
   const [selectedReason, setSelectedReason] = useState('Đi gia đình');
   const [detailReason, setDetailReason] = useState('Có việc gia đình cần về quê');
@@ -60,7 +64,6 @@ export const StudentLeaveRequestScreen: React.FC = () => {
   ];
 
   const handleSubmit = () => {
-    // Submit logic here
     console.log('Submit leave request:', { selectedReason, detailReason, startDate, endDate });
   };
 
@@ -76,37 +79,70 @@ export const StudentLeaveRequestScreen: React.FC = () => {
   };
 
   const submitAppeal = () => {
-    // Submit appeal logic here
     console.log('Submit appeal:', { selectedRequest, appealType, appealDetail });
     setAppealModalVisible(false);
     setAppealDetail('');
     setSelectedRequest(null);
   };
 
+  const getStatusConfig = (status: LeaveRequestItem['status']) => {
+    switch (status) {
+      case 'approved':
+        return { bg: '#ECFDF5', text: '#059669', label: 'Đã duyệt' };
+      case 'pending':
+        return { bg: '#FEF3C7', text: '#D97706', label: 'Chờ duyệt' };
+      case 'rejected':
+        return { bg: '#FEF2F2', text: '#DC2626', label: 'Từ chối' };
+    }
+  };
+
   return (
-    <View className="flex-1 bg-slate-50">
+    <View style={styles.container}>
       {/* Header */}
-      <View className="bg-gradient-to-br from-[#0284C7] to-[#0369A1] pt-[60px] px-6 pb-6 rounded-b-[30px]">
-        <Text className="text-[20px] font-extrabold text-white">Đơn xin nghỉ phép</Text>
-        <Text className="text-[12px] text-blue-100 font-medium mt-0.5">Quản lý đơn xin nghỉ học</Text>
+      <View style={styles.headerBg}>
+        <View style={styles.headerContent}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation?.goBack()}>
+            <Icon name="arrow-left" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerTitle}>Đơn xin nghỉ phép</Text>
+            <Text style={styles.headerSubtitle}>Quản lý đơn xin nghỉ học</Text>
+          </View>
+        </View>
       </View>
 
-      <ScrollView className="px-6 pt-6 pb-[140px]" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Tabs */}
-        <View className="flex-row space-x-2 mb-6">
+        <View style={styles.tabContainer}>
           <TouchableOpacity
             onPress={() => setActiveTab('new')}
-            className={`flex-1 py-2.5 rounded-xl ${activeTab === 'new' ? 'bg-[#0284C7]' : 'bg-white border border-gray-200'}`}
+            style={[
+              styles.tab,
+              activeTab === 'new' ? styles.tabActive : styles.tabInactive,
+            ] as ViewStyle}
           >
-            <Text className={`text-sm font-black text-center ${activeTab === 'new' ? 'text-white' : 'text-gray-400'}`}>
+            <Text style={[
+              styles.tabText,
+              activeTab === 'new' ? styles.tabTextActive : styles.tabTextInactive,
+            ]}>
               Tạo đơn mới
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setActiveTab('history')}
-            className={`flex-1 py-2.5 rounded-xl ${activeTab === 'history' ? 'bg-[#0284C7]' : 'bg-white border border-gray-200'}`}
+            style={[
+              styles.tab,
+              activeTab === 'history' ? styles.tabActive : styles.tabInactive,
+            ] as ViewStyle}
           >
-            <Text className={`text-sm font-black text-center ${activeTab === 'history' ? 'text-white' : 'text-gray-400'}`}>
+            <Text style={[
+              styles.tabText,
+              activeTab === 'history' ? styles.tabTextActive : styles.tabTextInactive,
+            ]}>
               Lịch sử đơn
             </Text>
           </TouchableOpacity>
@@ -115,22 +151,22 @@ export const StudentLeaveRequestScreen: React.FC = () => {
         {activeTab === 'new' ? (
           <>
             {/* New Request Form */}
-            <View className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+            <View style={styles.formCard}>
               {/* Leave Type */}
-              <View>
-                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Lý do nghỉ</Text>
-                <View className="bg-gray-50 p-3 rounded-xl border border-gray-200">
-                  <Text className="text-gray-800 text-sm font-medium">{selectedReason}</Text>
+              <View style={styles.formField}>
+                <Text style={styles.fieldLabel}>Lý do nghỉ</Text>
+                <View style={styles.valueBox}>
+                  <Text style={styles.valueText}>{selectedReason}</Text>
                 </View>
               </View>
 
               {/* Reason Details */}
-              <View>
-                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Chi tiết lý do</Text>
+              <View style={styles.formField}>
+                <Text style={styles.fieldLabel}>Chi tiết lý do</Text>
                 <TextInput
                   value={detailReason}
                   onChangeText={setDetailReason}
-                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-gray-800 text-sm font-medium"
+                  style={styles.inputBox}
                   multiline
                   numberOfLines={3}
                   textAlignVertical="top"
@@ -138,96 +174,108 @@ export const StudentLeaveRequestScreen: React.FC = () => {
               </View>
 
               {/* Date Range */}
-              <View>
-                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Từ ngày</Text>
-                <View className="bg-gray-50 p-3 rounded-xl border border-gray-200">
-                  <Text className="text-gray-800 text-sm font-medium">{startDate}</Text>
+              <View style={styles.formField}>
+                <Text style={styles.fieldLabel}>Từ ngày</Text>
+                <View style={styles.valueBox}>
+                  <Text style={styles.valueText}>{startDate}</Text>
                 </View>
               </View>
 
-              <View>
-                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Đến ngày</Text>
-                <View className="bg-gray-50 p-3 rounded-xl border border-gray-200">
-                  <Text className="text-gray-800 text-sm font-medium">{endDate}</Text>
+              <View style={styles.formField}>
+                <Text style={styles.fieldLabel}>Đến ngày</Text>
+                <View style={styles.valueBox}>
+                  <Text style={styles.valueText}>{endDate}</Text>
                 </View>
               </View>
 
               {/* Submit Button */}
               <TouchableOpacity
                 onPress={handleSubmit}
-                className="bg-gradient-to-r from-[#0284C7] to-[#0369A1] py-3.5 rounded-xl shadow-lg items-center"
+                style={styles.submitButton}
               >
-                <Text className="text-white font-extrabold text-sm text-center">Gửi đơn xin nghỉ</Text>
+                <Text style={styles.submitButtonText}>Gửi đơn xin nghỉ</Text>
               </TouchableOpacity>
             </View>
 
             {/* Recent Requests Preview */}
-            <View className="mt-6">
-              <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-gray-800 font-extrabold text-sm">Đơn gần đây</Text>
+            <View style={styles.recentSection}>
+              <View style={styles.recentHeader}>
+                <Text style={styles.recentTitle}>Đơn gần đây</Text>
                 <TouchableOpacity onPress={() => setActiveTab('history')}>
-                  <Text className="text-[#0284C7] text-[10px] font-bold uppercase tracking-wider">Xem tất cả</Text>
+                  <Text style={styles.viewAllText}>Xem tất cả</Text>
                 </TouchableOpacity>
               </View>
 
-              <View className="space-y-3">
-                {recentRequests.slice(0, 2).map((request) => (
-                  <View key={request.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <View className="flex-row justify-between items-start mb-2">
-                      <View className="flex-row items-center space-x-2">
-                        <View className={`px-2 py-0.5 rounded-full ${request.status === 'approved' ? 'bg-emerald-100' : 'bg-amber-100'}`}>
-                          <Text className={`text-[8px] font-black uppercase ${request.status === 'approved' ? 'text-emerald-700' : 'text-amber-700'}`}>
-                            {request.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}
-                          </Text>
+              <View style={styles.requestsList}>
+                {recentRequests.slice(0, 2).map((request) => {
+                  const statusConfig = getStatusConfig(request.status);
+                  return (
+                    <View key={request.id} style={styles.requestCard}>
+                      <View style={styles.requestHeader}>
+                        <View style={styles.requestBadges}>
+                          <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
+                            <Text style={[styles.statusBadgeText, { color: statusConfig.text }]}>
+                              {statusConfig.label}
+                            </Text>
+                          </View>
+                          <Text style={styles.requestDate}>{request.date}</Text>
                         </View>
-                        <Text className="text-gray-400 text-[9px] font-medium">{request.date}</Text>
+                        <Text style={styles.requestDuration}>{request.duration}</Text>
                       </View>
-                      <Text className="text-gray-500 text-[9px] font-medium">{request.duration}</Text>
+                      <Text style={styles.requestReason}>{request.reason}</Text>
+                      <Text style={styles.requestDateRange}>{request.dateRange}</Text>
+                      {request.status === 'approved' && (
+                        <TouchableOpacity
+                          onPress={() => openAppealModal(request)}
+                          style={styles.appealButton}
+                        >
+                          <Text style={styles.appealButtonText}>Phúc khảo</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
-                    <Text className="text-gray-800 font-bold text-sm mb-1">{request.reason}</Text>
-                    <Text className="text-gray-400 text-[9px] font-medium mb-2">{request.dateRange}</Text>
-                    {request.status === 'approved' && (
-                      <TouchableOpacity
-                        onPress={() => openAppealModal(request)}
-                        className="bg-amber-50 border border-amber-200 py-2 rounded-xl items-center"
-                      >
-                        <Text className="text-amber-700 font-bold text-xs text-center">Phúc khảo</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                ))}
+                  );
+                })}
               </View>
             </View>
           </>
         ) : (
           <>
             {/* History List */}
-            <View className="space-y-3">
-              {recentRequests.map((request) => (
-                <View key={request.id} className={`p-4 rounded-2xl border shadow-sm ${request.status === 'pending' ? 'bg-white border-amber-200' : 'bg-white border-gray-100'}`}>
-                  <View className="flex-row justify-between items-start mb-2">
-                    <View className="flex-row items-center space-x-2">
-                      <View className={`px-2 py-0.5 rounded-full ${request.status === 'approved' ? 'bg-emerald-100' : request.status === 'pending' ? 'bg-amber-100' : 'bg-rose-100'}`}>
-                        <Text className={`text-[8px] font-black uppercase ${request.status === 'approved' ? 'text-emerald-700' : request.status === 'pending' ? 'text-amber-700' : 'text-rose-700'}`}>
-                          {request.status === 'approved' ? 'Đã duyệt' : request.status === 'pending' ? 'Chờ duyệt' : 'Từ chối'}
-                        </Text>
+            <View style={styles.historyList}>
+              {recentRequests.map((request) => {
+                const statusConfig = getStatusConfig(request.status);
+                return (
+                  <View
+                    key={request.id}
+                    style={[
+                      styles.requestCard,
+                      request.status === 'pending' && styles.requestCardPending,
+                    ]}
+                  >
+                    <View style={styles.requestHeader}>
+                      <View style={styles.requestBadges}>
+                        <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
+                          <Text style={[styles.statusBadgeText, { color: statusConfig.text }]}>
+                            {statusConfig.label}
+                          </Text>
+                        </View>
+                        <Text style={styles.requestDate}>{request.date}</Text>
                       </View>
-                      <Text className="text-gray-400 text-[9px] font-medium">{request.date}</Text>
+                      <Text style={styles.requestDuration}>{request.duration}</Text>
                     </View>
-                    <Text className="text-gray-500 text-[9px] font-medium">{request.duration}</Text>
+                    <Text style={styles.requestReason}>{request.reason}</Text>
+                    <Text style={styles.requestDateRange}>{request.dateRange}</Text>
+                    {request.status === 'approved' && (
+                      <TouchableOpacity
+                        onPress={() => openAppealModal(request)}
+                        style={styles.appealButton}
+                      >
+                        <Text style={styles.appealButtonText}>Phúc khảo</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
-                  <Text className="text-gray-800 font-bold text-sm mb-1">{request.reason}</Text>
-                  <Text className="text-gray-400 text-[9px] font-medium mb-2">{request.dateRange}</Text>
-                  {request.status === 'approved' && (
-                    <TouchableOpacity
-                      onPress={() => openAppealModal(request)}
-                      className="bg-amber-50 border border-amber-200 py-2 rounded-xl items-center"
-                    >
-                      <Text className="text-amber-700 font-bold text-xs text-center">Phúc khảo</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              ))}
+                );
+              })}
             </View>
           </>
         )}
@@ -240,37 +288,37 @@ export const StudentLeaveRequestScreen: React.FC = () => {
         animationType="fade"
         onRequestClose={closeAppealModal}
       >
-        <View className="flex-1 bg-black/50 justify-center items-center px-5">
-          <View className="bg-white rounded-3xl p-6 w-full max-h-[80%]">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
             {/* Header */}
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-gray-800 font-extrabold text-lg">Phúc khảo đơn</Text>
-              <TouchableOpacity onPress={closeAppealModal} className="w-8 h-8 bg-gray-100 rounded-full items-center justify-center">
-                <Text className="text-gray-500">✕</Text>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Phúc khảo đơn</Text>
+              <TouchableOpacity onPress={closeAppealModal} style={styles.modalCloseButton}>
+                <Text style={styles.modalCloseText}>✕</Text>
               </TouchableOpacity>
             </View>
 
             {/* Request Info */}
             {selectedRequest && (
-              <View className="bg-blue-50 p-3 rounded-xl mb-4">
-                <Text className="text-gray-500 text-[10px] font-medium mb-1">Đơn xin nghỉ:</Text>
-                <Text className="text-gray-800 font-bold text-sm mb-2">{selectedRequest.reason}</Text>
-                <Text className="text-gray-500 text-[10px] font-medium mb-1">Thời gian:</Text>
-                <Text className="text-gray-800 font-bold text-xs">{selectedRequest.dateRange}</Text>
+              <View style={styles.modalRequestInfo}>
+                <Text style={styles.modalInfoLabel}>Đơn xin nghỉ:</Text>
+                <Text style={styles.modalInfoReason}>{selectedRequest.reason}</Text>
+                <Text style={styles.modalInfoLabel}>Thời gian:</Text>
+                <Text style={styles.modalInfoDateRange}>{selectedRequest.dateRange}</Text>
               </View>
             )}
 
             {/* Appeal Form */}
-            <View className="space-y-3">
-              <View>
-                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Lý do phúc khảo</Text>
-                <View className="bg-gray-50 p-3 rounded-xl border border-gray-200">
-                  <Text className="text-gray-800 text-sm font-medium">{appealType}</Text>
+            <View style={styles.appealForm}>
+              <View style={styles.formField}>
+                <Text style={styles.fieldLabel}>Lý do phúc khảo</Text>
+                <View style={styles.valueBox}>
+                  <Text style={styles.valueText}>{appealType}</Text>
                 </View>
               </View>
 
-              <View>
-                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Giải trình chi tiết</Text>
+              <View style={styles.formField}>
+                <Text style={styles.fieldLabel}>Giải trình chi tiết</Text>
                 <TextInput
                   value={appealDetail}
                   onChangeText={setAppealDetail}
@@ -278,23 +326,23 @@ export const StudentLeaveRequestScreen: React.FC = () => {
                   placeholderTextColor="#9CA3AF"
                   multiline
                   numberOfLines={3}
-                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-gray-800 text-sm font-medium"
+                  style={styles.inputBox}
                   textAlignVertical="top"
                 />
               </View>
 
-              <View>
-                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">File đính kèm (nếu có)</Text>
-                <View className="border-2 border-dashed border-gray-300 rounded-xl p-4 items-center">
-                  <Text className="text-gray-400 text-xs font-medium text-center">Tap để tải file lên</Text>
+              <View style={styles.formField}>
+                <Text style={styles.fieldLabel}>File đính kèm (nếu có)</Text>
+                <View style={styles.fileUploadBox}>
+                  <Text style={styles.fileUploadText}>Tap để tải file lên</Text>
                 </View>
               </View>
 
               <TouchableOpacity
                 onPress={submitAppeal}
-                className="bg-gradient-to-r from-[#0284C7] to-[#0369A1] py-3.5 rounded-xl shadow-lg items-center"
+                style={styles.submitButton}
               >
-                <Text className="text-white font-extrabold text-sm text-center">Gửi yêu cầu phúc khảo</Text>
+                <Text style={styles.submitButtonText}>Gửi yêu cầu phúc khảo</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -303,3 +351,323 @@ export const StudentLeaveRequestScreen: React.FC = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  headerBg: {
+    backgroundColor: '#0284C7',
+    paddingTop: 60,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
+    borderBottomRightRadius: 30,
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  headerSubtitle: {
+    color: 'rgba(224, 242, 254, 0.9)',
+    fontSize: 12,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 140,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 24,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  tabActive: {
+    backgroundColor: '#0284C7',
+  },
+  tabInactive: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  tabTextActive: {
+    color: '#FFFFFF',
+  },
+  tabTextInactive: {
+    color: '#9CA3AF',
+  },
+  formCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+    gap: 16,
+  },
+  formField: {
+    gap: 8,
+  },
+  fieldLabel: {
+    color: '#374151',
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  valueBox: {
+    backgroundColor: '#F9FAFB',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  valueText: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  inputBox: {
+    backgroundColor: '#F9FAFB',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '500',
+    minHeight: 80,
+  },
+  submitButton: {
+    backgroundColor: '#0284C7',
+    paddingVertical: 14,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  recentSection: {
+    marginTop: 24,
+  },
+  recentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  recentTitle: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  viewAllText: {
+    color: '#0284C7',
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  requestsList: {
+    gap: 12,
+  },
+  requestCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  requestCardPending: {
+    borderColor: '#FDE68A',
+    backgroundColor: '#FFFBEB',
+  },
+  requestHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  requestBadges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  statusBadgeText: {
+    fontSize: 8,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  requestDate: {
+    color: '#9CA3AF',
+    fontSize: 9,
+    fontWeight: '500',
+  },
+  requestDuration: {
+    color: '#6B7280',
+    fontSize: 9,
+    fontWeight: '500',
+  },
+  requestReason: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  requestDateRange: {
+    color: '#9CA3AF',
+    fontSize: 9,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  appealButton: {
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    paddingVertical: 8,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  appealButtonText: {
+    color: '#B45309',
+    fontWeight: '700',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  historyList: {
+    gap: 12,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    width: '100%',
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    color: '#1F2937',
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  modalCloseButton: {
+    width: 32,
+    height: 32,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCloseText: {
+    color: '#6B7280',
+    fontSize: 16,
+  },
+  modalRequestInfo: {
+    backgroundColor: '#EFF6FF',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  modalInfoLabel: {
+    color: '#6B7280',
+    fontSize: 10,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  modalInfoReason: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  modalInfoDateRange: {
+    color: '#1F2937',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  appealForm: {
+    gap: 12,
+  },
+  fileUploadBox: {
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+  },
+  fileUploadText: {
+    color: '#9CA3AF',
+    fontSize: 12,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+});

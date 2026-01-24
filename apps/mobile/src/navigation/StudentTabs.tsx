@@ -8,7 +8,8 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, StyleSheet } from 'react-native';
-import Svg, { Path, Polyline, Circle } from 'react-native-svg';
+import * as Svg from 'react-native-svg';
+const { Path, Polyline, Circle } = Svg;
 import { useUIStore } from '../stores';
 import { colors } from '../theme';
 import {
@@ -66,19 +67,19 @@ const ProfileStackNavigator = () => (
 // Custom Tab Bar Icons
 const HomeIcon = ({ focused }: { focused: boolean }) => (
   <View style={styles.iconContainer}>
-    <Svg width={26} height={26} viewBox="0 0 24 24" fill="none">
+    <Svg.default width={26} height={26} viewBox="0 0 24 24" fill="none">
       <Path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke={focused ? colors.primary : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
       <Polyline points="9 22 9 12 15 12 15 22" stroke={focused ? colors.primary : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
-    </Svg>
+    </Svg.default>
   </View>
 );
 
 const ProfileIcon = ({ focused }: { focused: boolean }) => (
   <View style={styles.iconContainer}>
-    <Svg width={26} height={26} viewBox="0 0 24 24" fill="none">
+    <Svg.default width={26} height={26} viewBox="0 0 24 24" fill="none">
       <Path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke={focused ? colors.primary : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
       <Circle cx="12" cy="7" r="4" stroke={focused ? colors.primary : '#D1D5DB'} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
-    </Svg>
+    </Svg.default>
   </View>
 );
 

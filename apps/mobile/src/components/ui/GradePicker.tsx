@@ -11,6 +11,8 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
+  type ViewStyle,
+  type TextStyle,
 } from 'react-native';
 
 export interface PickerOption {
@@ -81,14 +83,20 @@ export const GradePicker: React.FC<GradePickerProps> = ({
             >
               {options.map((option) => {
                 const isSelected = option.value === value;
+                const optionStyle: ViewStyle = isSelected
+                  ? StyleSheet.compose(styles.option, styles.optionSelected) as ViewStyle
+                  : styles.option;
+                const optionTextStyle: TextStyle = isSelected
+                  ? StyleSheet.compose(styles.optionText, styles.optionTextSelected) as TextStyle
+                  : styles.optionText;
                 return (
                   <TouchableOpacity
                     key={option.value}
-                    style={isSelected ? [styles.option, styles.optionSelected] : styles.option}
+                    style={optionStyle}
                     onPress={() => handleSelect(option.value)}
                     activeOpacity={0.7}
                   >
-                    <Text style={isSelected ? [styles.optionText, styles.optionTextSelected] : styles.optionText}>
+                    <Text style={optionTextStyle}>
                       {option.label}
                     </Text>
                     {isSelected && (

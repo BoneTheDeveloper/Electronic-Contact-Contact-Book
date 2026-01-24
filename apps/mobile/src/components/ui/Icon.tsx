@@ -6,7 +6,8 @@
 
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
-import Svg, { Path, Circle, Polyline, Rect, Line } from 'react-native-svg';
+import * as Svg from 'react-native-svg';
+const { Path, Circle, Polyline, Rect, Line } = Svg;
 
 export interface IconProps {
   name: IconName;
@@ -253,9 +254,9 @@ const Icon: React.FC<IconProps> = ({
 
   return (
     <View style={[styles.container, { width: size, height: size }, style]}>
-      <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Svg.default width={size} height={size} viewBox="0 0 24 24">
         {renderIcon()}
-      </Svg>
+      </Svg.default>
     </View>
   );
 };

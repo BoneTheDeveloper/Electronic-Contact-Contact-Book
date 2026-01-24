@@ -1,13 +1,17 @@
 /**
  * Teacher Feedback Screen
- * Comments and feedback from teachers
+ * Comments and feedback from teachers with proper StyleSheet styling
  */
 
 import React, { useState } from "react";
-import { View, ScrollView, Text, TouchableOpacity } from "react-native";
+import { View, ScrollView, Text, TouchableOpacity, StyleSheet, type ViewStyle } from "react-native";
 import Svg, { Path, Circle, Line, Polygon } from "react-native-svg";
-import { useStudentStore } from "../../stores";
-import { colors } from "../../theme";
+import { Icon } from "../../components/ui";
+import type { StudentHomeStackNavigationProp } from "../../navigation/types";
+
+interface TeacherFeedbackScreenProps {
+  navigation?: StudentHomeStackNavigationProp;
+}
 
 interface Feedback {
   id: string;
@@ -70,13 +74,6 @@ const SENTIMENT_CONFIG = {
     badgeColor: "#FEF3C7",
     badgeText: "#D97706",
   },
-  neutral: {
-    label: "Cần cải thiện",
-    color: "#D97706",
-    bgColor: "#FEF3C7",
-    badgeColor: "#FEF3C7",
-    badgeText: "#D97706",
-  },
 };
 
 const StarIcon = ({ filled }: { filled: boolean }) => {
@@ -91,9 +88,7 @@ const StarIcon = ({ filled }: { filled: boolean }) => {
   );
 };
 
-export const StudentTeacherFeedbackScreen: React.FC = () => {
-  const { studentData } = useStudentStore();
-  const selectedChild = children.find((c) => c.id === selectedChildId) || children[0];
+export const StudentTeacherFeedbackScreen: React.FC<TeacherFeedbackScreenProps> = ({ navigation }) => {
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
 
   const filteredFeedback = MOCK_FEEDBACK.filter((item) => {
@@ -111,11 +106,9 @@ export const StudentTeacherFeedbackScreen: React.FC = () => {
     return (
       <TouchableOpacity
         onPress={() => setActiveFilter(filter)}
-        className={"flex-shrink-0 px-4 py-2 rounded-xl " + (isActive ? "bg-[#0284C7]" : "bg-white border border-gray-200")}
+        style={[styles.filterTab, isActive ? styles.filterTabActive : styles.filterTabInactive]}
       >
-        <Text
-          className={"text-xs font-black uppercase " + (isActive ? "text-white" : "text-gray-400")}
-        >
+        <Text style={[styles.filterTabText, isActive && styles.filterTabTextActive]}>
           {label}
         </Text>
       </TouchableOpacity>
@@ -126,166 +119,96 @@ export const StudentTeacherFeedbackScreen: React.FC = () => {
     const config = SENTIMENT_CONFIG[item.sentiment];
     const isConcern = item.sentiment === "concern";
     return (
-      <View
-        className={"bg-white p-4 rounded-2xl " + (isConcern ? "border border-amber-200" : "border border-gray-100") + " shadow-sm mb-3"}
-      >
-        <View className="flex-row justify-between items-start mb-3">
-          <View className="flex-row items-center space-x-2">
-            <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: config.badgeColor }}>
-              <Text className="text-[8px] font-black uppercase" style={{ color: config.badgeText }}>
+      <View style={[styles.feedbackCard, isConcern && styles.feedbackCardConcern]}>
+        <View style={styles.feedbackHeader}>
+          <View style={styles.feedbackBadges}>
+            <View style={[styles.sentimentBadge, { backgroundColor: config.badgeColor }]}>
+              <Text style={[styles.sentimentBadgeText, { color: config.badgeText }]}>
                 {config.label}
               </Text>
             </View>
-            <Text className="text-gray-400 text-[9px] font-medium">{item.date}</Text>
+            <Text style={styles.feedbackDate}>{item.date}</Text>
           </View>
-          <View className="flex-row items-center space-x-1">
+          <View style={styles.starContainer}>
             {[1, 2, 3, 4, 5].map((star) => (
               <StarIcon key={star} filled={star <= item.rating} />
             ))}
           </View>
         </View>
-        <View className="flex-row items-start space-x-3">
-          <View
-            className="w-10 h-10 rounded-xl justify-center items-center"
-            style={{
-              backgroundColor:
-                item.teacherAvatar === "GV"
-                  ? "#DBEAFE"
-                  : item.teacherAvatar === "LH"
-                  ? "#D1FAE5"
-                  : "#E0E7FF",
-            }}
-          >
-            <Text
-              className="font-black text-sm"
-              style={{
-                color:
-                  item.teacherAvatar === "GV"
-                    ? "#0284C7"
-                    : item.teacherAvatar === "LH"
-                    ? "#059669"
-                    : "#4F46E5",
-              }}
-            >
+        <View style={styles.feedbackContent}>
+          <View style={[styles.avatar, { backgroundColor: item.teacherAvatar === "GV" ? "#DBEAFE" : item.teacherAvatar === "LH" ? "#D1FAE5" : "#E0E7FF" }]}>
+            <Text style={[styles.avatarText, { color: item.teacherAvatar === "GV" ? "#0284C7" : item.teacherAvatar === "LH" ? "#059669" : "#4F46E5" }]}>
               {item.teacherAvatar}
             </Text>
           </View>
-          <View className="flex-1">
-            <Text className="text-gray-800 font-bold text-sm mb-0.5">
-              {item.teacherName}
-            </Text>
-            <Text className="text-gray-400 text-[9px] font-medium mb-2">
-              {item.subject}
-            </Text>
-            <Text className="text-gray-600 text-xs leading-snug">
-              {item.message}
-            </Text>
+          <View style={styles.feedbackInfo}>
+            <Text style={styles.teacherName}>{item.teacherName}</Text>
+            <Text style={styles.teacherSubject}>{item.subject}</Text>
+            <Text style={styles.feedbackMessage}>{item.message}</Text>
           </View>
         </View>
       </View>
     );
   };
 
-  const ThumbsUpIcon = () => (
-    <Svg width={16} height={16} viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth={3}>
-      <Path d='M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3' />
-    </Svg>
-  );
-
-  const AlertIcon = () => (
-    <Svg width={16} height={16} viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth={3}>
-      <Circle cx='12' cy='12' r='10' />
-      <Line x1='12' y1='8' x2='12' y2='12' />
-      <Line x1='12' y1='16' x2='12.01' y2='16' />
-    </Svg>
-  );
-
-  const BackIcon = () => (
-    <Svg width={20} height={20} viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth={2.5}>
-      <Path d='M19 12H5' />
-      <Path d='M12 19l-7-7 7-7' />
-    </Svg>
-  );
-
   return (
-    <View className="flex-1 bg-[#F8FAFC]">
-      <View
-        className="absolute top-0 left-0 right-0 h-35 z-0"
-        style={{
-          backgroundColor: "#0284C7",
-          borderBottomLeftRadius: 30,
-          borderBottomRightRadius: 30,
-        }}
-      />
-      <View className="relative z-10 px-6 pt-16 pb-4">
-        <View className="flex-row items-center space-x-4">
-          <TouchableOpacity
-            className="w-10 h-10 bg-white/20 rounded-full justify-center items-center"
-            onPress={() => {}}
-          >
-            <BackIcon />
-          </TouchableOpacity>
-          <View>
-            <Text className="text-white text-xl font-extrabold">Nhận xét giáo viên</Text>
-            <Text className="text-blue-100 text-xs font-medium mt-0.5">
-              Nhận xét và đánh giá của giáo viên
-            </Text>
-          </View>
+    <View style={styles.container}>
+      {/* Header Background */}
+      <View style={styles.headerBg} />
+
+      {/* Header with Back Button */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation?.goBack()}>
+          <Icon name="arrow-left" size={20} color="#FFFFFF" />
+        </TouchableOpacity>
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.headerTitle}>Nhận xét giáo viên</Text>
+          <Text style={styles.headerSubtitle}>Nhận xét và đánh giá của giáo viên</Text>
         </View>
       </View>
+
+      {/* Main Content */}
       <ScrollView
-        className="flex-1 px-6 pt-6"
-        contentContainerStyle={{ paddingBottom: 128 }}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-row space-x-2 mb-5 overflow-x-auto">
+        {/* Filter Tabs */}
+        <View style={styles.filterContainer}>
           <FilterTab label="Tất cả" filter="all" />
           <FilterTab label="Tích cực" filter="positive" />
           <FilterTab label="Cần cải thiện" filter="concern" />
         </View>
-        <View className="flex-row space-x-3 mb-6">
-          <View
-            className="flex-1 p-4 rounded-2xl"
-            style={{
-              backgroundColor: "#A855F7",
-              shadowColor: "#6B21A8",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.2,
-              shadowRadius: 8,
-              elevation: 4,
-            }}
-          >
-            <View className="flex-row items-center space-x-2 mb-1">
-              <ThumbsUpIcon />
-              <Text className="text-purple-100 text-[9px] font-black uppercase">
-                Tích cực
-              </Text>
+
+        {/* Summary Stats */}
+        <View style={styles.statsContainer}>
+          <View style={[styles.statCard, styles.statPositive]}>
+            <View style={styles.statHeader}>
+              <Svg width={16} height={16} viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth={3}>
+                <Path d='M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3' />
+              </Svg>
+              <Text style={styles.statLabel}>Tích cực</Text>
             </View>
-            <Text className="text-white text-3xl font-extrabold">{positiveCount}</Text>
+            <Text style={styles.statValue}>{positiveCount}</Text>
           </View>
-          <View
-            className="flex-1 p-4 rounded-2xl"
-            style={{
-              backgroundColor: "#F59E0B",
-              shadowColor: "#B45309",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.2,
-              shadowRadius: 8,
-              elevation: 4,
-            }}
-          >
-            <View className="flex-row items-center space-x-2 mb-1">
-              <AlertIcon />
-              <Text className="text-amber-100 text-[9px] font-black uppercase">
-                Cần lưu ý
-              </Text>
+
+          <View style={[styles.statCard, styles.statConcern]}>
+            <View style={styles.statHeader}>
+              <Svg width={16} height={16} viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth={3}>
+                <Circle cx='12' cy='12' r='10' />
+                <Line x1='12' y1='8' x2='12' y2='12' />
+                <Line x1='12' y1='16' x2='12.01' y2='16' />
+              </Svg>
+              <Text style={styles.statLabel}>Cần lưu ý</Text>
             </View>
-            <Text className="text-white text-3xl font-extrabold">{concernCount}</Text>
+            <Text style={styles.statValue}>{concernCount}</Text>
           </View>
         </View>
-        <Text className="text-gray-800 font-extrabold text-sm mb-3">
-          Nhận xét gần đây
-        </Text>
+
+        {/* Feedback List Header */}
+        <Text style={styles.listTitle}>Nhận xét gần đây</Text>
+
+        {/* Feedback List */}
         {filteredFeedback.map((item) => (
           <FeedbackCard key={item.id} item={item} />
         ))}
@@ -293,3 +216,212 @@ export const StudentTeacherFeedbackScreen: React.FC = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  headerBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 140,
+    backgroundColor: '#0284C7',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 64,
+    paddingBottom: 16,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  headerSubtitle: {
+    color: 'rgba(224, 242, 254, 0.9)',
+    fontSize: 12,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 128,
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 20,
+  },
+  filterTab: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  filterTabActive: {
+    backgroundColor: '#0284C7',
+  } as ViewStyle,
+  filterTabInactive: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  filterTabText: {
+    fontSize: 12,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    color: '#9CA3AF',
+  },
+  filterTabTextActive: {
+    color: '#FFFFFF',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  statCard: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  statPositive: {
+    backgroundColor: '#A855F7',
+  },
+  statConcern: {
+    backgroundColor: '#F59E0B',
+  },
+  statHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  statLabel: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 9,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  statValue: {
+    color: '#FFFFFF',
+    fontSize: 28,
+    fontWeight: '800',
+  },
+  listTitle: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '800',
+    marginBottom: 12,
+  },
+  feedbackCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+    marginBottom: 12,
+  },
+  feedbackCardConcern: {
+    borderColor: '#FDE68A',
+    backgroundColor: '#FFFBEB',
+  },
+  feedbackHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  feedbackBadges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sentimentBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  sentimentBadgeText: {
+    fontSize: 8,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  feedbackDate: {
+    color: '#9CA3AF',
+    fontSize: 9,
+    fontWeight: '500',
+  },
+  starContainer: {
+    flexDirection: 'row',
+    gap: 2,
+  },
+  feedbackContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  feedbackInfo: {
+    flex: 1,
+  },
+  teacherName: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  teacherSubject: {
+    color: '#9CA3AF',
+    fontSize: 9,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  feedbackMessage: {
+    color: '#6B7280',
+    fontSize: 12,
+    lineHeight: 18,
+  },
+});
