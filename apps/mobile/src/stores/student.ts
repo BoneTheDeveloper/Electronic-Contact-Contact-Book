@@ -1,10 +1,18 @@
 /**
  * Student Store
- * Manages student-specific data with MOCK DATA for testing
- * TODO: Replace with real Supabase queries when database is ready
+ * Manages student-specific data with real Supabase queries
+ * Falls back to mock data if Supabase returns errors or for development
  */
 
 import { create } from 'zustand';
+import {
+  getStudentProfile,
+  getStudentGrades,
+  getStudentAttendance,
+  getStudentSchedule,
+  getStudentComments,
+  getStudentInvoices,
+} from '../lib/supabase/queries';
 
 interface StudentData {
   id: string;
@@ -252,65 +260,132 @@ export const useStudentStore = create<StudentState>((set) => ({
   isLoading: false,
   error: null,
 
-  // Load student profile data (MOCK)
+  // Load student profile data
   loadStudentData: async (studentId: string) => {
     set({ isLoading: true, error: null });
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    set({ studentData: MOCK_STUDENT_DATA, isLoading: false });
+    try {
+      const profile = await getStudentProfile(studentId);
+      if (profile) {
+        set({
+          studentData: {
+            id: profile.id,
+            name: profile.fullName,
+            studentCode: profile.studentCode,
+            classId: profile.classId,
+            className: profile.className,
+            gradeId: profile.gradeId,
+            avatarUrl: profile.avatarUrl,
+          },
+          isLoading: false,
+        });
+      } else {
+        console.warn('[StudentStore] Profile not found, using mock data');
+        set({ studentData: MOCK_STUDENT_DATA, isLoading: false });
+      }
+    } catch (err) {
+      console.error('[StudentStore] Error loading student data:', err);
+      set({ studentData: MOCK_STUDENT_DATA, isLoading: false, error: (err as Error).message });
+    }
   },
 
-  // Load grades (MOCK)
+  // Load grades
   loadGrades: async (studentId: string) => {
     set({ isLoading: true, error: null });
 
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    set({ grades: MOCK_GRADES, isLoading: false });
+    try {
+      const grades = await getStudentGrades(studentId);
+      if (grades.length > 0) {
+        set({ grades, isLoading: false });
+      } else {
+        console.warn('[StudentStore] No grades found, using mock data');
+        set({ grades: MOCK_GRADES, isLoading: false });
+      }
+    } catch (err) {
+      console.error('[StudentStore] Error loading grades:', err);
+      set({ grades: MOCK_GRADES, isLoading: false, error: (err as Error).message });
+    }
   },
 
-  // Load attendance (MOCK)
+  // Load attendance
   loadAttendance: async (studentId: string, monthFilter?: string) => {
     set({ isLoading: true, error: null });
 
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const attendance = generateMockAttendance();
-    const presentDays = attendance.filter(
-      (record) => record.status === 'present' || record.status === 'late' || record.status === 'excused'
-    ).length;
-    const percentage = attendance.length > 0 ? (presentDays / attendance.length) * 100 : 0;
-
-    set({ attendance, attendancePercentage: percentage, isLoading: false });
+    try {
+      const attendance = await getStudentAttendance(studentId, monthFilter);
+      if (attendance.length > 0) {
+        const presentDays = attendance.filter(
+          (record) => record.status === 'present' || record.status === 'late' || record.status === 'excused'
+        ).length;
+        const percentage = attendance.length > 0 ? (presentDays / attendance.length) * 100 : 0;
+        set({ attendance, attendancePercentage: percentage, isLoading: false });
+      } else {
+        console.warn('[StudentStore] No attendance found, using mock data');
+        const mockAttendance = generateMockAttendance();
+        const presentDays = mockAttendance.filter(
+          (record) => record.status === 'present' || record.status === 'late' || record.status === 'excused'
+        ).length;
+        const percentage = mockAttendance.length > 0 ? (presentDays / mockAttendance.length) * 100 : 0;
+        set({ attendance: mockAttendance, attendancePercentage: percentage, isLoading: false });
+      }
+    } catch (err) {
+      console.error('[StudentStore] Error loading attendance:', err);
+      const mockAttendance = generateMockAttendance();
+      const presentDays = mockAttendance.filter(
+        (record) => record.status === 'present' || record.status === 'late' || record.status === 'excused'
+      ).length;
+      const percentage = mockAttendance.length > 0 ? (presentDays / mockAttendance.length) * 100 : 0;
+      set({ attendance: mockAttendance, attendancePercentage: percentage, isLoading: false, error: (err as Error).message });
+    }
   },
 
-  // Load schedule (MOCK)
+  // Load schedule
   loadSchedule: async (classId: string, semester: string = '1') => {
     set({ isLoading: true, error: null });
 
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    set({ schedule: MOCK_SCHEDULE, isLoading: false });
+    try {
+      const schedule = await getStudentSchedule(classId, semester);
+      if (schedule.length > 0) {
+        set({ schedule, isLoading: false });
+      } else {
+        console.warn('[StudentStore] No schedule found, using mock data');
+        set({ schedule: MOCK_SCHEDULE, isLoading: false });
+      }
+    } catch (err) {
+      console.error('[StudentStore] Error loading schedule:', err);
+      set({ schedule: MOCK_SCHEDULE, isLoading: false, error: (err as Error).message });
+    }
   },
 
-  // Load teacher comments (MOCK)
+  // Load teacher comments
   loadComments: async (studentId: string) => {
     set({ isLoading: true, error: null });
 
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    set({ comments: MOCK_COMMENTS, isLoading: false });
+    try {
+      const comments = await getStudentComments(studentId);
+      set({ comments, isLoading: false });
+    } catch (err) {
+      console.error('[StudentStore] Error loading comments:', err);
+      set({ comments: MOCK_COMMENTS, isLoading: false, error: (err as Error).message });
+    }
   },
 
-  // Load invoices/payments (MOCK)
+  // Load invoices/payments
   loadInvoices: async (studentId: string) => {
     set({ isLoading: true, error: null });
 
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    set({ invoices: MOCK_INVOICES, isLoading: false });
+    try {
+      const invoices = await getStudentInvoices(studentId);
+      if (invoices.length > 0) {
+        set({ invoices, isLoading: false });
+      } else {
+        console.warn('[StudentStore] No invoices found, using mock data');
+        set({ invoices: MOCK_INVOICES, isLoading: false });
+      }
+    } catch (err) {
+      console.error('[StudentStore] Error loading invoices:', err);
+      set({ invoices: MOCK_INVOICES, isLoading: false, error: (err as Error).message });
+    }
   },
 
   // Clear error

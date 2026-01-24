@@ -210,10 +210,15 @@ export function UsersManagement({
               {row.name.split(' ').slice(0, 2).map((n: string) => n[0]).join('')}
             </div>
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-slate-800">{row.name}</p>
-            <p className="text-xs text-slate-400">{row.email}</p>
+            <p className="text-xs text-slate-400 truncate">{row.role === 'parent' ? (row.phone || row.email) : row.email}</p>
           </div>
+          {row.code && (
+            <span className="shrink-0 px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-mono font-bold">
+              {row.code}
+            </span>
+          )}
         </div>
       ),
     },
@@ -441,10 +446,12 @@ export function UsersManagement({
             }}
             user={{
               id: selectedUser.id,
+              code: selectedUser.code,
               name: selectedUser.name,
               role: selectedUser.role,
               status: selectedUser.status,
               email: selectedUser.email,
+              phone: selectedUser.phone,
             }}
             currentUser={currentUser}
           />

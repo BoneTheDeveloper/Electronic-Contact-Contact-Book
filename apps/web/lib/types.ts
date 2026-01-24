@@ -22,12 +22,14 @@ export interface Student {
 
 export interface User {
   id: string
+  code?: string // Unique code: AD001, TC001, PH12345678, ST2024001
   name: string
   email: string
   role: 'admin' | 'teacher' | 'parent' | 'student'
   status: 'active' | 'inactive'
   avatar?: string
   classId?: string
+  phone?: string
 }
 
 export interface Class {

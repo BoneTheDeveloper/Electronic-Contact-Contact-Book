@@ -111,21 +111,61 @@ function handleQueryError(error: { message?: string; code?: string }, context: s
 export const getUsers = cache(async (): Promise<User[]> => {
   const supabase = await getSupabase()
 
-  const { data, error } = await supabase
+  // Fetch all profiles with their role-specific codes
+  const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
-    .select('id, email, role, full_name, status, avatar_url')
+    .select('id, email, role, full_name, status, avatar_url, phone')
     .order('created_at', { ascending: false })
 
-  if (error) handleQueryError(error, 'getUsers')
+  if (profilesError) handleQueryError(profilesError, 'getUsers')
 
-  return (data || []).map((p: any) => ({
-    id: p.id,
-    name: p.full_name || p.email.split('@')[0],
-    email: p.email,
-    role: p.role as User['role'],
-    status: p.status as User['status'],
-    avatar: p.avatar_url || undefined
-  }))
+  // Fetch role-specific codes
+  const [adminsResult, teachersResult, parentsResult] = await Promise.all([
+    supabase.from('admins').select('id, admin_code'),
+    supabase.from('teachers').select('id, employee_code'),
+    supabase.from('parents').select('id, parent_code')
+  ])
+
+  const adminCodes = new Map((adminsResult.data || []).map((a: any) => [a.id, a.admin_code]))
+  const teacherCodes = new Map((teachersResult.data || []).map((t: any) => [t.id, t.employee_code]))
+  const parentCodes = new Map((parentsResult.data || []).map((p: any) => [p.id, p.parent_code]))
+
+  // Fetch student codes
+  const { data: students } = await supabase
+    .from('students')
+    .select('id, student_code')
+
+  const studentCodes = new Map((students || []).map((s: any) => [s.id, s.student_code]))
+
+  return (profiles || []).map((p: any) => {
+    let code: string | undefined
+
+    switch (p.role) {
+      case 'admin':
+        code = adminCodes.get(p.id)
+        break
+      case 'teacher':
+        code = teacherCodes.get(p.id)
+        break
+      case 'parent':
+        code = parentCodes.get(p.id)
+        break
+      case 'student':
+        code = studentCodes.get(p.id)
+        break
+    }
+
+    return {
+      id: p.id,
+      code,
+      name: p.full_name || p.email.split('@')[0],
+      email: p.email,
+      role: p.role as User['role'],
+      status: p.status as User['status'],
+      avatar: p.avatar_url || undefined,
+      phone: p.phone || undefined
+    }
+  })
 })
 
 /**

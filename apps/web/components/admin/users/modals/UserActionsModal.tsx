@@ -12,6 +12,7 @@ interface UserActionsModalProps {
   onLinkStudent?: () => void
   user: {
     id: string
+    code?: string
     name: string
     role: string
     status: string
@@ -181,7 +182,9 @@ export function UserActionsModal({ isOpen, onClose, onSuccess, onLinkParent, onL
             </div>
             <div>
               <h4 className="text-lg font-black text-slate-800">{user.name}</h4>
-              <p className="text-sm font-medium text-slate-500">{user.id}</p>
+              <p className="text-sm font-medium text-slate-500">
+                {user.code || user.id}
+              </p>
               <span className={cn(
                 'inline-block mt-1 px-3 py-1 text-xs font-bold rounded-lg',
                 getRoleBadgeClass(user.role)
