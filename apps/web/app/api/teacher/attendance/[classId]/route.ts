@@ -5,7 +5,6 @@
  */
 
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import {
   getClassStudentsForAttendance,
   getClassAttendance,
@@ -14,7 +13,7 @@ import {
 import { requireAuth } from '@/lib/auth'
 
 interface RouteContext {
-  params: { classId: string }
+  params: Promise<{ classId: string }>
 }
 
 /**
@@ -50,15 +49,17 @@ export async function GET(
       }, { status: 400 })
     }
 
+    const { classId } = await params
+
     // Fetch students and existing attendance in parallel
     const [students, existingAttendance, approvedLeaves] = await Promise.all([
-      getClassStudentsForAttendance(params.classId, date),
+      getClassStudentsForAttendance(classId, date),
       getClassAttendance(
-        params.classId,
+        classId,
         date,
         periodId ? parseInt(periodId) : undefined
       ),
-      getApprovedLeaveRequests(params.classId, date)
+      getApprovedLeaveRequests(classId, date)
     ])
 
     // Create a map of existing attendance

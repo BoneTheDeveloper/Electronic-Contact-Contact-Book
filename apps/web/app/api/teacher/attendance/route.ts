@@ -15,9 +15,7 @@ import {
   getAbsentStudents
 } from '@/lib/supabase/queries/attendance'
 import { requireAuth } from '@/lib/auth'
-import {
-  sendAttendanceNotifications
-} from '@/lib/services/attendance-notification-service'
+import { sendAttendanceNotifications } from '@/lib/services/attendance-notification-service'
 
 /**
  * GET /api/teacher/attendance
