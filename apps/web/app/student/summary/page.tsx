@@ -12,10 +12,11 @@ import Link from 'next/link';
 export default async function StudentSummaryPage({
   searchParams,
 }: {
-  searchParams: { semester?: string };
+  searchParams: Promise<{ semester?: string }>;
 }) {
   const supabase = await createClient();
-  const semester = searchParams.semester || 'I';
+  const params = await searchParams;
+  const semester = params.semester || 'I';
 
   // TODO: Fetch real summary data from Supabase
   const mockSummary = {

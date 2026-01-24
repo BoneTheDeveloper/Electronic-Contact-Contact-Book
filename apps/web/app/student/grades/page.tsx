@@ -16,10 +16,11 @@ import { useState } from 'react';
 export default async function StudentGradesPage({
   searchParams,
 }: {
-  searchParams: { semester?: string };
+  searchParams: Promise<{ semester?: string }>;
 }) {
   const supabase = await createClient();
-  const semester = searchParams.semester || 'I';
+  const params = await searchParams;
+  const semester = params.semester || 'I';
 
   const {
     data: { user },

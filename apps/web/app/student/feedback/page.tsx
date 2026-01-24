@@ -11,10 +11,11 @@ import { cn } from '@/lib/utils';
 export default async function StudentFeedbackPage({
   searchParams,
 }: {
-  searchParams: { filter?: string };
+  searchParams: Promise<{ filter?: string }>;
 }) {
   const supabase = await createClient();
-  const filter = searchParams.filter || 'all';
+  const params = await searchParams;
+  const filter = params.filter || 'all';
 
   // TODO: Fetch real feedback from Supabase
   const mockFeedback = [

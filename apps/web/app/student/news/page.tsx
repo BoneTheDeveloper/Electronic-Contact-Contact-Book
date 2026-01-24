@@ -10,10 +10,11 @@ import { Newspaper, Eye } from 'lucide-react';
 export default async function StudentNewsPage({
   searchParams,
 }: {
-  searchParams: { category?: string };
+  searchParams: Promise<{ category?: string }>;
 }) {
   const supabase = await createClient();
-  const category = searchParams.category || 'all';
+  const params = await searchParams;
+  const category = params.category || 'all';
 
   // TODO: Fetch real news from Supabase
   const mockNews = [

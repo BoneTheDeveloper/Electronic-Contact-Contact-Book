@@ -10,11 +10,12 @@ import { createClient } from '@/lib/supabase/server';
 export default async function StudentAttendancePage({
   searchParams,
 }: {
-  searchParams: { month?: string };
+  searchParams: Promise<{ month?: string }>;
 }) {
   const supabase = await createClient();
   const now = new Date();
-  const currentMonth = searchParams.month || now.toISOString().slice(0, 7);
+  const params = await searchParams;
+  const currentMonth = params.month || now.toISOString().slice(0, 7);
 
   // TODO: Fetch real attendance from Supabase
   // For now, showing mock data

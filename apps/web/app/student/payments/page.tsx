@@ -11,10 +11,11 @@ import Link from 'next/link';
 export default async function StudentPaymentsPage({
   searchParams,
 }: {
-  searchParams: { filter?: string };
+  searchParams: Promise<{ filter?: string }>;
 }) {
   const supabase = await createClient();
-  const filter = searchParams.filter || 'all';
+  const params = await searchParams;
+  const filter = params.filter || 'all';
 
   // TODO: Fetch real payments from Supabase
   const mockInvoices = [

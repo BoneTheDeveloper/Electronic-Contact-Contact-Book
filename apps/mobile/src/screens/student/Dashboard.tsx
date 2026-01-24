@@ -1,10 +1,9 @@
 /**
  * Student Dashboard Screen
- * Wireframe-matched design with simplified layout
- * Shows 9 service icons in 3x3 grid for navigation
+ * Wireframe-matched design with 3x3 function grid and bottom nav
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { View, ScrollView, TouchableOpacity, Dimensions, Text, StyleSheet } from 'react-native';
 import { useAuthStore } from '../../stores';
 import { useStudentStore } from '../../stores';
@@ -46,6 +45,7 @@ interface DashboardScreenProps {
 export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const { user } = useAuthStore();
   const { studentData } = useStudentStore();
+  const [activeTab, setActiveTab] = useState<'home' | 'profile'>('home');
 
   const getInitials = (name?: string) => {
     if (!name) return 'SV';
@@ -68,7 +68,7 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
         activeOpacity={0.92}
       >
         <View style={styles.iconBox}>
-          <Icon name={item.icon as 'calendar' | 'check-circle' | 'account-check' | 'book' | 'file-document' | 'message-reply' | 'newspaper' | 'chart-pie' | 'cash'} size={32} color={item.color} />
+          <Icon name={item.icon as any} size={32} color={item.color} />
         </View>
         <Text style={styles.iconLabel}>{item.label}</Text>
       </TouchableOpacity>
@@ -78,7 +78,7 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
   return (
     <View style={styles.container}>
       {/* Header with gradient background */}
-      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+      <View style={styles.header}>
         <View style={styles.headerTop}>
           <View style={styles.userInfo}>
             <View style={styles.avatar}>
@@ -116,6 +116,39 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
           {STUDENT_SERVICE_ICONS.map(renderServiceIcon)}
         </View>
       </ScrollView>
+
+      {/* Bottom Navigation Bar */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => setActiveTab('home')}
+          activeOpacity={0.7}
+        >
+          <Icon
+            name="home"
+            size={26}
+            color={activeTab === 'home' ? '#0284C7' : '#D1D5DB'}
+          />
+          <Text style={[styles.navLabel, activeTab === 'home' && styles.navLabelActive]}>
+            Trang chủ
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => setActiveTab('profile')}
+          activeOpacity={0.7}
+        >
+          <Icon
+            name="account"
+            size={26}
+            color={activeTab === 'profile' ? '#0284C7' : '#D1D5DB'}
+          />
+          <Text style={[styles.navLabel, activeTab === 'profile' && styles.navLabelActive]}>
+            Cá nhân
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -129,6 +162,7 @@ const styles = StyleSheet.create({
     paddingTop: 64,
     paddingHorizontal: 24,
     paddingBottom: 24,
+    backgroundColor: '#0284C7',
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
@@ -238,5 +272,37 @@ const styles = StyleSheet.create({
     marginTop: 12,
     lineHeight: 14,
     letterSpacing: 0.5,
+  },
+  bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingHorizontal: 64,
+    paddingVertical: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  navItem: {
+    alignItems: 'center',
+  },
+  navLabel: {
+    color: '#D1D5DB',
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    marginTop: 4,
+  },
+  navLabelActive: {
+    color: '#0284C7',
   },
 });

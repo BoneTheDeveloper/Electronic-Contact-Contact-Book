@@ -11,10 +11,11 @@ import Link from 'next/link';
 export default async function StudentSchedulePage({
   searchParams,
 }: {
-  searchParams: { day?: string };
+  searchParams: Promise<{ day?: string }>;
 }) {
   const supabase = await createClient();
-  const selectedDay = parseInt(searchParams.day || '1');
+  const params = await searchParams;
+  const selectedDay = parseInt(params.day || '1');
 
   // TODO: Fetch real schedule from Supabase
   // For now, showing mock data matching the wireframe
