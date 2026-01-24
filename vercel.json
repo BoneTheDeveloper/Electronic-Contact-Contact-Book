@@ -1,6 +1,6 @@
 {
   "buildCommand": "pnpm build --filter=web",
   "outputDirectory": "apps/web/.next",
-  "installCommand": "pnpm install --no-frozen-lockfile --filter=@school-management/web --ignore-scripts",
+  "installCommand": "pnpm install --no-frozen-lockfile --filter=@school-management/web --ignore-scripts --no-strict-peer-dependencies",
   "framework": null
 }
