@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle2, XCircle, Clock } from 'lucide-react'
 import type { AttendanceStats } from '@/lib/types'
-import { useState, useEffect } from 'react'
+import { useState, useLayoutEffect } from 'react'
 
 interface AttendanceChartProps {
   initialData: AttendanceStats
@@ -13,7 +13,7 @@ export function AttendanceChart({ initialData }: AttendanceChartProps) {
   const [period, setPeriod] = useState<'week' | 'month' | 'semester'>('week')
   const [data, setData] = useState(initialData)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Simulate data fetch on period change
     const mockData: Record<typeof period, AttendanceStats> = {
       week: { excused: 8, unexcused: 4, tardy: 28 },

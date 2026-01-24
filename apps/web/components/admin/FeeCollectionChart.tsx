@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle2, Clock } from 'lucide-react'
 import type { FeeStats } from '@/lib/types'
-import { useState, useEffect } from 'react'
+import { useState, useLayoutEffect } from 'react'
 
 interface FeeCollectionChartProps {
   initialData: FeeStats
@@ -13,7 +13,7 @@ export function FeeCollectionChart({ initialData }: FeeCollectionChartProps) {
   const [semester, setSemester] = useState<'1' | '2'>('1')
   const [data, setData] = useState(initialData)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const mockData: Record<typeof semester, FeeStats> = {
       '1': {
         percentage: 84,

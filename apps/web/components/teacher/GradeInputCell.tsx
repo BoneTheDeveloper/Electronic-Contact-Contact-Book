@@ -2,7 +2,7 @@
 
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { useState, useEffect } from 'react'
+import { useState, useLayoutEffect } from 'react'
 
 interface GradeInputCellProps {
   value?: number
@@ -32,7 +32,7 @@ export function GradeInputCell({
   )
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setInputValue(value !== undefined ? value.toString() : '')
   }, [value])
 

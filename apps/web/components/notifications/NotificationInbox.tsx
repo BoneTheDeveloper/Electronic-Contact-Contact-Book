@@ -14,6 +14,21 @@ export function NotificationInbox({ userId }: NotificationInboxProps) {
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const [unreadCount, setUnreadCount] = useState(0)
 
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/notifications/my?unreadOnly=${filter === 'unread'}`)
+      const result = await response.json()
+      if (result.success) {
+        setNotifications(result.data || [])
+        setUnreadCount(
+          (result.data || []).filter((n: UserNotification) => !n.isRead).length
+        )
+      }
+    } catch (error) {
+      console.error('[NotificationInbox] Failed to fetch:', error)
+    }
+  }, [filter])
+
   useEffect(() => {
     fetchNotifications()
 
@@ -41,27 +56,12 @@ export function NotificationInbox({ userId }: NotificationInboxProps) {
     return () => {
       channel.unsubscribe()
     }
-  }, [userId])
+  }, [userId, fetchNotifications])
 
   // Refetch when filter changes
   useEffect(() => {
     fetchNotifications()
-  }, [filter])
-
-  const fetchNotifications = async () => {
-    try {
-      const response = await fetch(`/api/notifications/my?unreadOnly=${filter === 'unread'}`)
-      const result = await response.json()
-      if (result.success) {
-        setNotifications(result.data || [])
-        setUnreadCount(
-          (result.data || []).filter((n: UserNotification) => !n.isRead).length
-        )
-      }
-    } catch (error) {
-      console.error('[NotificationInbox] Failed to fetch:', error)
-    }
-  }
+  }, [fetchNotifications])
 
   const markAsRead = useCallback(
     async (notificationId: string) => {
