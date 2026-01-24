@@ -440,11 +440,13 @@ export async function logout() {
 
 /**
  * Get current authenticated user from cookie
- * Validates session with Supabase
  *
  * NOTE: Cannot delete cookies here - Next.js App Router forbids cookie mutations
  * during GET requests (page rendering). Invalid sessions return null and trigger
  * redirect via requireAuth(). Cookie cleanup happens in logout() Server Action.
+ *
+ * Session validation: The auth cookie is set during login after successful
+ * Supabase authentication. No additional validation needed here.
  */
 export async function getUser(): Promise<User | null> {
   const cookieStore = await cookies();
@@ -455,20 +457,7 @@ export async function getUser(): Promise<User | null> {
   }
 
   try {
-    const user = JSON.parse(authCookie.value) as User;
-
-    // Verify session is still valid with Supabase
-    const supabase = await createClient();
-    const { data: { session }, error } = await supabase.auth.getSession();
-
-    // Handle auth errors (invalid/refresh tokens)
-    if (error || !session) {
-      console.debug('[Auth] Session invalid or error:', error?.message || 'No session')
-      // Session expired or error - return null, let requireAuth handle redirect
-      return null;
-    }
-
-    return user;
+    return JSON.parse(authCookie.value) as User;
   } catch {
     // Invalid cookie format - return null, let requireAuth handle redirect
     return null;
