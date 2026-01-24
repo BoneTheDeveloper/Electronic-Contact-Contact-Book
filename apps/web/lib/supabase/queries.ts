@@ -1,9 +1,20 @@
 // ==================== SUPABASE DATA LAYER ====================
 // Real Supabase queries replacing all mock data functions
 // Uses server client for server components (async)
-// Performance: React cache() + Next.js fetch caching
+// Performance: React.cache-like wrapper for query memoization
 
-import { cache } from 'react'
+// Simple cache wrapper for memoizing async functions
+function cache<T extends (...args: unknown[]) => unknown>(fn: T): T {
+  const cache = new Map<string, Promise<ReturnType<T>>>()
+  return ((...args: unknown[]) => {
+    const key = JSON.stringify(args)
+    if (!cache.has(key)) {
+      cache.set(key, fn(...args))
+    }
+    return cache.get(key)!
+  }) as T
+}
+
 import { createClient as createServerClient } from './server'
 import { Database } from '@/types/supabase'
 import type {
@@ -597,10 +608,13 @@ export const getInvoices = cache(async (): Promise<Invoice[]> => {
   if (error) handleQueryError(error, 'getInvoices')
 
   return (data || []).map((inv) => ({
-    id: inv.id,
-    studentId: inv.student_id,
-    studentName: inv.student_name,
-    amount: inv.total_amount,
+    id: inv.id || '',
+    studentId: inv.student_id || '',
+    studentName: inv.student_name || '',
+    amount: inv.total_amount || 0,
+    totalAmount: inv.total_amount || 0,
+    paidAmount: inv.paid_amount || 0,
+    remainingAmount: inv.remaining_amount || 0,
     status: inv.status as Invoice['status'],
     dueDate: inv.due_date || undefined,
     paidDate: inv.paid_date || undefined
@@ -628,12 +642,15 @@ export async function getInvoiceById(id: string): Promise<Invoice | null> {
   if (!data) return null
 
   return {
-    id: data.id,
-    studentId: data.student_id,
-    studentName: data.student_name,
-    amount: data.total_amount,
+    id: data.id || '',
+    studentId: data.student_id || '',
+    studentName: data.student_name || '',
+    amount: data.total_amount || 0,
+    totalAmount: data.total_amount || 0,
+    paidAmount: data.paid_amount || 0,
+    remainingAmount: data.remaining_amount || 0,
     status: data.status as Invoice['status'],
-    dueDate: data.due_date,
+    dueDate: data.due_date || undefined,
     paidDate: data.paid_date || undefined
   }
 }

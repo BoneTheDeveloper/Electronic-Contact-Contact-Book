@@ -231,7 +231,6 @@ export function FeeAssignmentWizard({ onComplete }: FeeAssignmentWizardProps) {
             selectedFees={selectedFees}
             invoiceName={invoiceName}
             feeItems={feeItems}
-            onFeesChange={setSelectedFees}
             onNameChange={setInvoiceName}
             onToggleFee={toggleFee}
             totalAmount={totalAmount}
@@ -514,7 +513,7 @@ function Step3TimelineConfiguration({
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Tần suất nhắc</label>
               <select
                 value={reminderFrequency}
-                onChange={(e) => onReminderFrequencyChange(e.target.value)}
+                onChange={(e) => onReminderFrequencyChange(e.target.value as 'once' | 'daily' | 'weekly')}
                 className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-[#0284C7]"
               >
                 <option value="once">Nhắc 1 lần</option>

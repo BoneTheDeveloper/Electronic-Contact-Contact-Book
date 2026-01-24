@@ -5,7 +5,7 @@ import { TrendingUp, Award, BarChart3 } from 'lucide-react'
 import { StatCard, DataTable, FilterBar } from '@/components/admin/shared'
 import type { Column } from '@/components/admin/shared'
 
-interface GradeRecord {
+interface GradeRecord extends Record<string, unknown> {
   id: string
   studentName: string
   classId: string
@@ -45,7 +45,7 @@ export function GradesManagement() {
     gradeF: 0,
   })
   const [loading, setLoading] = useState(true)
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Record<string, string | number | string[]>>({
     search: '',
     class: '',
     subject: '',
@@ -69,10 +69,10 @@ export function GradesManagement() {
     const fetchGrades = async () => {
       setLoading(true)
       const params = new URLSearchParams()
-      if (filters.search) params.append('search', filters.search)
-      if (filters.class) params.append('classId', filters.class)
-      if (filters.subject) params.append('subject', filters.subject)
-      if (filters.letterGrade) params.append('letterGrade', filters.letterGrade)
+      if (filters.search) params.append('search', String(filters.search))
+      if (filters.class) params.append('classId', String(filters.class))
+      if (filters.subject) params.append('subject', String(filters.subject))
+      if (filters.letterGrade) params.append('letterGrade', String(filters.letterGrade))
 
       try {
         const response = await fetch(`/api/grades?${params}`)
@@ -110,7 +110,7 @@ export function GradesManagement() {
   }, [])
 
   // Handle filter change - memoized
-  const handleFilterChange = useCallback((key: string, value: string) => {
+  const handleFilterChange = useCallback((key: string, value: string | number | string[]) => {
     setFilters(prev => ({ ...prev, [key]: value }))
   }, [])
 
@@ -152,7 +152,7 @@ export function GradesManagement() {
       label: 'Lớp',
       render: (value) => (
         <span className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-          {value}
+          {value as React.ReactNode}
         </span>
       ),
     },
@@ -160,7 +160,7 @@ export function GradesManagement() {
       key: 'subject',
       label: 'Môn học',
       render: (value) => (
-        <span className="text-sm font-medium text-slate-700">{value}</span>
+        <span className="text-sm font-medium text-slate-700">{value as React.ReactNode}</span>
       ),
     },
     {
@@ -168,7 +168,7 @@ export function GradesManagement() {
       label: 'Giữa kỳ',
       render: (value) => (
         <span className="rounded-lg bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-700">
-          {value.toFixed(1)}
+          {(value as number).toFixed(1)}
         </span>
       ),
     },
@@ -177,7 +177,7 @@ export function GradesManagement() {
       label: 'Cuối kỳ',
       render: (value) => (
         <span className="rounded-lg bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-700">
-          {value.toFixed(1)}
+          {(value as number).toFixed(1)}
         </span>
       ),
     },
@@ -186,14 +186,14 @@ export function GradesManagement() {
       label: 'Trung bình',
       render: (value) => (
         <span className="rounded-lg bg-blue-50 px-3 py-1 text-sm font-black text-blue-700">
-          {value.toFixed(1)}
+          {(value as number).toFixed(1)}
         </span>
       ),
     },
     {
       key: 'letterGrade',
       label: 'Điểm chữ',
-      render: (value) => getGradeBadge(value),
+      render: (value) => getGradeBadge(value as string),
     },
   ], [getGradeBadge])
 

@@ -73,7 +73,7 @@ export function StatCard({
           <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
             {title}
           </p>
-          <p className="text-3xl font-black text-slate-800">{value}</p>
+          <p className="text-3xl font-black text-slate-800">{value as React.ReactNode}</p>
           {trend !== undefined && (
             <p
               className={cn(

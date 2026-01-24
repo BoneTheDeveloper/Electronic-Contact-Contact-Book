@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { DollarSign, TrendingUp, AlertCircle, FileText, Plus, Download } from 'lucide-react'
 import { StatCard, DataTable, StatusBadge, FilterBar } from '@/components/admin/shared'
 import type { Column } from '@/components/admin/shared'
+import type { Invoice } from '@/lib/types'
 import { FeeItemsTable } from './FeeItemsTable'
 import { FeeAssignmentWizard } from './FeeAssignmentWizard'
 import { QuickAccessCard } from './QuickAccessCard'
@@ -13,16 +14,6 @@ import { PaymentConfirmModal } from './modals/PaymentConfirmModal'
 import { InvoiceDetailModal } from './modals/InvoiceDetailModal'
 import { SendReminderModal } from './modals/SendReminderModal'
 import { ExportReportModal } from './modals/ExportReportModal'
-
-interface Invoice {
-  id: string
-  studentId: string
-  studentName: string
-  amount: number
-  status: 'paid' | 'pending' | 'overdue'
-  dueDate: string
-  paidDate?: string
-}
 
 interface PaymentStats {
   totalAmount: number
@@ -133,7 +124,7 @@ export function PaymentsManagement() {
   }, [])
 
   // Handle filter change - memoized
-  const handleFilterChange = useCallback((key: string, value: string) => {
+  const handleFilterChange = useCallback((key: string, value: string | string[] | number) => {
     setFilters(prev => ({ ...prev, [key]: value }))
   }, [])
 
@@ -193,7 +184,7 @@ export function PaymentsManagement() {
           pending: { label: 'Chờ thanh toán', status: 'warning' as const },
           overdue: { label: 'Quá hạn', status: 'error' as const },
         }
-        const config = statusConfig[value as keyof typeof statusConfig]
+        const config = statusConfig[value]
         return <StatusBadge status={config.status} label={config.label} />
       },
     },
@@ -496,13 +487,13 @@ export function PaymentsManagement() {
           setRefreshKey(k => k + 1)
         }}
         recipients={invoices
-          .filter(inv => inv.status === 'pending' || inv.status === 'overdue')
+          .filter(inv => (inv.status === 'pending' || inv.status === 'overdue') && inv.dueDate)
           .map(inv => ({
             studentName: inv.studentName,
             parentEmail: `parent_${inv.studentId}@example.com`,
             parentPhone: '09xxxxxxxx',
             amount: inv.amount,
-            dueDate: inv.dueDate,
+            dueDate: inv.dueDate || "",
           }))}
         currentUser={currentUser}
       />

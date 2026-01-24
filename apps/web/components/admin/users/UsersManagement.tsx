@@ -228,7 +228,8 @@ export function UsersManagement({
           student: { label: 'Học sinh', color: 'bg-orange-100 text-orange-700' },
         }
         // Safe type assertion with fallback
-        const config = roleConfig[value ?? ''] ?? { label: value ?? 'Unknown', color: 'bg-gray-100 text-gray-700' }
+        const roleKey = String(value ?? '')
+        const config = roleConfig[roleKey] ?? { label: roleKey || 'Unknown', color: 'bg-gray-100 text-gray-700' }
         return (
           <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase ${config.color}`}>
             <Shield className="h-3 w-3" />
@@ -242,7 +243,7 @@ export function UsersManagement({
       label: 'Lớp / Đơn vị',
       render: (value) => value ? (
         <span className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-          Lớp {value}
+          Lớp {value as React.ReactNode}
         </span>
       ) : (
         <span className="text-xs text-slate-400">—</span>

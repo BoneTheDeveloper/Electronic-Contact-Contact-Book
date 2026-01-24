@@ -21,7 +21,7 @@ export interface DataTableProps<T> {
   className?: string
 }
 
-export function DataTable<T extends Record<string, unknown>>({
+export function DataTable<T extends object & { id: string }>({
   data,
   columns,
   onRowClick,
@@ -120,8 +120,8 @@ export function DataTable<T extends Record<string, unknown>>({
                   className="whitespace-nowrap px-4 py-3 text-sm text-slate-700"
                 >
                   {column.render
-                    ? column.render(row[column.key as keyof T], row)
-                    : String(row[column.key as keyof T] ?? '')}
+                    ? column.render(row[column.key], row)
+                    : String(row[column.key] ?? '')}
                 </td>
               ))}
             </tr>

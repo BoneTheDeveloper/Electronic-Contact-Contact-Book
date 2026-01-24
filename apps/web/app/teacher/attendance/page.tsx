@@ -1,4 +1,4 @@
-import { getTeacherClasses } from '@/lib/supabase/queries'
+import { getTeacherClasses, type TeacherClass } from '@/lib/supabase/queries'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, Users, Clock } from 'lucide-react'
 import Link from 'next/link'
@@ -17,7 +17,7 @@ export default async function AttendanceListPage() {
 
       {/* Classes Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {classes.map((cls: { id: string; name: string; subject: string; isHomeroom: boolean; studentCount: number }) => (
+        {classes.map((cls: TeacherClass) => (
           <Link key={cls.id} href={`/teacher/attendance/${cls.id}`}>
             <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-l-sky-500">
               <CardHeader>

@@ -35,7 +35,7 @@ export async function GET() {
     const { data: sessions, error } = await supabase
       .from('user_sessions')
       .select('*')
-      .eq('user_id', user.id as any)
+      .eq('user_id', user.id)
       .order('last_active', { ascending: false })
       .limit(10)
 
@@ -80,8 +80,8 @@ export async function DELETE(request: Request) {
     const { data: session } = await supabase
       .from('user_sessions')
       .select('*')
-      .eq('id', sessionId as any)
-      .eq('user_id', user.id as any)
+      .eq('id', sessionId)
+      .eq('user_id', user.id)
       .single()
 
     if (!session) {
@@ -100,8 +100,8 @@ export async function DELETE(request: Request) {
 
     const { error: updateError } = await supabase
       .from('user_sessions')
-      .update(updateData as any)
-      .eq('id', sessionId as any)
+      .update(updateData)
+      .eq('id', sessionId)
 
     if (updateError) {
       return NextResponse.json({

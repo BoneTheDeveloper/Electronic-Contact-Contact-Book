@@ -141,8 +141,8 @@ export async function POST(request: NextRequest) {
     }
 
     const { data, error } = await supabase
-      .from('fee_assignments' as const)
-      .insert(insertData as any)
+      .from('fee_assignments')
+      .insert(insertData)
       .select()
       .single()
 

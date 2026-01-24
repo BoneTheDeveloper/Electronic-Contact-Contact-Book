@@ -139,7 +139,7 @@ export async function DELETE(request: Request) {
     const { error } = await supabase
       .from('notifications')
       .delete()
-      .eq('id', id as any);
+      .eq('id', id);
 
     if (error) {
       throw new Error(`Failed to delete notification: ${error.message}`);

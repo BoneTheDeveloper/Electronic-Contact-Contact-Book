@@ -5,28 +5,13 @@ import { CheckCircle, AlertCircle } from 'lucide-react'
 import { BaseModal } from '@/components/admin/shared/modals/BaseModal'
 import { PrimaryButton } from '@/components/admin/shared/buttons/primary-button'
 import { SecondaryButton } from '@/components/admin/shared/buttons/secondary-button'
-
-export interface InvoiceSummary {
-  id: string
-  studentName: string
-  studentId: string
-  totalAmount: number
-  paidAmount: number
-  remainingAmount: number
-  status: 'paid' | 'pending' | 'overdue'
-  dueDate: string
-  feeItems: Array<{
-    name: string
-    code: string
-    amount: number
-  }>
-}
+import type { Invoice } from '@/lib/types'
 
 interface PaymentConfirmModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess?: () => void
-  invoice: InvoiceSummary
+  invoice: Invoice
   currentUser?: { role: string; id?: string }
 }
 
@@ -116,7 +101,7 @@ export function PaymentConfirmModal({
       pending: { label: 'Chờ thanh toán', color: 'bg-amber-100 text-amber-700' },
       overdue: { label: 'Quá hạn', color: 'bg-red-100 text-red-700' },
     }
-    const { label, color } = config[status as keyof typeof config] || config.pending
+    const { label, color } = config[value] || config.pending
     return (
       <span className={`px-3 py-1 text-xs font-black uppercase rounded-lg ${color}`}>
         {label}
@@ -188,20 +173,22 @@ export function PaymentConfirmModal({
         </div>
 
         {/* Fee Items Preview */}
-        <div>
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Chi Tiết Khoản Thu</p>
-          <div className="space-y-2 max-h-32 overflow-y-auto">
-            {invoice.feeItems.map((item, index) => (
-              <div key={index} className="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
-                <div>
-                  <p className="text-xs font-bold text-slate-700">{item.name}</p>
-                  <p className="text-[10px] text-slate-400 font-mono">{item.code}</p>
+        {invoice.feeItems && invoice.feeItems.length > 0 && (
+          <div>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Chi Tiết Khoản Thu</p>
+            <div className="space-y-2 max-h-32 overflow-y-auto">
+              {invoice.feeItems.map((item, index) => (
+                <div key={index} className="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                  <div>
+                    <p className="text-xs font-bold text-slate-700">{item.code}</p>
+                    <p className="text-[10px] text-slate-400 font-mono">{item.code}</p>
+                  </div>
+                  <span className="text-xs font-bold text-slate-800">{formatCurrency(item.amount)} ₫</span>
                 </div>
-                <span className="text-xs font-bold text-slate-800">{formatCurrency(item.amount)} ₫</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Payment Amount Input */}
         <div>

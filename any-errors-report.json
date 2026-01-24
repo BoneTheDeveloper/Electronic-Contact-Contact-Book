@@ -1,0 +1,1668 @@
+{
+  "web": [
+    {
+      "file": "app/teacher/conduct/ConductClient.tsx",
+      "count": 14,
+      "errors": [
+        {
+          "line": 28,
+          "col": 43
+        },
+        {
+          "line": 51,
+          "col": 47
+        },
+        {
+          "line": 52,
+          "col": 43
+        },
+        {
+          "line": 53,
+          "col": 38
+        },
+        {
+          "line": 54,
+          "col": 41
+        },
+        {
+          "line": 55,
+          "col": 50
+        },
+        {
+          "line": 59,
+          "col": 38
+        },
+        {
+          "line": 60,
+          "col": 38
+        },
+        {
+          "line": 61,
+          "col": 41
+        },
+        {
+          "line": 62,
+          "col": 38
+        },
+        {
+          "line": 68,
+          "col": 16
+        },
+        {
+          "line": 242,
+          "col": 46
+        },
+        {
+          "line": 242,
+          "col": 58
+        },
+        {
+          "line": 302,
+          "col": 48
+        }
+      ]
+    },
+    {
+      "file": "components/admin/users/UsersManagement.tsx",
+      "count": 14,
+      "errors": [
+        {
+          "line": 22,
+          "col": 11
+        },
+        {
+          "line": 62,
+          "col": 45
+        },
+        {
+          "line": 63,
+          "col": 48
+        },
+        {
+          "line": 64,
+          "col": 47
+        },
+        {
+          "line": 65,
+          "col": 48
+        },
+        {
+          "line": 138,
+          "col": 43
+        },
+        {
+          "line": 139,
+          "col": 46
+        },
+        {
+          "line": 140,
+          "col": 45
+        },
+        {
+          "line": 141,
+          "col": 46
+        },
+        {
+          "line": 161,
+          "col": 63
+        },
+        {
+          "line": 210,
+          "col": 56
+        },
+        {
+          "line": 345,
+          "col": 42
+        },
+        {
+          "line": 357,
+          "col": 44
+        },
+        {
+          "line": 369,
+          "col": 37
+        }
+      ]
+    },
+    {
+      "file": "lib/supabase/queries.ts",
+      "count": 14,
+      "errors": [
+        {
+          "line": 109,
+          "col": 31
+        },
+        {
+          "line": 371,
+          "col": 70
+        },
+        {
+          "line": 439,
+          "col": 43
+        },
+        {
+          "line": 469,
+          "col": 31
+        },
+        {
+          "line": 505,
+          "col": 31
+        },
+        {
+          "line": 575,
+          "col": 31
+        },
+        {
+          "line": 846,
+          "col": 31
+        },
+        {
+          "line": 900,
+          "col": 31
+        },
+        {
+          "line": 943,
+          "col": 36
+        },
+        {
+          "line": 983,
+          "col": 21
+        },
+        {
+          "line": 1032,
+          "col": 31
+        },
+        {
+          "line": 1078,
+          "col": 32
+        },
+        {
+          "line": 1276,
+          "col": 41
+        },
+        {
+          "line": 1312,
+          "col": 31
+        }
+      ]
+    },
+    {
+      "file": "components/teacher/GradeEntryForm.tsx",
+      "count": 12,
+      "errors": [
+        {
+          "line": 76,
+          "col": 16
+        },
+        {
+          "line": 77,
+          "col": 19
+        },
+        {
+          "line": 78,
+          "col": 16
+        },
+        {
+          "line": 81,
+          "col": 38
+        },
+        {
+          "line": 82,
+          "col": 33
+        },
+        {
+          "line": 83,
+          "col": 36
+        },
+        {
+          "line": 84,
+          "col": 33
+        },
+        {
+          "line": 86,
+          "col": 32
+        },
+        {
+          "line": 86,
+          "col": 40
+        },
+        {
+          "line": 223,
+          "col": 39
+        },
+        {
+          "line": 223,
+          "col": 51
+        },
+        {
+          "line": 233,
+          "col": 79
+        }
+      ]
+    },
+    {
+      "file": "__tests__/middleware.flow.test.ts",
+      "count": 10,
+      "errors": [
+        {
+          "line": 6,
+          "col": 54
+        },
+        {
+          "line": 21,
+          "col": 44
+        },
+        {
+          "line": 28,
+          "col": 44
+        },
+        {
+          "line": 35,
+          "col": 44
+        },
+        {
+          "line": 42,
+          "col": 44
+        },
+        {
+          "line": 50,
+          "col": 44
+        },
+        {
+          "line": 57,
+          "col": 44
+        },
+        {
+          "line": 64,
+          "col": 44
+        },
+        {
+          "line": 71,
+          "col": 44
+        },
+        {
+          "line": 85,
+          "col": 44
+        }
+      ]
+    },
+    {
+      "file": "app/api/grades/route.ts",
+      "count": 10,
+      "errors": [
+        {
+          "line": 38,
+          "col": 48
+        },
+        {
+          "line": 41,
+          "col": 48
+        },
+        {
+          "line": 44,
+          "col": 48
+        },
+        {
+          "line": 47,
+          "col": 48
+        },
+        {
+          "line": 55,
+          "col": 58
+        },
+        {
+          "line": 56,
+          "col": 39
+        },
+        {
+          "line": 57,
+          "col": 39
+        },
+        {
+          "line": 58,
+          "col": 39
+        },
+        {
+          "line": 59,
+          "col": 39
+        },
+        {
+          "line": 60,
+          "col": 39
+        }
+      ]
+    },
+    {
+      "file": "components/admin/users/UsersManagementServer.tsx",
+      "count": 9,
+      "errors": [
+        {
+          "line": 33,
+          "col": 36
+        },
+        {
+          "line": 34,
+          "col": 39
+        },
+        {
+          "line": 35,
+          "col": 38
+        },
+        {
+          "line": 36,
+          "col": 39
+        },
+        {
+          "line": 41,
+          "col": 14
+        },
+        {
+          "line": 43,
+          "col": 21
+        },
+        {
+          "line": 43,
+          "col": 33
+        },
+        {
+          "line": 43,
+          "col": 44
+        },
+        {
+          "line": 44,
+          "col": 14
+        }
+      ]
+    },
+    {
+      "file": "app/api/attendance/route.ts",
+      "count": 8,
+      "errors": [
+        {
+          "line": 34,
+          "col": 56
+        },
+        {
+          "line": 37,
+          "col": 56
+        },
+        {
+          "line": 40,
+          "col": 56
+        },
+        {
+          "line": 48,
+          "col": 44
+        },
+        {
+          "line": 49,
+          "col": 43
+        },
+        {
+          "line": 50,
+          "col": 41
+        },
+        {
+          "line": 51,
+          "col": 44
+        },
+        {
+          "line": 53,
+          "col": 51
+        }
+      ]
+    },
+    {
+      "file": "components/admin/payments/FeeAssignmentWizard.tsx",
+      "count": 8,
+      "errors": [
+        {
+          "line": 176,
+          "col": 47
+        },
+        {
+          "line": 187,
+          "col": 17
+        },
+        {
+          "line": 188,
+          "col": 19
+        },
+        {
+          "line": 188,
+          "col": 27
+        },
+        {
+          "line": 318,
+          "col": 93
+        },
+        {
+          "line": 361,
+          "col": 109
+        },
+        {
+          "line": 429,
+          "col": 4
+        },
+        {
+          "line": 549,
+          "col": 4
+        }
+      ]
+    },
+    {
+      "file": "app/api/payments/route.ts",
+      "count": 7,
+      "errors": [
+        {
+          "line": 67,
+          "col": 52
+        },
+        {
+          "line": 70,
+          "col": 52
+        },
+        {
+          "line": 77,
+          "col": 64
+        },
+        {
+          "line": 79,
+          "col": 17
+        },
+        {
+          "line": 80,
+          "col": 30
+        },
+        {
+          "line": 86,
+          "col": 47
+        },
+        {
+          "line": 87,
+          "col": 47
+        }
+      ]
+    },
+    {
+      "file": "app/teacher/assessments/AssessmentsClient.tsx",
+      "count": 7,
+      "errors": [
+        {
+          "line": 30,
+          "col": 38
+        },
+        {
+          "line": 34,
+          "col": 38
+        },
+        {
+          "line": 44,
+          "col": 46
+        },
+        {
+          "line": 45,
+          "col": 44
+        },
+        {
+          "line": 46,
+          "col": 45
+        },
+        {
+          "line": 47,
+          "col": 51
+        },
+        {
+          "line": 88,
+          "col": 83
+        }
+      ]
+    },
+    {
+      "file": "components/admin/users/modals/AddUserModal.tsx",
+      "count": 7,
+      "errors": [
+        {
+          "line": 161,
+          "col": 21
+        },
+        {
+          "line": 231,
+          "col": 53
+        },
+        {
+          "line": 232,
+          "col": 81
+        },
+        {
+          "line": 233,
+          "col": 178
+        },
+        {
+          "line": 432,
+          "col": 45
+        },
+        {
+          "line": 447,
+          "col": 45
+        },
+        {
+          "line": 519,
+          "col": 45
+        }
+      ]
+    },
+    {
+      "file": "app/api/invoices/export/route.ts",
+      "count": 6,
+      "errors": [
+        {
+          "line": 33,
+          "col": 40
+        },
+        {
+          "line": 36,
+          "col": 40
+        },
+        {
+          "line": 41,
+          "col": 40
+        },
+        {
+          "line": 45,
+          "col": 49
+        },
+        {
+          "line": 46,
+          "col": 36
+        },
+        {
+          "line": 79,
+          "col": 49
+        }
+      ]
+    },
+    {
+      "file": "app/api/student-guardians/route.ts",
+      "count": 6,
+      "errors": [
+        {
+          "line": 55,
+          "col": 60
+        },
+        {
+          "line": 91,
+          "col": 61
+        },
+        {
+          "line": 131,
+          "col": 37
+        },
+        {
+          "line": 147,
+          "col": 39
+        },
+        {
+          "line": 154,
+          "col": 37
+        },
+        {
+          "line": 197,
+          "col": 37
+        }
+      ]
+    },
+    {
+      "file": "app/api/teacher/dashboard/route.ts",
+      "count": 6,
+      "errors": [
+        {
+          "line": 11,
+          "col": 51
+        },
+        {
+          "line": 31,
+          "col": 57
+        },
+        {
+          "line": 35,
+          "col": 53
+        },
+        {
+          "line": 36,
+          "col": 51
+        },
+        {
+          "line": 37,
+          "col": 52
+        },
+        {
+          "line": 38,
+          "col": 58
+        }
+      ]
+    },
+    {
+      "file": "lib/__tests__/auth.error-handling.test.ts",
+      "count": 6,
+      "errors": [
+        {
+          "line": 50,
+          "col": 44
+        },
+        {
+          "line": 56,
+          "col": 40
+        },
+        {
+          "line": 57,
+          "col": 38
+        },
+        {
+          "line": 59,
+          "col": 44
+        },
+        {
+          "line": 70,
+          "col": 44
+        },
+        {
+          "line": 80,
+          "col": 44
+        }
+      ]
+    },
+    {
+      "file": "lib/__tests__/auth.security.test.ts",
+      "count": 6,
+      "errors": [
+        {
+          "line": 12,
+          "col": 28
+        },
+        {
+          "line": 47,
+          "col": 44
+        },
+        {
+          "line": 56,
+          "col": 44
+        },
+        {
+          "line": 69,
+          "col": 44
+        },
+        {
+          "line": 79,
+          "col": 44
+        },
+        {
+          "line": 90,
+          "col": 44
+        }
+      ]
+    },
+    {
+      "file": "app/api/cron/retry-notifications/route.ts",
+      "count": 5,
+      "errors": [
+        {
+          "line": 93,
+          "col": 23
+        },
+        {
+          "line": 109,
+          "col": 19
+        },
+        {
+          "line": 125,
+          "col": 30
+        },
+        {
+          "line": 137,
+          "col": 40
+        },
+        {
+          "line": 184,
+          "col": 19
+        }
+      ]
+    },
+    {
+      "file": "app/teacher/regular-assessment/page.tsx",
+      "count": 5,
+      "errors": [
+        {
+          "line": 39,
+          "col": 63
+        },
+        {
+          "line": 45,
+          "col": 49
+        },
+        {
+          "line": 46,
+          "col": 47
+        },
+        {
+          "line": 47,
+          "col": 48
+        },
+        {
+          "line": 48,
+          "col": 54
+        }
+      ]
+    },
+    {
+      "file": "components/admin/grades/GradesManagement.tsx",
+      "count": 5,
+      "errors": [
+        {
+          "line": 98,
+          "col": 44
+        },
+        {
+          "line": 99,
+          "col": 40
+        },
+        {
+          "line": 103,
+          "col": 45
+        },
+        {
+          "line": 104,
+          "col": 41
+        },
+        {
+          "line": 113,
+          "col": 63
+        }
+      ]
+    },
+    {
+      "file": "lib/services/notification-service.ts",
+      "count": 5,
+      "errors": [
+        {
+          "line": 273,
+          "col": 22
+        },
+        {
+          "line": 421,
+          "col": 17
+        },
+        {
+          "line": 476,
+          "col": 19
+        },
+        {
+          "line": 495,
+          "col": 49
+        },
+        {
+          "line": 511,
+          "col": 40
+        }
+      ]
+    },
+    {
+      "file": "components/admin/attendance/AttendanceManagement.tsx",
+      "count": 4,
+      "errors": [
+        {
+          "line": 93,
+          "col": 48
+        },
+        {
+          "line": 94,
+          "col": 40
+        },
+        {
+          "line": 103,
+          "col": 63
+        },
+        {
+          "line": 147,
+          "col": 61
+        }
+      ]
+    },
+    {
+      "file": "components/teacher/AttendanceForm.tsx",
+      "count": 4,
+      "errors": [
+        {
+          "line": 91,
+          "col": 45
+        },
+        {
+          "line": 92,
+          "col": 45
+        },
+        {
+          "line": 93,
+          "col": 45
+        },
+        {
+          "line": 94,
+          "col": 45
+        }
+      ]
+    },
+    {
+      "file": "lib/__tests__/auth.session.test.ts",
+      "count": 4,
+      "errors": [
+        {
+          "line": 52,
+          "col": 37
+        },
+        {
+          "line": 66,
+          "col": 37
+        },
+        {
+          "line": 90,
+          "col": 41
+        },
+        {
+          "line": 98,
+          "col": 47
+        }
+      ]
+    },
+    {
+      "file": "app/api/notifications/route.ts",
+      "count": 3,
+      "errors": [
+        {
+          "line": 36,
+          "col": 19
+        },
+        {
+          "line": 99,
+          "col": 19
+        },
+        {
+          "line": 148,
+          "col": 19
+        }
+      ]
+    },
+    {
+      "file": "app/api/users/route.ts",
+      "count": 3,
+      "errors": [
+        {
+          "line": 34,
+          "col": 32
+        },
+        {
+          "line": 37,
+          "col": 32
+        },
+        {
+          "line": 41,
+          "col": 32
+        }
+      ]
+    },
+    {
+      "file": "components/admin/shared/filters/filter-bar.tsx",
+      "count": 3,
+      "errors": [
+        {
+          "line": 18,
+          "col": 11
+        },
+        {
+          "line": 23,
+          "col": 26
+        },
+        {
+          "line": 24,
+          "col": 34
+        }
+      ]
+    },
+    {
+      "file": "lib/__tests__/auth.csrf.test.ts",
+      "count": 3,
+      "errors": [
+        {
+          "line": 43,
+          "col": 37
+        },
+        {
+          "line": 56,
+          "col": 37
+        },
+        {
+          "line": 71,
+          "col": 37
+        }
+      ]
+    },
+    {
+      "file": "lib/__tests__/auth.sql-injection.test.ts",
+      "count": 3,
+      "errors": [
+        {
+          "line": 40,
+          "col": 44
+        },
+        {
+          "line": 51,
+          "col": 44
+        },
+        {
+          "line": 64,
+          "col": 44
+        }
+      ]
+    },
+    {
+      "file": "lib/__tests__/auth.xss.test.ts",
+      "count": 3,
+      "errors": [
+        {
+          "line": 40,
+          "col": 44
+        },
+        {
+          "line": 50,
+          "col": 44
+        },
+        {
+          "line": 60,
+          "col": 44
+        }
+      ]
+    },
+    {
+      "file": "app/api/fee-assignments/route.ts",
+      "count": 2,
+      "errors": [
+        {
+          "line": 13,
+          "col": 62
+        },
+        {
+          "line": 129,
+          "col": 12
+        }
+      ]
+    },
+    {
+      "file": "app/api/invoices/route.ts",
+      "count": 2,
+      "errors": [
+        {
+          "line": 25,
+          "col": 21
+        },
+        {
+          "line": 26,
+          "col": 18
+        }
+      ]
+    },
+    {
+      "file": "app/api/notifications/my/route.ts",
+      "count": 2,
+      "errors": [
+        {
+          "line": 30,
+          "col": 19
+        },
+        {
+          "line": 79,
+          "col": 19
+        }
+      ]
+    },
+    {
+      "file": "app/api/teacher/assessments/route.ts",
+      "count": 2,
+      "errors": [
+        {
+          "line": 14,
+          "col": 42
+        },
+        {
+          "line": 17,
+          "col": 42
+        }
+      ]
+    },
+    {
+      "file": "app/api/user/sessions/route.ts",
+      "count": 2,
+      "errors": [
+        {
+          "line": 50,
+          "col": 19
+        },
+        {
+          "line": 119,
+          "col": 19
+        }
+      ]
+    },
+    {
+      "file": "app/teacher/leave-approval/page.tsx",
+      "count": 2,
+      "errors": [
+        {
+          "line": 57,
+          "col": 41
+        },
+        {
+          "line": 74,
+          "col": 41
+        }
+      ]
+    },
+    {
+      "file": "components/admin/payments/PaymentsManagement.tsx",
+      "count": 2,
+      "errors": [
+        {
+          "line": 75,
+          "col": 58
+        },
+        {
+          "line": 136,
+          "col": 63
+        }
+      ]
+    },
+    {
+      "file": "components/admin/payments/modals/AddFeeItemModal.tsx",
+      "count": 2,
+      "errors": [
+        {
+          "line": 46,
+          "col": 21
+        },
+        {
+          "line": 51,
+          "col": 20
+        }
+      ]
+    },
+    {
+      "file": "components/admin/shared/tables/data-table.tsx",
+      "count": 2,
+      "errors": [
+        {
+          "line": 9,
+          "col": 20
+        },
+        {
+          "line": 24,
+          "col": 52
+        }
+      ]
+    },
+    {
+      "file": "components/notifications/NotificationInbox.tsx",
+      "count": 2,
+      "errors": [
+        {
+          "line": 31,
+          "col": 46
+        },
+        {
+          "line": 32,
+          "col": 46
+        }
+      ]
+    },
+    {
+      "file": "app/(auth)/login/page.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 65,
+          "col": 23
+        }
+      ]
+    },
+    {
+      "file": "app/api/teacher/classes/route.ts",
+      "count": 1,
+      "errors": [
+        {
+          "line": 11,
+          "col": 43
+        }
+      ]
+    },
+    {
+      "file": "app/api/teacher/leave-requests/route.ts",
+      "count": 1,
+      "errors": [
+        {
+          "line": 12,
+          "col": 49
+        }
+      ]
+    },
+    {
+      "file": "app/teacher/assessments/[id]/page.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 17,
+          "col": 43
+        }
+      ]
+    },
+    {
+      "file": "app/teacher/attendance/[classId]/page.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 71,
+          "col": 38
+        }
+      ]
+    },
+    {
+      "file": "components/admin/classes/AcademicStructure.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 306,
+          "col": 66
+        }
+      ]
+    },
+    {
+      "file": "components/admin/payments/modals/SendReminderModal.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 180,
+          "col": 45
+        }
+      ]
+    },
+    {
+      "file": "components/admin/users/modals/UserActionsModal.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 33,
+          "col": 48
+        }
+      ]
+    },
+    {
+      "file": "components/ui/button.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 34,
+          "col": 25
+        }
+      ]
+    },
+    {
+      "file": "lib/middleware/session-validation.ts",
+      "count": 1,
+      "errors": [
+        {
+          "line": 14,
+          "col": 13
+        }
+      ]
+    },
+    {
+      "file": "lib/supabase/realtime.ts",
+      "count": 1,
+      "errors": [
+        {
+          "line": 180,
+          "col": 48
+        }
+      ]
+    }
+  ],
+  "mobile": [
+    {
+      "file": "src/navigation/StudentTabs.tsx",
+      "count": 16,
+      "errors": [
+        {
+          "line": 40,
+          "col": 77
+        },
+        {
+          "line": 41,
+          "col": 75
+        },
+        {
+          "line": 42,
+          "col": 71
+        },
+        {
+          "line": 43,
+          "col": 79
+        },
+        {
+          "line": 44,
+          "col": 87
+        },
+        {
+          "line": 45,
+          "col": 83
+        },
+        {
+          "line": 46,
+          "col": 89
+        },
+        {
+          "line": 47,
+          "col": 67
+        },
+        {
+          "line": 48,
+          "col": 73
+        },
+        {
+          "line": 49,
+          "col": 73
+        },
+        {
+          "line": 57,
+          "col": 69
+        },
+        {
+          "line": 58,
+          "col": 81
+        },
+        {
+          "line": 59,
+          "col": 83
+        },
+        {
+          "line": 60,
+          "col": 81
+        },
+        {
+          "line": 61,
+          "col": 61
+        },
+        {
+          "line": 62,
+          "col": 69
+        }
+      ]
+    },
+    {
+      "file": "src/lib/logger.ts",
+      "count": 10,
+      "errors": [
+        {
+          "line": 13,
+          "col": 10
+        },
+        {
+          "line": 20,
+          "col": 61
+        },
+        {
+          "line": 41,
+          "col": 45
+        },
+        {
+          "line": 45,
+          "col": 45
+        },
+        {
+          "line": 49,
+          "col": 46
+        },
+        {
+          "line": 53,
+          "col": 46
+        },
+        {
+          "line": 75,
+          "col": 62
+        },
+        {
+          "line": 76,
+          "col": 62
+        },
+        {
+          "line": 77,
+          "col": 63
+        },
+        {
+          "line": 78,
+          "col": 63
+        }
+      ]
+    },
+    {
+      "file": "src/utils/devOnly/performanceTest.ts",
+      "count": 5,
+      "errors": [
+        {
+          "line": 81,
+          "col": 30
+        },
+        {
+          "line": 83,
+          "col": 12
+        },
+        {
+          "line": 161,
+          "col": 31
+        },
+        {
+          "line": 266,
+          "col": 36
+        },
+        {
+          "line": 285,
+          "col": 20
+        }
+      ]
+    },
+    {
+      "file": "src/utils/devOnly/verifyNewArchitecture.ts",
+      "count": 5,
+      "errors": [
+        {
+          "line": 21,
+          "col": 56
+        },
+        {
+          "line": 24,
+          "col": 42
+        },
+        {
+          "line": 31,
+          "col": 41
+        },
+        {
+          "line": 62,
+          "col": 32
+        },
+        {
+          "line": 80,
+          "col": 39
+        }
+      ]
+    },
+    {
+      "file": "src/navigation/RootNavigator.tsx",
+      "count": 4,
+      "errors": [
+        {
+          "line": 39,
+          "col": 65
+        },
+        {
+          "line": 41,
+          "col": 64
+        },
+        {
+          "line": 43,
+          "col": 66
+        },
+        {
+          "line": 46,
+          "col": 65
+        }
+      ]
+    },
+    {
+      "file": "src/lib/supabase/queries.ts",
+      "count": 3,
+      "errors": [
+        {
+          "line": 65,
+          "col": 42
+        },
+        {
+          "line": 67,
+          "col": 30
+        },
+        {
+          "line": 74,
+          "col": 57
+        }
+      ]
+    },
+    {
+      "file": "src/screens/parent/Dashboard.tsx",
+      "count": 3,
+      "errors": [
+        {
+          "line": 120,
+          "col": 59
+        },
+        {
+          "line": 124,
+          "col": 36
+        },
+        {
+          "line": 154,
+          "col": 69
+        }
+      ]
+    },
+    {
+      "file": "src/stores/auth.ts",
+      "count": 3,
+      "errors": [
+        {
+          "line": 21,
+          "col": 36
+        },
+        {
+          "line": 61,
+          "col": 28
+        },
+        {
+          "line": 61,
+          "col": 62
+        }
+      ]
+    },
+    {
+      "file": "src/navigation/AuthNavigator.tsx",
+      "count": 2,
+      "errors": [
+        {
+          "line": 28,
+          "col": 66
+        },
+        {
+          "line": 31,
+          "col": 39
+        }
+      ]
+    },
+    {
+      "file": "src/screens/student/Dashboard.tsx",
+      "count": 2,
+      "errors": [
+        {
+          "line": 43,
+          "col": 42
+        },
+        {
+          "line": 71,
+          "col": 36
+        }
+      ]
+    },
+    {
+      "file": "lib/supabase/client.ts",
+      "count": 1,
+      "errors": [
+        {
+          "line": 34,
+          "col": 29
+        }
+      ]
+    },
+    {
+      "file": "src/components/ui/Button.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 44,
+          "col": 20
+        }
+      ]
+    },
+    {
+      "file": "src/components/ui/Card.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 34,
+          "col": 20
+        }
+      ]
+    },
+    {
+      "file": "src/lib/supabase/client.ts",
+      "count": 1,
+      "errors": [
+        {
+          "line": 62,
+          "col": 40
+        }
+      ]
+    },
+    {
+      "file": "src/navigation/ParentTabs.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 40,
+          "col": 48
+        }
+      ]
+    },
+    {
+      "file": "src/screens/auth/CustomLoginScreen.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 73,
+          "col": 19
+        }
+      ]
+    },
+    {
+      "file": "src/screens/parent/Messages.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 188,
+          "col": 37
+        }
+      ]
+    },
+    {
+      "file": "src/screens/parent/Notifications.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 61,
+          "col": 16
+        }
+      ]
+    },
+    {
+      "file": "src/screens/parent/PaymentOverview.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 202,
+          "col": 39
+        }
+      ]
+    },
+    {
+      "file": "src/screens/profile/BiometricAuthScreen.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 24,
+          "col": 42
+        }
+      ]
+    },
+    {
+      "file": "src/screens/profile/ChangePasswordScreen.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 25,
+          "col": 42
+        }
+      ]
+    },
+    {
+      "file": "src/screens/profile/FAQScreen.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 22,
+          "col": 42
+        }
+      ]
+    },
+    {
+      "file": "src/screens/profile/ProfileScreen.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 23,
+          "col": 42
+        }
+      ]
+    },
+    {
+      "file": "src/screens/profile/SupportScreen.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 26,
+          "col": 42
+        }
+      ]
+    },
+    {
+      "file": "src/screens/profile/UpdateProfileScreen.tsx",
+      "count": 1,
+      "errors": [
+        {
+          "line": 25,
+          "col": 42
+        }
+      ]
+    },
+    {
+      "file": "src/utils/devOnly/screenChecklist.ts",
+      "count": 1,
+      "errors": [
+        {
+          "line": 12,
+          "col": 37
+        }
+      ]
+    }
+  ]
+}

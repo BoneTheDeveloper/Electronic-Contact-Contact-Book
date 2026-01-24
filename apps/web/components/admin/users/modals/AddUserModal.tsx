@@ -205,12 +205,12 @@ export function AddUserModal({ isOpen, onClose, onSuccess, initialRole = 'studen
       }
 
       const payload = {
+        ...formData,
         role: activeRole,
         code: generatedCode,
         password: generatedPassword,
         sendPassword: true,
         forcePasswordChange: true,
-        ...formData,
       }
 
       console.log('[AddUserModal] Creating user:', payload)

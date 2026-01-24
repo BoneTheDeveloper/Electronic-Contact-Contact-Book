@@ -44,9 +44,16 @@ export interface Invoice {
   studentId: string
   studentName: string
   amount: number
+  totalAmount: number
+  paidAmount: number
+  remainingAmount: number
   status: 'paid' | 'pending' | 'overdue'
   dueDate?: string
   paidDate?: string
+  feeItems?: {
+    code: string
+    amount: number
+  }[]
 }
 
 export interface Notification {

@@ -1,45 +1,51 @@
 /**
  * Grades Screen
  * Subject grades with semester selector and grade types grid
+ * Uses real Supabase data via student store
  */
 
-import React, { useState } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput, ActivityIndicator } from 'react-native';
 import { useStudentStore } from '../../stores';
-import { getGradesByStudentId } from '../../mock-data';
+import { useAuthStore } from '../../stores';
 
 interface SubjectGradeData {
-  subject: string;
+  subjectId: string;
+  subjectName: string;
   shortName: string;
   iconColor: string;
-  grades: {
-    tx1: number;
-    tx2: number;
-    tx3: number;
-    gk: number;
-    ck: number;
-  };
+  grades: Array<{
+    id: string;
+    label: string;
+    score: number | null;
+    maxScore: number;
+    assessmentType: string;
+  }>;
   average: number;
 }
 
 interface GradeCellProps {
   label: string;
-  score: number;
+  score: number | null;
+  maxScore: number;
   bgColor: string;
   textColor: string;
 }
 
-const GradeCell: React.FC<GradeCellProps> = ({ label, score, bgColor, textColor }) => (
+const GradeCell: React.FC<GradeCellProps> = ({ label, score, maxScore, bgColor, textColor }) => (
   <View className={`${bgColor} rounded-lg p-2 items-center`}>
     <Text className={`${textColor} text-[8px] font-black mb-1 uppercase`}>{label}</Text>
-    <Text className={`${textColor} text-sm font-extrabold`}>{score.toFixed(1)}</Text>
+    <Text className={`${textColor} text-sm font-extrabold`}>
+      {score !== null ? score.toFixed(1) : '-'}
+    </Text>
   </View>
 );
 
 const SUBJECT_ICONS: Record<string, { shortName: string; iconColor: string }> = {
-  'Toán học': { shortName: 'Toán', iconColor: 'bg-orange-100 text-orange-500' },
+  'Toán': { shortName: 'Toán', iconColor: 'bg-orange-100 text-orange-500' },
   'Ngữ văn': { shortName: 'Văn', iconColor: 'bg-purple-100 text-purple-600' },
   'Tiếng Anh': { shortName: 'Anh', iconColor: 'bg-emerald-100 text-emerald-600' },
+  'Anh': { shortName: 'Anh', iconColor: 'bg-emerald-100 text-emerald-600' },
   'Vật lý': { shortName: 'Lý', iconColor: 'bg-indigo-100 text-indigo-600' },
   'Hóa học': { shortName: 'Hóa', iconColor: 'bg-amber-100 text-amber-600' },
   'Lịch sử': { shortName: 'Sử', iconColor: 'bg-rose-100 text-rose-600' },
@@ -48,27 +54,111 @@ const SUBJECT_ICONS: Record<string, { shortName: string; iconColor: string }> = 
 };
 
 export const StudentGradesScreen: React.FC = () => {
-  const { studentData } = useStudentStore();
-    // Using mock data
+  const { user } = useAuthStore();
+  const { grades, isLoading, error, loadGrades } = useStudentStore();
 
   const [selectedSemester, setSelectedSemester] = useState<'I' | 'II'>('I');
   const [appealModalVisible, setAppealModalVisible] = useState(false);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<SubjectGradeData | null>(null);
   const [appealDetail, setAppealDetail] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Mock data for subjects with grade types
-  const subjectsData: SubjectGradeData[] = [
-    { subject: 'Toán học', shortName: 'Toán', iconColor: 'bg-orange-100 text-orange-500', grades: { tx1: 8.5, tx2: 9.0, tx3: 8.8, gk: 8.0, ck: 9.0 }, average: 8.47 },
-    { subject: 'Ngữ văn', shortName: 'Văn', iconColor: 'bg-purple-100 text-purple-600', grades: { tx1: 7.5, tx2: 8.0, tx3: 7.3, gk: 7.5, ck: 8.0 }, average: 7.85 },
-    { subject: 'Tiếng Anh', shortName: 'Anh', iconColor: 'bg-emerald-100 text-emerald-600', grades: { tx1: 9.0, tx2: 8.5, tx3: 9.3, gk: 8.5, ck: 9.0 }, average: 8.88 },
-    { subject: 'Vật lý', shortName: 'Lý', iconColor: 'bg-indigo-100 text-indigo-600', grades: { tx1: 7.5, tx2: 7.0, tx3: 7.3, gk: 7.5, ck: 8.0 }, average: 7.50 },
-    { subject: 'Hóa học', shortName: 'Hóa', iconColor: 'bg-amber-100 text-amber-600', grades: { tx1: 8.0, tx2: 7.5, tx3: 8.3, gk: 8.0, ck: 8.5 }, average: 8.00 },
-    { subject: 'Lịch sử', shortName: 'Sử', iconColor: 'bg-rose-100 text-rose-600', grades: { tx1: 8.5, tx2: 8.0, tx3: 8.8, gk: 8.5, ck: 9.0 }, average: 8.50 },
-  ];
+  // Load grades when student ID changes
+  const loadData = async () => {
+    if (user?.id && user?.role === 'student') {
+      await loadGrades(user.id);
+    }
+  };
 
-  const overallAverage = subjectsData.reduce((sum, s) => sum + s.average, 0) / subjectsData.length;
-  const overallRating = overallAverage >= 9 ? 'Xuất sắc' : overallAverage >= 8 ? 'Giỏi' : overallAverage >= 7 ? 'Khá' : overallAverage >= 5 ? 'Trung bình' : 'Yếu';
+  useEffect(() => {
+    loadData();
+  }, [user?.id]);
+
+  const handleReload = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
+
+  // Group grades by subject and calculate averages
+  const subjectsData = useMemo(() => {
+    const semesterFilter = selectedSemester === 'I' ? '1' : '2';
+
+    // Filter grades by semester
+    const semesterGrades = grades.filter(g => g.semester === semesterFilter);
+
+    // Group by subject
+    const subjectMap = new Map<string, SubjectGradeData>();
+
+    semesterGrades.forEach(grade => {
+      if (!subjectMap.has(grade.subjectId)) {
+        const iconInfo = SUBJECT_ICONS[grade.subjectName] || {
+          shortName: grade.subjectName.substring(0, 3),
+          iconColor: 'bg-gray-100 text-gray-600'
+        };
+
+        subjectMap.set(grade.subjectId, {
+          subjectId: grade.subjectId,
+          subjectName: grade.subjectName,
+          shortName: iconInfo.shortName,
+          iconColor: iconInfo.iconColor,
+          grades: [],
+          average: 0,
+        });
+      }
+
+      const subject = subjectMap.get(grade.subjectId)!;
+
+      // Add grade with appropriate label
+      let label = grade.assessmentType;
+      if (grade.assessmentType === 'quiz') {
+        // Assign TX labels for quizzes
+        const quizCount = subject.grades.filter(g => g.assessmentType === 'quiz').length;
+        label = `TX${quizCount + 1}`;
+      } else if (grade.assessmentType === 'midterm') {
+        label = 'GK';
+      } else if (grade.assessmentType === 'final') {
+        label = 'CK';
+      }
+
+      subject.grades.push({
+        id: grade.id,
+        label,
+        score: grade.score,
+        maxScore: grade.maxScore,
+        assessmentType: grade.assessmentType,
+      });
+    });
+
+    // Calculate averages
+    subjectMap.forEach(subject => {
+      const validScores = subject.grades
+        .map(g => g.score !== null ? (g.score / g.maxScore) * 10 : 0) // Normalize to 10-point scale
+        .filter(s => s > 0);
+
+      subject.average = validScores.length > 0
+        ? validScores.reduce((sum, s) => sum + s, 0) / validScores.length
+        : 0;
+    });
+
+    return Array.from(subjectMap.values());
+  }, [grades, selectedSemester]);
+
+  // Calculate overall average
+  const overallAverage = useMemo(() => {
+    if (subjectsData.length === 0) return 0;
+    const sum = subjectsData.reduce((acc, s) => acc + s.average, 0);
+    return sum / subjectsData.length;
+  }, [subjectsData]);
+
+  const overallRating = useMemo(() => {
+    if (overallAverage >= 9) return 'Xuất sắc';
+    if (overallAverage >= 8) return 'Giỏi';
+    if (overallAverage >= 7) return 'Khá';
+    if (overallAverage >= 5) return 'Trung bình';
+    return 'Yếu';
+  }, [overallAverage]);
 
   const openAppealModal = (subject: SubjectGradeData) => {
     setSelectedSubject(subject);
@@ -92,12 +182,60 @@ export const StudentGradesScreen: React.FC = () => {
     setSuccessModalVisible(false);
   };
 
+  // Loading state
+  if (isLoading && grades.length === 0) {
+    return (
+      <View className="flex-1 bg-slate-50 justify-center items-center">
+        <ActivityIndicator size="large" color="#0284C7" />
+        <Text className="mt-4 text-sm text-gray-500">Đang tải dữ liệu...</Text>
+      </View>
+    );
+  }
+
+  // Error state
+  if (error && grades.length === 0) {
+    return (
+      <View className="flex-1 bg-slate-50 justify-center items-center px-6">
+        <View className="w-20 h-20 bg-rose-100 rounded-full items-center justify-center mb-4">
+          <Text className="text-rose-600 text-3xl">⚠</Text>
+        </View>
+        <Text className="text-gray-800 font-extrabold text-lg mb-2">Lỗi tải dữ liệu</Text>
+        <Text className="text-gray-500 text-sm text-center mb-6">{error}</Text>
+        <TouchableOpacity
+          onPress={handleReload}
+          disabled={refreshing}
+          className={`bg-[#0284C7] py-3 px-8 rounded-xl ${refreshing ? 'opacity-50' : ''}`}
+        >
+          <Text className="text-white font-extrabold text-sm">
+            {refreshing ? 'Đang tải...' : 'Thử lại'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-slate-50">
       {/* Header */}
       <View className="bg-gradient-to-br from-[#0284C7] to-[#0369A1] pt-[60px] px-6 pb-6 rounded-b-[30px]">
-        <Text className="text-[20px] font-extrabold text-white">Bảng điểm môn học</Text>
-        <Text className="text-[12px] text-blue-100 font-medium mt-0.5">Năm học 2025 - 2026</Text>
+        <View className="flex-row justify-between items-start">
+          <View>
+            <Text className="text-[20px] font-extrabold text-white">Bảng điểm môn học</Text>
+            <Text className="text-[12px] text-blue-100 font-medium mt-0.5">Năm học 2025 - 2026</Text>
+          </View>
+          <TouchableOpacity
+            onPress={handleReload}
+            disabled={refreshing}
+            className={`w-10 h-10 bg-white/20 rounded-full items-center justify-center ${refreshing ? 'opacity-50' : ''}`}
+          >
+            <Text className={`text-white ${refreshing ? 'animate-spin' : ''}`}>{refreshing ? '⟳' : '↻'}</Text>
+          </TouchableOpacity>
+        </View>
+        {error && (
+          <View className="mt-3 bg-rose-500/20 px-3 py-2 rounded-lg">
+            <Text className="text-rose-100 text-xs">{error}</Text>
+          </View>
+        )}
       </View>
 
       <ScrollView contentContainerClassName="px-6 pt-6 pb-[140px]" showsVerticalScrollIndicator={false}>
@@ -139,46 +277,52 @@ export const StudentGradesScreen: React.FC = () => {
         <Text className="text-gray-800 font-extrabold text-sm mb-3">Chi tiết các môn</Text>
 
         <View className="space-y-3">
-          {subjectsData.map((subjectData) => {
-            const iconInfo = SUBJECT_ICONS[subjectData.subject] || { shortName: subjectData.subject.substring(0, 3), iconColor: 'bg-gray-100 text-gray-600' };
-
-            return (
-              <View key={subjectData.subject} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                <View className="flex-row justify-between items-center mb-3">
-                  <View className="flex-row items-center space-x-3">
-                    <View className={`w-11 h-11 ${iconInfo.iconColor} rounded-xl items-center justify-center`}>
-                      <Text className="text-sm font-black">{iconInfo.shortName}</Text>
-                    </View>
-                    <View>
-                      <Text className="text-gray-800 font-bold text-sm">{subjectData.subject}</Text>
-                    </View>
+          {subjectsData.map((subjectData) => (
+            <View key={subjectData.subjectId} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+              <View className="flex-row justify-between items-center mb-3">
+                <View className="flex-row items-center space-x-3">
+                  <View className={`w-11 h-11 ${subjectData.iconColor} rounded-xl items-center justify-center`}>
+                    <Text className="text-sm font-black">{subjectData.shortName}</Text>
                   </View>
-                  <View className="flex-row items-center space-x-2">
-                    <View className="items-right">
-                      <Text className="text-[#0284C7] font-extrabold text-lg">{subjectData.average.toFixed(2)}</Text>
-                      <Text className="text-gray-400 text-[9px] font-medium text-right">ĐTB</Text>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => openAppealModal(subjectData)}
-                      className="w-8 h-8 bg-amber-50 border border-amber-200 rounded-xl items-center justify-center"
-                    >
-                      <Text className="text-amber-600 text-sm">✏</Text>
-                    </TouchableOpacity>
+                  <View>
+                    <Text className="text-gray-800 font-bold text-sm">{subjectData.subjectName}</Text>
                   </View>
                 </View>
-
-                {/* Grade Grid */}
-                <View className="flex flex-row justify-between gap-2">
-                  <GradeCell label="TX1" score={subjectData.grades.tx1} bgColor="bg-blue-50" textColor="text-blue-700" />
-                  <GradeCell label="TX2" score={subjectData.grades.tx2} bgColor="bg-blue-50" textColor="text-blue-700" />
-                  <GradeCell label="TX3" score={subjectData.grades.tx3} bgColor="bg-blue-50" textColor="text-blue-700" />
-                  <GradeCell label="GK" score={subjectData.grades.gk} bgColor="bg-purple-50" textColor="text-purple-700" />
-                  <GradeCell label="CK" score={subjectData.grades.ck} bgColor="bg-orange-50" textColor="text-orange-700" />
+                <View className="flex-row items-center space-x-2">
+                  <View className="items-right">
+                    <Text className="text-[#0284C7] font-extrabold text-lg">{subjectData.average.toFixed(2)}</Text>
+                    <Text className="text-gray-400 text-[9px] font-medium text-right">ĐTB</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => openAppealModal(subjectData)}
+                    className="w-8 h-8 bg-amber-50 border border-amber-200 rounded-xl items-center justify-center"
+                  >
+                    <Text className="text-amber-600 text-sm">✏</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-            );
-          })}
+
+              {/* Grade Grid - Display up to 5 most recent grades */}
+              <View className="flex flex-row justify-between gap-2">
+                {subjectData.grades.slice(0, 5).map((grade) => (
+                  <View key={grade.id} className="bg-blue-50 rounded-lg p-2 items-center flex-1">
+                    <Text className="text-blue-700 text-[8px] font-black mb-1 uppercase">{grade.label}</Text>
+                    <Text className="text-blue-700 text-sm font-extrabold">
+                      {grade.score !== null ? (grade.score / grade.maxScore * 10).toFixed(1) : '-'}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))}
         </View>
+
+        {/* Empty state */}
+        {subjectsData.length === 0 && !isLoading && (
+          <View className="bg-white p-8 rounded-2xl border border-gray-100 items-center">
+            <Text className="text-gray-400 text-sm text-center">Chưa có dữ liệu điểm</Text>
+          </View>
+        )}
       </ScrollView>
 
       {/* Appeal Modal */}
@@ -213,7 +357,7 @@ export const StudentGradesScreen: React.FC = () => {
                   </View>
                   <View className="flex-1">
                     <Text className="text-gray-500 text-[10px] font-black uppercase tracking-wider mb-1">Môn học</Text>
-                    <Text className="text-gray-800 font-extrabold text-base mb-2">{selectedSubject.subject}</Text>
+                    <Text className="text-gray-800 font-extrabold text-base mb-2">{selectedSubject.subjectName}</Text>
                     <View className="flex-row items-center space-x-4">
                       <View>
                         <Text className="text-gray-500 text-[9px] font-black uppercase tracking-wider mb-0.5">ĐTB</Text>
@@ -223,7 +367,7 @@ export const StudentGradesScreen: React.FC = () => {
                       <View className="flex-1">
                         <Text className="text-gray-500 text-[9px] font-black uppercase tracking-wider mb-0.5">Chi tiết</Text>
                         <Text className="text-gray-700 font-bold text-[10px]">
-                          TX1: {selectedSubject.grades.tx1} • TX2: {selectedSubject.grades.tx2} • TX3: {selectedSubject.grades.tx3}
+                          {selectedSubject.grades.length > 0 ? selectedSubject.grades.map(g => `${g.label}: ${g.score !== null ? (g.score / g.maxScore * 10).toFixed(1) : '-'}`).join(' • ') : 'Chưa có điểm'}
                         </Text>
                       </View>
                     </View>

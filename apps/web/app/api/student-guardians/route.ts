@@ -43,8 +43,8 @@ export async function GET(request: Request) {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email, phone, role')
-        .eq('role', 'parent' as any)
-        .eq('status', 'active' as any)
+        .eq('role', 'parent')
+        .eq('status', 'active')
         .or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`)
         .limit(10)
 
@@ -60,7 +60,7 @@ export async function GET(request: Request) {
         phone: string | null
       }
 
-      const results: ParentResult[] = (data || []).map((p: any) => ({
+      const results: ParentResult[] = (data || []).map((p: ProfileResult) => ({
         id: p.id,
         name: p.full_name || '',
         code: p.id.slice(0, 10),
@@ -87,7 +87,7 @@ export async function GET(request: Request) {
             status
           )
         `)
-        .eq('profiles.status', 'active' as any)
+        .eq('profiles.status', 'active')
         .or(`student_code.ilike.%${search}%,profiles.full_name.ilike.%${search}%,class_id.ilike.%${search}%`)
         .limit(10)
 
@@ -107,7 +107,7 @@ export async function GET(request: Request) {
         }
       }
 
-      const results: StudentResult[] = (data || []).map((s: any) => ({
+      const results: StudentResult[] = (data || []).map((s: StudentQueryResult) => ({
         id: s.id,
         name: s.profiles?.full_name || '',
         code: s.student_code,
@@ -167,7 +167,7 @@ export async function POST(request: Request) {
     if (isPrimary) {
       await supabase
         .from('student_guardians')
-        .update({ is_primary: false } as any)
+        .update({ is_primary: false })
         .eq('student_id', studentId)
     }
 
@@ -180,7 +180,7 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase
       .from('student_guardians')
-      .insert(insertData as any)
+      .insert(insertData)
       .select()
       .single()
 
@@ -220,8 +220,8 @@ export async function DELETE(request: Request) {
     const { error } = await supabase
       .from('student_guardians')
       .delete()
-      .eq('student_id', studentId as any)
-      .eq('guardian_id', guardianId as any)
+      .eq('student_id', studentId)
+      .eq('guardian_id', guardianId)
 
     if (error) {
       console.error('[API] Error deleting link:', error)

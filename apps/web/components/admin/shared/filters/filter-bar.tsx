@@ -49,7 +49,7 @@ export const FilterBar = memo(function FilterBar({
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <SearchInput
-              value={values[searchKey] || ''}
+              value={String(values[searchKey] || '')}
               onChange={(val) => onChange(searchKey, val)}
               placeholder={searchPlaceholder}
             />

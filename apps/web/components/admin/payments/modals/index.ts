@@ -6,4 +6,3 @@ export { SendReminderModal } from './SendReminderModal'
 export { ExportReportModal } from './ExportReportModal'
 
 export type { FeeItemFormData } from './AddFeeItemModal'
-export type { InvoiceSummary } from './PaymentConfirmModal'

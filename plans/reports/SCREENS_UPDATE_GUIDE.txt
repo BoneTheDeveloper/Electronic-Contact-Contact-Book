@@ -1,0 +1,117 @@
+Mobile Screens Wireframe Update Guide
+=====================================
+
+Date: 2026-01-24
+Files: Summary.tsx, TeacherDirectory.tsx, Messages.tsx
+
+SUMMARY OF CHANGES NEEDED
+==========================
+
+1. Summary.tsx (summary.html)
+   - Add semester selector (Học kỳ I / Cả năm) 
+   - Add SVG circular progress ring showing 82%
+   - Change header to show "Năm học 2025 - 2026"
+   - Add back button in header
+   - Create 2-column stats grid: Attendance (green) + Conduct (purple)
+   - Subject cards with colored icons and progress bars
+   - Use indigo gradient card (#6366F1)
+
+2. TeacherDirectory.tsx (teacher-directory.html)
+   - Add search bar with magnifying glass icon
+   - Add horizontal scrollable subject filter tabs
+   - Add featured homeroom teacher card with star icon
+   - Teacher cards with gradient avatars
+   - Online status green dots
+   - Contact buttons (info + message)
+
+3. Messages.tsx (messages.html)
+   - Add search bar at top
+   - Add "Đang hoạt động" horizontal scroll section
+   - Chat cards with gradient avatars
+   - Read checkmark icons
+   - Unread badges (blue #0284C7 or red #EF4444)
+
+CRITICAL CODE ADDITIONS
+=======================
+
+A. IMPORTS NEEDED:
+-------------------
+import Svg, { Circle, Path, Polyline, Line, Polygon } from 'react-native-svg';
+import { TextInput } from 'react-native';
+
+B. SUMMARY TSX - KEY ADDITIONS:
+-------------------------------
+1. State: const [selectedSemester, setSelectedSemester] = useState<'I' | 'all'>('I');
+
+2. Subject colors object:
+const subjectColors = {
+  'Toán học': {bg: '#FEF3C7', text: '#D97706', grad: ['#FB923C']},
+  'Ngữ văn': {bg: '#EDE9FE', text: '#7C3AED', grad: ['#A78BFA']},
+  'Tiếng Anh': {bg: '#D1FAE5', text: '#059669', grad: ['#34D399']},
+  'Vật lý': {bg: '#E0E7FF', text: '#4F46E5', grad: ['#818CF8']},
+  'Hóa học': {bg: '#CFFAFE', text: '#0891B2', grad: ['#22D3EE']},
+};
+
+3. SVG Progress Ring (circumference = 2 * PI * 42 = 264):
+   For 82%: strokeDashoffset = 264 - (0.82 * 264) = 47.5
+
+C. TEACHER DIRECTORY - KEY ADDITIONS:
+------------------------------------
+1. State: 
+   const [searchQuery, setSearchQuery] = useState('');
+   const [selectedFilter, setSelectedFilter] = useState('Tất cả');
+   const filters = ['Tất cả', 'GVCN', 'Toán', 'Văn', 'Anh', 'Lý'];
+
+2. Star icon for GVCN (use Polygon SVG):
+   <Polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+
+D. MESSAGES - KEY ADDITIONS:
+----------------------------
+1. Online teachers data structure
+2. Avatar color array (6 gradient options)
+3. Read receipt checkmark (Polyline SVG)
+
+ESSENTIAL STYLES
+================
+
+semesterRow: { flexDirection: 'row', gap: 8, marginBottom: 20 }
+semBtnActive: { backgroundColor: '#0284C7', borderColor: '#0284C7' }
+scoreCard: { backgroundColor: '#6366F1', borderRadius: 24, shadowColor: '#312E81' }
+
+searchInput: { backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingVertical: 12, paddingLeft: 40 }
+
+filterScroll: { flexDirection: 'row', marginBottom: 16 }
+filterTabActive: { backgroundColor: '#0284C7' }
+
+gvcnCard: { backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE', borderRadius: 16, padding: 16 }
+
+onlineSection: { paddingHorizontal: 24, paddingVertical: 16, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' }
+
+chatCard: { flexDirection: 'row', alignItems: 'center', padding: 16, backgroundColor: 'white', borderRadius: 16, borderWidth: 1, borderColor: '#F3F4F6', marginBottom: 12 }
+
+COLOR REFERENCE
+==============
+Primary: #0284C7 (sky-600)
+Indigo card: #6366F1
+Online green: #22C55E
+Unread blue: #0284C7
+Unread red: #EF4444
+Subject gradients (see subjectColors above)
+
+IMPLEMENTATION ORDER
+====================
+1. Summary.tsx (most changes, SVG learning curve)
+2. TeacherDirectory.tsx (medium complexity)
+3. Messages.tsx (least complex)
+
+TESTING CHECKLIST
+=================
+- Semester selector toggles
+- Progress ring displays correctly
+- Search inputs work
+- Filter tabs scroll
+- GVCN star shows
+- Online dots visible
+- Contact buttons clickable
+- Chat cards show read status
+- Unread badges display correctly

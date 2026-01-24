@@ -158,7 +158,7 @@ export function AttendanceManagement() {
       label: 'Lớp',
       render: (value) => (
         <span className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-          {value}
+          {value as React.ReactNode}
         </span>
       ),
     },
@@ -166,7 +166,7 @@ export function AttendanceManagement() {
       key: 'date',
       label: 'Ngày điểm danh',
       render: (value) => (
-        <span className="text-sm text-slate-600">{value}</span>
+        <span className="text-sm text-slate-600">{value as React.ReactNode}</span>
       ),
     },
     {
@@ -186,7 +186,7 @@ export function AttendanceManagement() {
       key: 'notes',
       label: 'Ghi chú',
       render: (value) => value ? (
-        <span className="text-xs text-slate-500">{value}</span>
+        <span className="text-xs text-slate-500">{value as React.ReactNode}</span>
       ) : (
         <span className="text-xs text-slate-400">—</span>
       ),

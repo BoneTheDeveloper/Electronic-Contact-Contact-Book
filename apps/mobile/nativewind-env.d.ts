@@ -33,4 +33,16 @@ declare module 'react-native' {
     contentContainerClassName?: string;
     contentContainerStyle?: ViewStyle;
   }
+  interface TouchableOpacityProps {
+    className?: string;
+    style?: ViewStyle;
+  }
+  interface TouchableHighlightProps {
+    className?: string;
+    style?: ViewStyle;
+  }
+  interface PressableProps {
+    className?: string;
+    style?: ViewStyle;
+  }
 }

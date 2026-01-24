@@ -56,7 +56,6 @@ export async function validateSession(request: NextRequest): Promise<SessionVali
     if (now - lastUpdate > LAST_ACTIVE_THROTTLE_MS) {
       await supabase
         .from('user_sessions')
-        // @ts-expect-error - user_sessions table exists in DB but not in generated types
         .update({ last_active: new Date().toISOString() })
         .eq('id', sessionId);
       lastActiveUpdateCache.set(sessionId, now);

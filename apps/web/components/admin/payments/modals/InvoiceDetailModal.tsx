@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { User, Calendar, DollarSign, Clock, FileText, CheckCircle2 } from 'lucide-react'
 import { BaseModal } from '@/components/admin/shared/modals/BaseModal'
 import { SecondaryButton } from '@/components/admin/shared/buttons/secondary-button'
-import type { InvoiceSummary } from './PaymentConfirmModal'
+import type { Invoice } from '@/lib/types'
 
 interface PaymentRecord {
   id: string
@@ -91,7 +91,7 @@ export function InvoiceDetailModal({ isOpen, onClose, invoiceId }: InvoiceDetail
       pending: { label: 'Chờ thanh toán', color: 'bg-amber-100 text-amber-700', icon: Clock },
       overdue: { label: 'Quá hạn', color: 'bg-red-100 text-red-700', icon: Clock },
     }
-    const { label, color, icon: Icon } = config[status as keyof typeof config] || config.pending
+    const { label, color, icon: Icon } = config[value] || config.pending
     return (
       <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase rounded-lg ${color}`}>
         <Icon className="w-3.5 h-3.5" />

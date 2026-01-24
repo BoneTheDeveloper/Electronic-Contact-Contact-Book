@@ -44,7 +44,6 @@ export async function createNotification(
   const sanitizedContent = sanitizeHtml(input.content);
 
   // 2. Create notification
-  // @ts-expect-error - Supabase type inference issue with notifications table
   const { data: notification, error: notifError } = await supabase
     .from('notifications')
     .insert({
@@ -67,14 +66,13 @@ export async function createNotification(
   }
 
   // 3. Resolve recipients using database function
-  // @ts-expect-error - Supabase type inference issue with RPC functions
   const { data: recipients, error: recipientsError } = await supabase.rpc(
     'get_notification_recipients',
     {
-      p_target_role: input.targetRole === 'all' ? null : input.targetRole,
-      p_target_grade_ids: input.targetGradeIds || null,
-      p_target_class_ids: input.targetClassIds || null,
-      p_specific_user_ids: input.targetUserIds || null,
+      p_target_role: input.targetRole === 'all' ? '' : input.targetRole,
+      p_target_grade_ids: input.targetGradeIds || [],
+      p_target_class_ids: input.targetClassIds || [],
+      p_specific_user_ids: input.targetUserIds || [],
     }
   );
 
@@ -85,7 +83,6 @@ export async function createNotification(
 
   if (!recipients || recipients.length === 0) {
     // Clean up notification if no recipients
-    // @ts-expect-error - Supabase type inference issue with notifications table
     await supabase.from('notifications').delete().eq('id', notification.id);
     throw new Error('No recipients found for the given criteria');
   }
@@ -97,7 +94,6 @@ export async function createNotification(
     role: r.role,
   }));
 
-  // @ts-expect-error - Supabase type inference issue with notification_recipients table
   const { error: insertError } = await supabase
     .from('notification_recipients')
     .insert(recipientEntries);
@@ -109,13 +105,11 @@ export async function createNotification(
 
   // 5. Trigger delivery (non-blocking)
   // Don't await - let it run in background
-  // @ts-expect-error - notification.id type inference issue
   deliverNotification(notification.id, recipientEntries).catch((error) => {
     console.error('[Notification] Delivery error:', error);
   });
 
   // 6. Fetch complete notification with recipients
-  // @ts-expect-error - Supabase type inference issue with notification_recipients table
   const { data: completeNotification } = await supabase
     .from('notification_recipients')
     .select(`
@@ -144,17 +138,17 @@ export async function createNotification(
 
   return {
     id: notification.id,
-    senderId: notification.sender_id,
+    senderId: notification.sender_id || '',
     title: notification.title,
     content: notification.content,
-    type: notification.type,
-    category: notification.category,
-    priority: notification.priority,
-    scheduledFor: notification.scheduled_for,
-    expiresAt: notification.expires_at,
-    isRead: notification.is_read,
-    readAt: notification.read_at,
-    createdAt: notification.created_at,
+    type: notification.type || 'info',
+    category: (notification.category || "info"),
+    priority: (notification.priority || "normal"),
+    scheduledFor: notification.scheduled_for || undefined,
+    expiresAt: notification.expires_at || undefined,
+    isRead: notification.is_read || false,
+    readAt: notification.read_at || undefined,
+    createdAt: notification.created_at || new Date().toISOString(),
     recipients: recipientEntries.map((r, i) => ({
       id: `temp-${i}`,
       notificationId: notification.id,
@@ -199,10 +193,10 @@ export async function getNotifications(options: {
       id: n.id,
       title: n.title,
       content: n.content,
-      category: n.category,
-      priority: n.priority,
-      isRead: n.is_read,
-      createdAt: n.created_at,
+      category: (n.category || 'info'),
+      priority: (n.priority || 'normal'),
+      isRead: n.is_read || false,
+      createdAt: n.created_at || new Date().toISOString(),
     })),
     total: count || 0,
   };
@@ -251,12 +245,12 @@ export async function getMyNotifications(
       id: n.id,
       title: n.title,
       content: n.content,
-      type: n.type,
-      category: n.category,
-      priority: n.priority,
-      isRead: n.is_read,
-      readAt: n.read_at,
-      createdAt: n.created_at,
+      type: n.type || 'info',
+      category: (n.category || 'info'),
+      priority: (n.priority || 'normal'),
+      isRead: n.is_read || false,
+      readAt: n.read_at || undefined,
+      createdAt: n.created_at || new Date().toISOString(),
     }));
   }
 
@@ -269,12 +263,12 @@ export async function getMyNotifications(
       id: item.notifications.id,
       title: item.notifications.title,
       content: item.notifications.content,
-      type: item.notifications.type,
-      category: item.notifications.category,
-      priority: item.notifications.priority,
-      isRead: item.notifications.is_read,
-      readAt: item.notifications.read_at,
-      createdAt: item.notifications.created_at,
+      type: item.notifications.type || 'info',
+      category: (item.notifications.category || 'info'),
+      priority: (item.notifications.priority || 'normal'),
+      isRead: item.notifications.is_read || false,
+      readAt: item.notifications.read_at || undefined,
+      createdAt: item.notifications.created_at || new Date().toISOString(),
     })) || []
   );
 }
@@ -318,6 +312,8 @@ export async function getDeliveryStatus(notificationId: string): Promise<Deliver
     .eq('notification_id', notificationId);
 
   const stats = {
+    notificationId,
+    totalRecipients: totalRecipients || 0,
     total: totalRecipients || 0,
     delivered: 0,
     failed: 0,
@@ -366,7 +362,7 @@ async function deliverNotification(
   }
 
   // Determine channels based on priority
-  const channels = getChannelsForPriority(notification.priority, notification.category);
+  const channels = getChannelsForPriority(notification.priority || 'normal', notification.category || 'info');
 
   console.log(
     `[Notification] Delivering ${notificationId} via ${channels.join(', ')} to ${recipients.length} recipients`

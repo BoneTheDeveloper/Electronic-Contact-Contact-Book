@@ -1,12 +1,13 @@
 /**
  * Payment Screen
  * Student fee payment information
+ * Uses real Supabase data via student store
  */
 
-import React, { useMemo } from 'react';
-import { View, ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React, { useMemo, useEffect } from 'react';
+import { View, ScrollView, TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useStudentStore } from '../../stores';
-import { getFeesByStudentId } from '../../mock-data';
+import { useAuthStore } from '../../stores';
 import { colors } from '../../theme';
 import { ScreenHeader } from '../../components/ui';
 import type { StudentHomeStackNavigationProp } from '../../navigation/types';
@@ -17,25 +18,23 @@ interface PaymentScreenProps {
 
 interface Fee {
   id: string;
-  type: string;
+  invoiceNumber: string;
+  name: string;
   amount: number;
+  paidAmount: number;
+  totalAmount: number;
+  remainingAmount: number;
   dueDate: string;
-  status: 'pending' | 'paid' | 'overdue';
+  status: 'pending' | 'partial' | 'paid' | 'overdue' | 'cancelled';
   paidDate?: string;
 }
 
-const FEE_TYPE_LABELS: Record<string, string> = {
-  tuition: 'Học phí',
-  transport: 'Phí đưa đón',
-  library: 'Phí thư viện',
-  lab: 'Phí phòng thí nghiệm',
-  other: 'Khác',
-};
-
 const STATUS_CONFIG = {
   pending: { label: 'Chưa thanh toán', color: '#F59E0B', bgColor: '#FEF3C7' },
+  partial: { label: 'Thanh toán 1 phần', color: '#3B82F6', bgColor: '#DBEAFE' },
   paid: { label: 'Đã thanh toán', color: '#10B981', bgColor: '#D1FAE5' },
   overdue: { label: 'Quá hạn', color: '#EF4444', bgColor: '#FEE2E2' },
+  cancelled: { label: 'Đã hủy', color: '#6B7280', bgColor: '#E5E7EB' },
 };
 
 const styles = StyleSheet.create({
@@ -169,16 +168,27 @@ const styles = StyleSheet.create({
 });
 
 export const StudentPaymentScreen: React.FC<PaymentScreenProps> = ({ navigation }) => {
-  const { studentData } = useStudentStore();
-  const fees = studentData ? getFeesByStudentId(studentData.id) : [];
+  const { user } = useAuthStore();
+  const { invoices, isLoading, loadInvoices } = useStudentStore();
+
+  // Load invoices when student ID changes
+  useEffect(() => {
+    if (user?.id && user?.role === 'student') {
+      loadInvoices(user.id);
+    }
+  }, [user?.id]);
 
   const stats = useMemo(() => {
-    const total = fees.reduce((sum, fee) => sum + fee.amount, 0);
-    const paid = fees.filter(f => f.status === 'paid').reduce((sum, fee) => sum + fee.amount, 0);
-    const pending = fees.filter(f => f.status === 'pending').reduce((sum, fee) => sum + fee.amount, 0);
-    const overdue = fees.filter(f => f.status === 'overdue').reduce((sum, fee) => sum + fee.amount, 0);
+    const total = invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
+    const paid = invoices.reduce((sum, inv) => sum + inv.paidAmount, 0);
+    const pending = invoices
+      .filter(f => f.status === 'pending')
+      .reduce((sum, inv) => sum + inv.remainingAmount, 0);
+    const overdue = invoices
+      .filter(f => f.status === 'overdue')
+      .reduce((sum, inv) => sum + inv.remainingAmount, 0);
     return { total, paid, pending, overdue };
-  }, [fees]);
+  }, [invoices]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -192,19 +202,22 @@ export const StudentPaymentScreen: React.FC<PaymentScreenProps> = ({ navigation 
     return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
-  const renderFeeCard = (fee: Fee) => {
-    const config = STATUS_CONFIG[fee.status];
+  const renderFeeCard = (invoice: Fee) => {
+    const config = STATUS_CONFIG[invoice.status];
     return (
       <TouchableOpacity
-        key={fee.id}
+        key={invoice.id}
         onPress={() => {}}
         activeOpacity={0.7}
         style={styles.feeCard}
       >
         <View style={styles.feeCardHeader}>
           <View>
-            <Text style={[styles.feeCardType, { marginBottom: 4 }]}>{FEE_TYPE_LABELS[fee.type] || fee.type}</Text>
-            <Text style={styles.feeCardDate}>Hạn chót: {formatDate(fee.dueDate)}</Text>
+            <Text style={[styles.feeCardType, { marginBottom: 4 }]}>{invoice.name}</Text>
+            <Text style={styles.feeCardDate}>Hạn chót: {formatDate(invoice.dueDate)}</Text>
+            {invoice.invoiceNumber && (
+              <Text style={styles.feeCardDate}>Mã: {invoice.invoiceNumber}</Text>
+            )}
           </View>
           <View
             style={[styles.feeCardStatus, { backgroundColor: config.bgColor }]}
@@ -217,12 +230,28 @@ export const StudentPaymentScreen: React.FC<PaymentScreenProps> = ({ navigation 
           </View>
         </View>
         <View style={styles.feeCardFooter}>
-          <Text style={styles.feeCardAmount}>{formatCurrency(fee.amount)}</Text>
+          <Text style={styles.feeCardAmount}>{formatCurrency(invoice.totalAmount)}</Text>
           <Text style={styles.feeCardDetail}>Chi tiết →</Text>
         </View>
       </TouchableOpacity>
     );
   };
+
+  // Loading state
+  if (isLoading && invoices.length === 0) {
+    return (
+      <View style={styles.container}>
+        <ScreenHeader
+          title="Học phí"
+          onBack={() => navigation?.goBack()}
+        />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ marginTop: 16, fontSize: 14, color: '#6b7280' }}>Đang tải dữ liệu...</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -265,7 +294,14 @@ export const StudentPaymentScreen: React.FC<PaymentScreenProps> = ({ navigation 
 
         {/* Fee List */}
         <Text style={styles.listTitle}>Chi tiết các khoản</Text>
-        {fees.map(renderFeeCard)}
+        {invoices.map(renderFeeCard)}
+
+        {/* Empty state */}
+        {invoices.length === 0 && !isLoading && (
+          <View style={{ padding: 32, alignItems: 'center' }}>
+            <Text style={{ fontSize: 14, color: '#9ca3af' }}>Chưa có dữ liệu học phí</Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   );

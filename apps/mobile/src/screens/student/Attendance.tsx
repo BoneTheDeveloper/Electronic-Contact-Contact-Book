@@ -1,12 +1,13 @@
 /**
  * Attendance Screen
  * Attendance history with month selector and weekly calendar grid
+ * Uses real Supabase data via student store
  */
 
-import React, { useState } from 'react';
-import { View, ScrollView, Text, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useStudentStore } from '../../stores';
-import { getAttendanceByStudentId } from '../../mock-data';
+import { useAuthStore } from '../../stores';
 
 interface WeekAttendanceData {
   weekNumber: number;
@@ -20,50 +21,134 @@ interface WeekAttendanceData {
   totalCount: number;
 }
 
+// Day names in Vietnamese
+const DAY_NAMES = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+
+/**
+ * Group attendance records by week
+ */
+const groupByWeek = (attendance: Array<{ date: string; status: string }>): WeekAttendanceData[] => {
+  const weeksMap = new Map<number, WeekAttendanceData>();
+
+  attendance.forEach(record => {
+    const date = new Date(record.date);
+    const year = date.getFullYear();
+    const weekNumber = getWeekNumber(date);
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ...
+
+    // Convert to ISO week day (1 = Monday, 7 = Sunday)
+    const isoDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
+
+    if (!weeksMap.has(weekNumber)) {
+      // Calculate week range
+      const weekStart = getWeekStart(date);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+
+      const formatDate = (d: Date) => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const dateRange = `${formatDate(weekStart)} - ${formatDate(weekEnd)}`;
+
+      weeksMap.set(weekNumber, {
+        weekNumber,
+        dateRange,
+        days: Array(7).fill(null).map((_, i) => ({
+          dayName: DAY_NAMES[i] || '',
+          date: formatDate(new Date(weekStart.getTime() + i * 24 * 60 * 60 * 1000)),
+          status: i === 6 ? 'weekend' : null, // Sunday is weekend
+        })) as Array<{
+          dayName: string;
+          date: string;
+          status: 'present' | 'absent' | 'weekend' | null;
+        }>,
+        presentCount: 0,
+        totalCount: 0,
+      });
+    }
+
+    const week = weeksMap.get(weekNumber)!;
+    const dayIndex = isoDayOfWeek - 1; // Convert to 0-based index
+
+    if (dayIndex >= 0 && dayIndex < 7) {
+      const day = week.days[dayIndex];
+      if (day) {
+        day.status = record.status as 'present' | 'absent' | null;
+      }
+    }
+  });
+
+  // Calculate counts for each week
+  weeksMap.forEach(week => {
+    const validDays = week.days.filter(d => d.status !== 'weekend');
+    week.presentCount = week.days.filter(d => d.status === 'present').length;
+    week.totalCount = validDays.length;
+  });
+
+  return Array.from(weeksMap.values()).sort((a, b) => b.weekNumber - a.weekNumber);
+};
+
+/**
+ * Get ISO week number
+ */
+const getWeekNumber = (date: Date): number => {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+};
+
+/**
+ * Get week start date (Monday)
+ */
+const getWeekStart = (date: Date): Date => {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(d.setDate(diff));
+};
+
+/**
+ * Format month for filtering (YYYY-MM)
+ */
+const getMonthFilter = (month: string): string => {
+  const currentYear = new Date().getFullYear();
+  const monthNum = parseInt(month, 10);
+  const year = monthNum >= 10 ? currentYear - 1 : currentYear;
+  return `${year}-${String(monthNum).padStart(2, '0')}`;
+};
+
 export const StudentAttendanceScreen: React.FC = () => {
-  const { studentData } = useStudentStore();
-    // Using mock data
+  const { user } = useAuthStore();
+  const { attendance, isLoading, error, loadAttendance } = useStudentStore();
 
   const [selectedMonth, setSelectedMonth] = useState<'10' | '11' | '12' | '1'>('11');
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Load attendance data when student ID or month changes
+  const loadData = async () => {
+    if (user?.id && user?.role === 'student') {
+      const monthFilter = getMonthFilter(selectedMonth);
+      await loadAttendance(user.id, monthFilter);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [user?.id, selectedMonth]);
+
+  const handleReload = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
 
   // Calculate stats
-  const presentCount = attendance.filter(a => a.status === 'present').length;
+  const presentCount = attendance.filter(a => a.status === 'present' || a.status === 'late').length;
   const absentCount = attendance.filter(a => a.status === 'absent').length;
   const excusedCount = attendance.filter(a => a.status === 'excused').length;
 
-  // Mock weekly data
-  const weeklyData: WeekAttendanceData[] = [
-    {
-      weekNumber: 2,
-      dateRange: '06/01 - 12/01',
-      days: [
-        { dayName: 'T2', date: '06/01', status: 'present' },
-        { dayName: 'T3', date: '07/01', status: 'present' },
-        { dayName: 'T4', date: '08/01', status: 'present' },
-        { dayName: 'T5', date: '09/01', status: 'present' },
-        { dayName: 'T6', date: '10/01', status: 'present' },
-        { dayName: 'T7', date: '11/01', status: 'present' },
-        { dayName: 'CN', date: '12/01', status: 'weekend' },
-      ],
-      presentCount: 6,
-      totalCount: 6,
-    },
-    {
-      weekNumber: 1,
-      dateRange: '30/12 - 05/01',
-      days: [
-        { dayName: 'T2', date: '30/12', status: 'present' },
-        { dayName: 'T3', date: '31/12', status: 'absent' },
-        { dayName: 'T4', date: '01/01', status: 'present' },
-        { dayName: 'T5', date: '02/01', status: 'present' },
-        { dayName: 'T6', date: '03/01', status: 'present' },
-        { dayName: 'T7', date: '04/01', status: 'present' },
-        { dayName: 'CN', date: '05/01', status: 'weekend' },
-      ],
-      presentCount: 5,
-      totalCount: 6,
-    },
-  ];
+  // Group attendance by week
+  const weeklyData = groupByWeek(attendance);
 
   const DayCell: React.FC<{ dayName: string; status: 'present' | 'absent' | 'weekend' | null }> = ({ dayName, status }) => {
     if (status === 'weekend') {
@@ -100,12 +185,60 @@ export const StudentAttendanceScreen: React.FC = () => {
     return null;
   };
 
+  // Loading state
+  if (isLoading && attendance.length === 0) {
+    return (
+      <View className="flex-1 bg-slate-50 justify-center items-center">
+        <ActivityIndicator size="large" color="#0284C7" />
+        <Text className="mt-4 text-sm text-gray-500">Đang tải dữ liệu...</Text>
+      </View>
+    );
+  }
+
+  // Error state
+  if (error && attendance.length === 0) {
+    return (
+      <View className="flex-1 bg-slate-50 justify-center items-center px-6">
+        <View className="w-20 h-20 bg-rose-100 rounded-full items-center justify-center mb-4">
+          <Text className="text-rose-600 text-3xl">⚠</Text>
+        </View>
+        <Text className="text-gray-800 font-extrabold text-lg mb-2">Lỗi tải dữ liệu</Text>
+        <Text className="text-gray-500 text-sm text-center mb-6">{error}</Text>
+        <TouchableOpacity
+          onPress={handleReload}
+          disabled={refreshing}
+          className={`bg-[#0284C7] py-3 px-8 rounded-xl ${refreshing ? 'opacity-50' : ''}`}
+        >
+          <Text className="text-white font-extrabold text-sm">
+            {refreshing ? 'Đang tải...' : 'Thử lại'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-slate-50">
       {/* Header */}
       <View className="bg-gradient-to-br from-[#0284C7] to-[#0369A1] pt-[60px] px-6 pb-6 rounded-b-[30px]">
-        <Text className="text-[20px] font-extrabold text-white">Lịch sử điểm danh</Text>
-        <Text className="text-[12px] text-blue-100 font-medium mt-0.5">Theo dõi attendance học sinh</Text>
+        <View className="flex-row justify-between items-start">
+          <View>
+            <Text className="text-[20px] font-extrabold text-white">Lịch sử điểm danh</Text>
+            <Text className="text-[12px] text-blue-100 font-medium mt-0.5">Theo dõi attendance học sinh</Text>
+          </View>
+          <TouchableOpacity
+            onPress={handleReload}
+            disabled={refreshing}
+            className={`w-10 h-10 bg-white/20 rounded-full items-center justify-center ${refreshing ? 'opacity-50' : ''}`}
+          >
+            <Text className={`text-white ${refreshing ? 'animate-spin' : ''}`}>{refreshing ? '⟳' : '↻'}</Text>
+          </TouchableOpacity>
+        </View>
+        {error && (
+          <View className="mt-3 bg-rose-500/20 px-3 py-2 rounded-lg">
+            <Text className="text-rose-100 text-xs">{error}</Text>
+          </View>
+        )}
       </View>
 
       <ScrollView className="px-6 pt-6 pb-[140px]" showsVerticalScrollIndicator={false}>
