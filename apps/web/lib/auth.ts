@@ -5,7 +5,7 @@
  *
  * Login identifiers:
  * - Admin: admin_code (AD001) or email
- * - Teacher: employee_code (TC001) or email
+ * - Teacher: employee_code (GV0001) or email
  * - Student: student_code (ST2024001) or email
  * - Parent: phone number or email
  */
@@ -48,7 +48,7 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
   }
 
   // 2. Check employee_code (in teachers table)
-  if (normalizedId.startsWith('TC')) {
+  if (normalizedId.startsWith('GV') || normalizedId.startsWith('TC')) {
     const { data } = await supabase
       .from('teachers')
       .select('profiles!inner(email)')

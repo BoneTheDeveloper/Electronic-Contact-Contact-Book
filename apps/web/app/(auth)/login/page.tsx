@@ -84,7 +84,7 @@ function LoginForm() {
     if (role === 'teacher') {
       return {
         label: 'Mã giáo viên Hoặc email',
-        placeholder: 'TC001'
+        placeholder: 'GV0001'
       }
     }
     return {
