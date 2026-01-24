@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Student Sidebar (Desktop)
  * Left navigation for student portal
