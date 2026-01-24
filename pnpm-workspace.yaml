@@ -8,8 +8,3 @@ ignoredBuiltDependencies:
   - prisma
   - sharp
   - unrs-resolver
-
-# Force consistent React versions across all packages
-pnpm:
-  overrides:
-    - react-dom: 19.1.0

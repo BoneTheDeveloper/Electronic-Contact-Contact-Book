@@ -40,5 +40,10 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "react-hook-form": "^7.71.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "react-dom": "19.1.0"
+    }
   }
 }
