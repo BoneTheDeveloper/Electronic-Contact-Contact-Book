@@ -3,7 +3,7 @@
 # Syntax: gitignore-spec | Use ! prefix to allow (e.g., !src/vendor)
 
 # JS/TS
-node_modules
+!node_modules
 !dist
 build
 .next
