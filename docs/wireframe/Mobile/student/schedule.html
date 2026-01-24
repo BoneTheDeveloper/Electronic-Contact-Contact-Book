@@ -10,13 +10,13 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
 
         :root {
-            --primary-blue: #0284C7;
-            --light-blue: #E0F2FE;
+            --primary: #0284C7;
+            --secondary: #0ea5e9;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f0f0;
+            background-color: #e5e7eb;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -28,71 +28,61 @@
             width: 375px;
             height: 812px;
             background-color: #F8FAFC;
-            border: 12px solid #333;
-            border-radius: 40px;
+            border: 12px solid #1e293b;
+            border-radius: 44px;
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
         }
 
         .notch {
-            width: 160px;
-            height: 30px;
-            background-color: #333;
+            width: 150px;
+            height: 28px;
+            background-color: #1e293b;
             position: absolute;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
             border-bottom-left-radius: 18px;
             border-bottom-right-radius: 18px;
-            z-index: 20;
+            z-index: 50;
         }
 
         .header-bg {
-            background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
-            height: 140px;
+            background: linear-gradient(135deg, #0284C7 0%, #075985 100%);
+            height: 180px;
             position: absolute;
             width: 100%;
             top: 0;
             z-index: 0;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
+            border-bottom-left-radius: 32px;
+            border-bottom-right-radius: 32px;
         }
 
-        .back-btn {
-            transition: all 0.2s ease;
-            cursor: pointer;
+        /* Category Nav Styling */
+        .category-tab {
+            position: relative;
+            transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
-        .back-btn:active {
-            transform: scale(0.92);
-        }
-
-        .day-tab {
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .day-tab.active {
-            background-color: #0284C7;
+        .category-tab.active {
             color: white;
+            font-weight: 800;
         }
 
-        .schedule-card {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-        }
-
-        .schedule-card:active {
-            transform: scale(0.98);
-            background-color: #f8fafc;
-        }
-
-        .nav-item {
-            transition: all 0.2s ease;
-            cursor: pointer;
+        .category-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 4px;
+            background: white;
+            border-radius: 10px;
         }
 
         .hide-scrollbar::-webkit-scrollbar {
@@ -103,6 +93,26 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        .schedule-card {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-item.active {
+            color: #0284C7;
+        }
     </style>
 </head>
 
@@ -112,168 +122,164 @@
         <div class="notch"></div>
         <div class="header-bg"></div>
 
-        <!-- Header with Back Button -->
-        <div class="relative z-10 px-6 pt-16 pb-4">
-            <div class="flex items-center space-x-4">
-                <button class="back-btn w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white"
-                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M19 12H5"></path>
-                        <path d="M12 19l-7-7 7-7"></path>
+        <!-- Header Content -->
+        <div class="relative z-10 px-6 pt-14">
+            <div class="flex items-center justify-between">
+                <button class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                        <path d="M19 12H5M12 19l-7-7 7-7" />
                     </svg>
                 </button>
-                <div>
-                    <h2 class="text-white text-xl font-extrabold">Thời khóa biểu</h2>
-                    <p class="text-blue-100 text-xs font-medium mt-0.5">Tuần 02 - Từ 06/01 đến 12/01/2026</p>
+                <div class="text-center">
+                    <h2 class="text-white text-lg font-extrabold tracking-tight">EContact</h2>
+                    <p class="text-blue-100 text-[10px] font-bold uppercase tracking-widest">Thời khóa biểu sinh viên
+                    </p>
                 </div>
+                <div class="w-10 h-10"></div>
+            </div>
+
+            <!-- Horizontal Category Navbar -->
+            <div class="flex justify-between px-4 space-x-4 mt-8 overflow-x-auto hide-scrollbar pb-2">
+                <button onclick="switchCategory('hoc')" id="tab-hoc"
+                    class="category-tab active text-blue-100 text-sm font-semibold">Lịch học</button>
+                <button onclick="switchCategory('bu')" id="tab-bu"
+                    class="category-tab text-blue-100 text-sm font-semibold">Học bù</button>
+                <button onclick="switchCategory('thi')" id="tab-thi"
+                    class="category-tab text-blue-100 text-sm font-semibold">Lịch thi</button>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="flex-1 overflow-y-auto hide-scrollbar px-6 pt-6 pb-32">
+        <!-- Main Content Area -->
+        <div class="flex-1 overflow-y-auto hide-scrollbar px-6 pt-6 pb-32 relative z-10">
 
-            <!-- Week Day Selector -->
-            <div class="flex justify-between mb-6 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
-                <div class="day-tab flex-1 py-2 text-center rounded-xl text-gray-400">
-                    <p class="text-[9px] font-black uppercase">T2</p>
-                    <p class="text-sm font-bold">6</p>
+            <!-- Week Day Selector (T2 to T7) -->
+            <div
+                class="flex justify-between mb-6 bg-white/90 backdrop-blur-md p-1.5 rounded-2xl shadow-lg border border-white/50">
+                <div class="flex-1 py-3 text-center rounded-xl text-gray-400">
+                    <p class="text-[11px] font-black">T2</p>
                 </div>
-                <div class="day-tab active flex-1 py-2 text-center rounded-xl">
-                    <p class="text-[9px] font-black uppercase">T3</p>
-                    <p class="text-sm font-bold">7</p>
+                <div class="flex-1 py-3 text-center rounded-xl bg-sky-600 text-white shadow-md">
+                    <p class="text-[11px] font-black">T3</p>
                 </div>
-                <div class="day-tab flex-1 py-2 text-center rounded-xl text-gray-400">
-                    <p class="text-[9px] font-black uppercase">T4</p>
-                    <p class="text-sm font-bold">8</p>
+                <div class="flex-1 py-3 text-center rounded-xl text-gray-400">
+                    <p class="text-[11px] font-black">T4</p>
                 </div>
-                <div class="day-tab flex-1 py-2 text-center rounded-xl text-gray-400">
-                    <p class="text-[9px] font-black uppercase">T5</p>
-                    <p class="text-sm font-bold">9</p>
+                <div class="flex-1 py-3 text-center rounded-xl text-gray-400">
+                    <p class="text-[11px] font-black">T5</p>
                 </div>
-                <div class="day-tab flex-1 py-2 text-center rounded-xl text-gray-400">
-                    <p class="text-[9px] font-black uppercase">T6</p>
-                    <p class="text-sm font-bold">10</p>
+                <div class="flex-1 py-3 text-center rounded-xl text-gray-400">
+                    <p class="text-[11px] font-black">T6</p>
+                </div>
+                <div class="flex-1 py-3 text-center rounded-xl text-gray-400">
+                    <p class="text-[11px] font-black">T7</p>
                 </div>
             </div>
 
-            <!-- Schedule Cards -->
-            <div class="space-y-3">
-                <!-- Morning Section -->
-                <div class="flex items-center space-x-2 mb-3">
-                    <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    <h3 class="text-gray-800 font-extrabold text-sm">BUỔI SÁNG</h3>
+            <!-- Content Containers -->
+            <div id="content-hoc" class="category-content space-y-4">
+                <div class="flex items-center space-x-2 mb-2">
+                    <div class="w-1.5 h-4 bg-blue-500 rounded-full"></div>
+                    <h3 class="font-black text-xs text-gray-500 uppercase">Tiết học trong ngày</h3>
                 </div>
 
-                <!-- Period 1 -->
-                <div class="schedule-card bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <div class="flex items-center space-x-2 mb-1">
-                                <span class="bg-orange-100 text-orange-600 text-[8px] font-black px-2 py-0.5 rounded-full uppercase">Tiết 1</span>
-                                <span class="text-gray-400 text-[9px] font-medium">07:00 - 07:45</span>
-                            </div>
-                            <h4 class="text-gray-800 font-bold text-base mb-0.5">Toán học</h4>
-                            <p class="text-gray-500 text-xs font-medium">GV: Nguyễn Thị Lan • Phòng 301</p>
-                        </div>
-                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-[#0284C7] font-black text-sm">
-                            Toán
-                        </div>
+                <div
+                    class="schedule-card bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex items-center space-x-4">
+                    <div
+                        class="w-12 h-12 bg-blue-50 rounded-2xl flex flex-col items-center justify-center text-blue-600">
+                        <span class="text-[10px] font-black">T.1-2</span>
+                        <div class="w-4 h-0.5 bg-blue-200 my-0.5"></div>
+                        <span class="text-[9px] font-bold">07:00</span>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-gray-900 font-bold text-sm">Giải tích nâng cao</h4>
+                        <p class="text-gray-500 text-[11px] font-medium">Phòng A2.301 • TS. Lê Nam</p>
                     </div>
                 </div>
 
-                <!-- Period 2 -->
-                <div class="schedule-card bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <div class="flex items-center space-x-2 mb-1">
-                                <span class="bg-orange-100 text-orange-600 text-[8px] font-black px-2 py-0.5 rounded-full uppercase">Tiết 2</span>
-                                <span class="text-gray-400 text-[9px] font-medium">07:50 - 08:35</span>
-                            </div>
-                            <h4 class="text-gray-800 font-bold text-base mb-0.5">Ngữ văn</h4>
-                            <p class="text-gray-500 text-xs font-medium">GV: Trần Văn Minh • Phòng 301</p>
+                <div
+                    class="schedule-card bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex items-center space-x-4">
+                    <div
+                        class="w-12 h-12 bg-purple-50 rounded-2xl flex flex-col items-center justify-center text-purple-600">
+                        <span class="text-[10px] font-black">T.3-5</span>
+                        <div class="w-4 h-0.5 bg-purple-200 my-0.5"></div>
+                        <span class="text-[9px] font-bold">08:45</span>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-gray-900 font-bold text-sm">Cấu trúc dữ liệu</h4>
+                        <p class="text-gray-500 text-[11px] font-medium">Phòng Lab 04 • ThS. Minh Tâm</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-bu" class="category-content hidden space-y-4">
+                <div class="flex items-center space-x-2 mb-2">
+                    <div class="w-1.5 h-4 bg-orange-500 rounded-full"></div>
+                    <h3 class="font-black text-xs text-gray-500 uppercase">Lịch học bổ sung</h3>
+                </div>
+
+                <div
+                    class="schedule-card bg-orange-50 p-4 rounded-3xl border border-orange-200 flex items-center space-x-4">
+                    <div
+                        class="w-12 h-12 bg-orange-500 rounded-2xl flex flex-col items-center justify-center text-white">
+                        <span class="text-[10px] font-black">BÙ</span>
+                        <span class="text-[9px] font-bold">13:30</span>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-gray-900 font-bold text-sm">Mạng máy tính</h4>
+                        <p class="text-gray-600 text-[11px] font-medium">Phòng B1.202 • Bù cho ngày 20/01</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-thi" class="category-content hidden space-y-4">
+                <div class="flex items-center space-x-2 mb-2">
+                    <div class="w-1.5 h-4 bg-red-500 rounded-full"></div>
+                    <h3 class="font-black text-xs text-gray-500 uppercase">Lịch thi học kỳ</h3>
+                </div>
+
+                <div
+                    class="schedule-card bg-gradient-to-br from-red-500 to-rose-600 p-5 rounded-[32px] text-white shadow-lg shadow-red-200">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="bg-white/20 text-[9px] font-black px-2 py-1 rounded-full uppercase">SBD:
+                                20250045</span>
+                            <h4 class="text-lg font-extrabold mt-2">Kỹ thuật lập trình</h4>
                         </div>
-                        <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 font-black text-sm">
-                            Văn
+                        <div class="text-right">
+                            <p class="text-[10px] font-bold opacity-80 uppercase">Bắt đầu</p>
+                            <p class="text-xl font-black">07:30</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 pt-4 border-t border-white/20">
+                        <div>
+                            <p class="text-[9px] font-bold opacity-70 uppercase tracking-tighter">Phòng thi</p>
+                            <p class="text-xs font-extrabold">Hội trường C</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-bold opacity-70 uppercase tracking-tighter">Thời lượng</p>
+                            <p class="text-xs font-extrabold">90 Phút</p>
                         </div>
                     </div>
                 </div>
-
-                <!-- Period 3 -->
-                <div class="schedule-card bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <div class="flex items-center space-x-2 mb-1">
-                                <span class="bg-orange-100 text-orange-600 text-[8px] font-black px-2 py-0.5 rounded-full uppercase">Tiết 3</span>
-                                <span class="text-gray-400 text-[9px] font-medium">08:40 - 09:25</span>
-                            </div>
-                            <h4 class="text-gray-800 font-bold text-base mb-0.5">Tiếng Anh</h4>
-                            <p class="text-gray-500 text-xs font-medium">GV: Lê Thu Hương • Phòng 201</p>
-                        </div>
-                        <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 font-black text-sm">
-                            Anh
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Afternoon Section -->
-                <div class="flex items-center space-x-2 mb-3 mt-6">
-                    <div class="w-2 h-2 bg-sky-500 rounded-full"></div>
-                    <h3 class="text-gray-800 font-extrabold text-sm">BUỔI CHIỀU</h3>
-                </div>
-
-                <!-- Period 6 -->
-                <div class="schedule-card bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <div class="flex items-center space-x-2 mb-1">
-                                <span class="bg-sky-100 text-sky-600 text-[8px] font-black px-2 py-0.5 rounded-full uppercase">Tiết 6</span>
-                                <span class="text-gray-400 text-[9px] font-medium">13:30 - 14:15</span>
-                            </div>
-                            <h4 class="text-gray-800 font-bold text-base mb-0.5">Vật lý</h4>
-                            <p class="text-gray-500 text-xs font-medium">GV: Phạm Quốc Khánh • Phòng Lab 1</p>
-                        </div>
-                        <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 font-black text-sm">
-                            Lý
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Period 7 -->
-                <div class="schedule-card bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <div class="flex items-center space-x-2 mb-1">
-                                <span class="bg-sky-100 text-sky-600 text-[8px] font-black px-2 py-0.5 rounded-full uppercase">Tiết 7</span>
-                                <span class="text-gray-400 text-[9px] font-medium">14:20 - 15:05</span>
-                            </div>
-                            <h4 class="text-gray-800 font-bold text-base mb-0.5">Hóa học</h4>
-                            <p class="text-gray-500 text-xs font-medium">GV: Hoàng Thị Mai • Phòng Lab 2</p>
-                        </div>
-                        <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 font-black text-sm">
-                            Hóa
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
         </div>
 
-        <!-- Navigation Bar -->
+        <!-- Bottom Navigation Bar (Restored and Modified) -->
         <div
-            class="absolute bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-100 px-10 py-5 flex justify-between items-center z-30">
-            <!-- Home -->
-            <div class="nav-item flex flex-col items-center text-gray-300 hover:text-gray-400">
+            class="absolute bottom-0 w-full bg-white/80 backdrop-blur-xl border-t border-gray-100 px-10 py-5 flex justify-between items-center z-50">
+            <!-- Trang chủ -->
+            <div class="nav-item active flex flex-col items-center">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                     stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                     <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
                 <span class="text-[9px] font-black uppercase mt-1">Trang chủ</span>
             </div>
 
-            <!-- Chat / Tin nhắn -->
-            <div class="nav-item flex flex-col items-center text-gray-300 hover:text-gray-400">
+            <!-- Tin nhắn -->
+            <div class="nav-item flex flex-col items-center text-gray-300">
                 <div class="relative">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -285,8 +291,8 @@
                 <span class="text-[9px] font-black uppercase mt-1">Tin nhắn</span>
             </div>
 
-            <!-- Profile / Cá nhân -->
-            <div class="nav-item flex flex-col items-center text-gray-300 hover:text-gray-400">
+            <!-- Cá nhân -->
+            <div class="nav-item flex flex-col items-center text-gray-300">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                     stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -297,6 +303,21 @@
         </div>
     </div>
 
+    <script>
+        function switchCategory(type) {
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active');
+                tab.classList.add('text-blue-100');
+            });
+            document.getElementById('tab-' + type).classList.add('active');
+            document.getElementById('tab-' + type).classList.remove('text-blue-100');
+
+            document.querySelectorAll('.category-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById('content-' + type).classList.remove('hidden');
+        }
+    </script>
 </body>
 
 </html>

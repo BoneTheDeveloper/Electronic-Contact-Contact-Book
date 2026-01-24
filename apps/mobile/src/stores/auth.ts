@@ -251,32 +251,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Logout action
-      logout: async () => {
-        set({
-          isLoading: true,
-        });
-
-        try {
-          // Sign out from Supabase Auth
-          await supabase.auth.signOut();
-
-          // Clear auth state
-          set({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: null,
-            token: null,
-          });
-        } catch (error) {
-          set({
-            isLoading: false,
-            error: error instanceof Error ? error.message : 'Logout failed',
-          });
-        }
-      },
-
       // Clear error
       clearError: () => set({ error: null }),
 

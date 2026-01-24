@@ -16,7 +16,7 @@ export interface IconProps {
   style?: ViewStyle;
 }
 
-type IconName =
+export type IconName =
   | 'calendar'
   | 'check-circle'
   | 'account-check'
@@ -41,7 +41,9 @@ type IconName =
   | 'trophy'
   | 'clock'
   | 'notification'
-  | 'book';
+  | 'book'
+  | 'upload-cloud'
+  | 'x';
 
 const Icon: React.FC<IconProps> = ({
   name,
@@ -244,6 +246,23 @@ const Icon: React.FC<IconProps> = ({
           <>
             <Path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
             <Path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          </>
+        );
+
+      case 'upload-cloud':
+        return (
+          <>
+            <Path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <Polyline points="17 8 12 3 7 8" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <Line x1="12" y1="3" x2="12" y2="15" stroke={color} strokeWidth={2} strokeLinecap="round" />
+          </>
+        );
+
+      case 'x':
+        return (
+          <>
+            <Line x1="18" y1="6" x2="6" y2="18" stroke={color} strokeWidth={2} strokeLinecap="round" />
+            <Line x1="6" y1="6" x2="18" y2="18" stroke={color} strokeWidth={2} strokeLinecap="round" />
           </>
         );
 

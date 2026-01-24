@@ -5,10 +5,8 @@
  */
 
 import React, { useState } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, StyleSheet, Svg } from 'react-native';
-import { Circle } from 'react-native-svg';
+import { View, ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Icon } from '../../components/ui';
-import { StatCard } from '../../components/ui';
 import type { StudentHomeStackNavigationProp } from '../../navigation/types';
 
 interface SummaryScreenProps {
@@ -18,31 +16,29 @@ interface SummaryScreenProps {
 interface SubjectSummary {
   subject: string;
   average: number;
-  grade: string;
+  rating: string;
 }
 
 const MOCK_SUBJECTS: SubjectSummary[] = [
-  { subject: 'Toán học', average: 8.5, grade: 'A' },
-  { subject: 'Ngữ văn', average: 7.8, grade: 'B' },
-  { subject: 'Tiếng Anh', average: 9.0, grade: 'A+' },
-  { subject: 'Vật lý', average: 7.2, grade: 'B' },
-  { subject: 'Hóa học', average: 8.0, grade: 'A' },
-  { subject: 'Lịch sử', average: 7.5, grade: 'B' },
+  { subject: 'Toán học', average: 8.5, rating: 'Giỏi' },
+  { subject: 'Ngữ văn', average: 7.8, rating: 'Khá' },
+  { subject: 'Tiếng Anh', average: 9.0, rating: 'Giỏi' },
+  { subject: 'Vật lý', average: 7.2, rating: 'Khá' },
+  { subject: 'Hóa học', average: 8.0, rating: 'Giỏi' },
+  { subject: 'Lịch sử', average: 7.5, rating: 'Khá' },
 ];
 
 const OVERALL_SCORE = 8.2;
-const ATTENDANCE_PERCENTAGE = 95;
-const CONDUCT_SCORE = 90;
 
 type TabType = 'semester1' | 'yearly';
 
 export const StudentSummaryScreen: React.FC<SummaryScreenProps> = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState<TabType>('semester1');
 
-  const getGradeColor = (grade: string): { bg: string; text: string } => {
-    if (grade === 'A+' || grade === 'A') return { bg: '#ECFDF5', text: '#059669' };
-    if (grade === 'B') return { bg: '#EFF6FF', text: '#1D4ED8' };
-    if (grade === 'C') return { bg: '#FEF3C7', text: '#D97706' };
+  const getRatingColor = (rating: string): { bg: string; text: string } => {
+    if (rating === 'Giỏi') return { bg: '#ECFDF5', text: '#059669' };
+    if (rating === 'Khá') return { bg: '#EFF6FF', text: '#1D4ED8' };
+    if (rating === 'TB') return { bg: '#FEF3C7', text: '#D97706' };
     return { bg: '#F3F4F6', text: '#6B7280' };
   };
 
@@ -56,38 +52,6 @@ export const StudentSummaryScreen: React.FC<SummaryScreenProps> = ({ navigation 
     if (average >= 7) return '#3B82F6';
     if (average >= 6) return '#F59E0B';
     return '#EF4444';
-  };
-
-  const renderProgressRing = (percentage: number) => {
-    const radius = 42;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (percentage / 100) * circumference;
-
-    return (
-      <Svg width={100} height={100} style={styles.progressRing}>
-        {/* Background circle */}
-        <Circle
-          cx={50}
-          cy={50}
-          r={radius}
-          stroke="#C7D2FE"
-          strokeWidth={8}
-          fill="transparent"
-        />
-        {/* Progress circle */}
-        <Circle
-          cx={50}
-          cy={50}
-          r={radius}
-          stroke="#FFFFFF"
-          strokeWidth={8}
-          fill="transparent"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-        />
-      </Svg>
-    );
   };
 
   return (
@@ -132,52 +96,30 @@ export const StudentSummaryScreen: React.FC<SummaryScreenProps> = ({ navigation 
           </TouchableOpacity>
         </View>
 
-        {/* Overall Score Card */}
-        <View style={styles.overallCard}>
-          <View style={styles.overallInfo}>
-            <Text style={styles.overallLabel}>Điểm tổng kết</Text>
-            <Text style={styles.overallScore}>{OVERALL_SCORE}</Text>
-            <View style={styles.overallBadges}>
-              <View style={styles.rankBadge}>
-                <Text style={styles.rankBadgeText}>Giỏi</Text>
+        {/* Simple Stat Cards */}
+        <View style={styles.simpleStatsRow}>
+          <View style={[styles.simpleStatCard, styles.scoreCard]}>
+            <Text style={styles.simpleStatLabel}>Điểm tổng kết</Text>
+            <View style={styles.scoreContent}>
+              <Text style={styles.simpleStatScore}>{OVERALL_SCORE}</Text>
+              <View style={[styles.ratingBadge, styles.scoreRatingBadge]}>
+                <Text style={[styles.simpleStatRating, styles.scoreRating]}>Giỏi</Text>
               </View>
-              <Text style={styles.overallRank}>Xếp hạng 5/40</Text>
             </View>
           </View>
-          <View style={styles.progressContainer}>
-            {renderProgressRing(OVERALL_SCORE * 10)}
-            <View style={styles.progressCenter}>
-              <Text style={styles.progressPercent}>{Math.round(OVERALL_SCORE * 10)}%</Text>
+          <View style={[styles.simpleStatCard, styles.conductCard]}>
+            <Text style={styles.simpleStatLabel}>Hạnh kiểm</Text>
+            <View style={[styles.ratingBadge, styles.conductRatingBadge]}>
+              <Text style={[styles.simpleStatRating, styles.conductRating]}>Tốt</Text>
             </View>
           </View>
-        </View>
-
-        {/* Detailed Stats */}
-        <View style={styles.statsGrid}>
-          <StatCard
-            label="Đi học đúng giờ"
-            value={`${ATTENDANCE_PERCENTAGE}%`}
-            icon={<Svg width={16} height={16} viewBox='0 0 24 24' fill='none' stroke='#059669' strokeWidth={3}>
-              <Path d='M22 11.08V12a10 10 0 1 1-5.93-9.14' />
-              <Path d='M22 4L12 14.01L9 11.01' />
-            </Svg>}
-            color="green"
-          />
-          <StatCard
-            label="Hạnh kiểm"
-            value="Tốt"
-            icon={<Svg width={16} height={16} viewBox='0 0 24 24' fill='none' stroke='#9333EA' strokeWidth={3}>
-              <Path d='M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3' />
-            </Svg>}
-            color="purple"
-          />
         </View>
 
         {/* Subject Breakdown */}
         <Text style={styles.sectionTitle}>Chi tiết các môn</Text>
 
         {MOCK_SUBJECTS.map((subject, index) => {
-          const colors = getGradeColor(subject.grade);
+          const colors = getRatingColor(subject.rating);
           const progressWidth = getProgressWidth(subject.average);
           const progressColor = getProgressColor(subject.average);
 
@@ -187,7 +129,7 @@ export const StudentSummaryScreen: React.FC<SummaryScreenProps> = ({ navigation 
                 <Text style={styles.subjectName}>{subject.subject}</Text>
                 <View style={[styles.gradeBadge, { backgroundColor: colors.bg }]}>
                   <Text style={[styles.gradeBadgeText, { color: colors.text }]}>
-                    {subject.grade}
+                    {subject.rating}
                   </Text>
                 </View>
               </View>
@@ -301,74 +243,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  overallInfo: {
-    flex: 1,
-  },
-  overallLabel: {
-    color: '#C7D2FE',
-    fontSize: 9,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  overallScore: {
-    color: '#FFFFFF',
-    fontSize: 48,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  overallBadges: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  rankBadge: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-  },
-  rankBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-  },
-  overallRank: {
-    color: '#C7D2FE',
-    fontSize: 9,
-    fontWeight: '500',
-  },
-  progressContainer: {
-    position: 'relative',
-    width: 100,
-    height: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  progressRing: {
-    transform: [{ rotate: '-90deg' }],
-  },
-  progressCenter: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  progressPercent: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 20,
-  },
   sectionTitle: {
     color: '#1F2937',
     fontSize: 14,
@@ -436,5 +310,73 @@ const styles = StyleSheet.create({
   progressBarFill: {
     height: 8,
     borderRadius: 4,
+  },
+  simpleStatsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+  },
+  simpleStatCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    padding: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  simpleStatLabel: {
+    color: '#6B7280',
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  scoreContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  simpleStatScore: {
+    color: '#1F2937',
+    fontSize: 36,
+    fontWeight: '800',
+    lineHeight: 40,
+  },
+  ratingBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  simpleStatRating: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  scoreCard: {
+    backgroundColor: '#F3E8FF',
+    borderColor: '#E9D5FF',
+  },
+  scoreRatingBadge: {
+    backgroundColor: 'rgba(147, 51, 234, 0.15)',
+  },
+  scoreRating: {
+    color: '#9333EA',
+  },
+  conductCard: {
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FED7AA',
+  },
+  conductRatingBadge: {
+    backgroundColor: 'rgba(249, 115, 22, 0.15)',
+  },
+  conductRating: {
+    color: '#F97316',
   },
 });

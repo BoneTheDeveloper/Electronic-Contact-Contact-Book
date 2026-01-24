@@ -5,9 +5,11 @@
  */
 
 import React, { useState } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput, StyleSheet, type ViewStyle } from 'react-native';
+import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput, StyleSheet, type ViewStyle, Platform, Pressable, Alert } from 'react-native';
 import { Icon } from '../../components/ui';
 import type { StudentHomeStackNavigationProp } from '../../navigation/types';
+import * as DocumentPicker from 'expo-document-picker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 interface LeaveRequestScreenProps {
   navigation?: StudentHomeStackNavigationProp;
@@ -34,14 +36,32 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
   const [activeTab, setActiveTab] = useState<'new' | 'history'>('new');
   const [selectedReason, setSelectedReason] = useState('Đi gia đình');
   const [detailReason, setDetailReason] = useState('Có việc gia đình cần về quê');
-  const [startDate, setStartDate] = useState('2026-01-10');
-  const [endDate, setEndDate] = useState('2026-01-10');
+  const [startDate, setStartDate] = useState<Date>(new Date(2026, 0, 10));
+  const [endDate, setEndDate] = useState<Date>(new Date(2026, 0, 10));
+
+  // Picker states
+  const [showReasonPicker, setShowReasonPicker] = useState(false);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [showOtherReasonInput, setShowOtherReasonInput] = useState(false);
+  const [otherReasonText, setOtherReasonText] = useState('');
+
+  // File upload state
+  const [attachedFile, setAttachedFile] = useState<{ name: string; uri: string; size?: number } | null>(null);
 
   // Appeal modal state
   const [appealModalVisible, setAppealModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<LeaveRequestItem | null>(null);
   const [appealType, setAppealType] = useState('Muốn xin thêm ngày nghỉ');
   const [appealDetail, setAppealDetail] = useState('');
+
+  // Detail/Edit modal state
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editReason, setEditReason] = useState('');
+  const [editStartDate, setEditStartDate] = useState('');
+  const [editEndDate, setEditEndDate] = useState('');
+  const [editDetail, setEditDetail] = useState('');
 
   // Mock recent requests
   const recentRequests: LeaveRequestItem[] = [
@@ -64,7 +84,64 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
   ];
 
   const handleSubmit = () => {
-    console.log('Submit leave request:', { selectedReason, detailReason, startDate, endDate });
+    const startDateStr = startDate.toLocaleDateString('vi-VN');
+    const endDateStr = endDate.toLocaleDateString('vi-VN');
+    console.log('Submit leave request:', { selectedReason, detailReason, startDateStr, endDateStr, attachedFile });
+    Alert.alert('Thành công', 'Đơn xin nghỉ phép đã được gửi');
+  };
+
+  const handleReasonChange = (reason: string) => {
+    setSelectedReason(reason);
+    setShowReasonPicker(false);
+    if (reason === 'Khác') {
+      setShowOtherReasonInput(true);
+    } else {
+      setShowOtherReasonInput(false);
+      setOtherReasonText('');
+    }
+  };
+
+  const handleStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowStartDatePicker(false);
+    if (selectedDate) {
+      setStartDate(selectedDate);
+    }
+  };
+
+  const handleEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowEndDatePicker(false);
+    if (selectedDate) {
+      setEndDate(selectedDate);
+    }
+  };
+
+  const handleFileUpload = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['image/*', 'application/pdf'],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
+        setAttachedFile({
+          name: file.name,
+          uri: file.uri,
+          size: file.size,
+        });
+      }
+    } catch (error) {
+      console.error('Error picking file:', error);
+      Alert.alert('Lỗi', 'Không thể tải file lên');
+    }
+  };
+
+  const removeFile = () => {
+    setAttachedFile(null);
+  };
+
+  const formatDateDisplay = (date: Date) => {
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
   const openAppealModal = (request: LeaveRequestItem) => {
@@ -82,6 +159,49 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
     console.log('Submit appeal:', { selectedRequest, appealType, appealDetail });
     setAppealModalVisible(false);
     setAppealDetail('');
+    setSelectedRequest(null);
+  };
+
+  const openDetailModal = (request: LeaveRequestItem) => {
+    setSelectedRequest(request);
+    setEditReason(request.reason);
+    setEditStartDate(request.dateRange.split(' - ')[0]);
+    setEditEndDate(request.dateRange.split(' - ')[1]);
+    setEditDetail('');
+    setEditMode(false);
+    setDetailModalVisible(true);
+  };
+
+  const closeDetailModal = () => {
+    setDetailModalVisible(false);
+    setEditMode(false);
+    setSelectedRequest(null);
+    setEditReason('');
+    setEditStartDate('');
+    setEditEndDate('');
+    setEditDetail('');
+  };
+
+  const startEdit = () => {
+    setEditMode(true);
+  };
+
+  const cancelEdit = () => {
+    setEditMode(false);
+    // Reset to original values
+    if (selectedRequest) {
+      setEditReason(selectedRequest.reason);
+      setEditStartDate(selectedRequest.dateRange.split(' - ')[0]);
+      setEditEndDate(selectedRequest.dateRange.split(' - ')[1]);
+      setEditDetail('');
+    }
+  };
+
+  const saveEdit = () => {
+    console.log('Save edit:', { selectedRequest, editReason, editStartDate, editEndDate, editDetail });
+    // TODO: Update the request in the backend
+    setDetailModalVisible(false);
+    setEditMode(false);
     setSelectedRequest(null);
   };
 
@@ -152,13 +272,31 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
           <>
             {/* New Request Form */}
             <View style={styles.formCard}>
-              {/* Leave Type */}
+              {/* Leave Type - Dropdown */}
               <View style={styles.formField}>
                 <Text style={styles.fieldLabel}>Lý do nghỉ</Text>
-                <View style={styles.valueBox}>
+                <TouchableOpacity
+                  style={styles.valueBoxTouchable}
+                  onPress={() => setShowReasonPicker(true)}
+                >
                   <Text style={styles.valueText}>{selectedReason}</Text>
-                </View>
+                  <Icon name="chevron-down" size={16} color="#9CA3AF" />
+                </TouchableOpacity>
               </View>
+
+              {/* Other Reason Input (shown when "Khác" is selected) */}
+              {showOtherReasonInput && (
+                <View style={styles.formField}>
+                  <Text style={styles.fieldLabel}>Nhập lý do khác</Text>
+                  <TextInput
+                    value={otherReasonText}
+                    onChangeText={setOtherReasonText}
+                    placeholder="Nhập lý do nghỉ của bạn..."
+                    placeholderTextColor="#9CA3AF"
+                    style={styles.inputBox}
+                  />
+                </View>
+              )}
 
               {/* Reason Details */}
               <View style={styles.formField}>
@@ -166,6 +304,8 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
                 <TextInput
                   value={detailReason}
                   onChangeText={setDetailReason}
+                  placeholder="Nhập chi tiết lý do nghỉ..."
+                  placeholderTextColor="#9CA3AF"
                   style={styles.inputBox}
                   multiline
                   numberOfLines={3}
@@ -173,19 +313,53 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
                 />
               </View>
 
-              {/* Date Range */}
+              {/* Date Range - Start Date */}
               <View style={styles.formField}>
                 <Text style={styles.fieldLabel}>Từ ngày</Text>
-                <View style={styles.valueBox}>
-                  <Text style={styles.valueText}>{startDate}</Text>
-                </View>
+                <TouchableOpacity
+                  style={styles.valueBoxTouchable}
+                  onPress={() => setShowStartDatePicker(true)}
+                >
+                  <Text style={styles.valueText}>{formatDateDisplay(startDate)}</Text>
+                  <Icon name="calendar" size={16} color="#9CA3AF" />
+                </TouchableOpacity>
               </View>
 
+              {/* Date Range - End Date */}
               <View style={styles.formField}>
                 <Text style={styles.fieldLabel}>Đến ngày</Text>
-                <View style={styles.valueBox}>
-                  <Text style={styles.valueText}>{endDate}</Text>
-                </View>
+                <TouchableOpacity
+                  style={styles.valueBoxTouchable}
+                  onPress={() => setShowEndDatePicker(true)}
+                >
+                  <Text style={styles.valueText}>{formatDateDisplay(endDate)}</Text>
+                  <Icon name="calendar" size={16} color="#9CA3AF" />
+                </TouchableOpacity>
+              </View>
+
+              {/* File Upload */}
+              <View style={styles.formField}>
+                <Text style={styles.fieldLabel}>File đính kèm (nếu có)</Text>
+                {attachedFile ? (
+                  <View style={styles.fileAttachedBox}>
+                    <Icon name="file-document" size={20} color="#0284C7" />
+                    <View style={styles.fileInfo}>
+                      <Text style={styles.fileName} numberOfLines={1}>{attachedFile.name}</Text>
+                      {attachedFile.size && (
+                        <Text style={styles.fileSize}>{(attachedFile.size / 1024).toFixed(0)} KB</Text>
+                      )}
+                    </View>
+                    <TouchableOpacity onPress={removeFile} style={styles.removeFileButton}>
+                      <Icon name="close" size={16} color="#EF4444" />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity style={styles.fileUploadBox} onPress={handleFileUpload}>
+                    <Icon name="upload-cloud" size={24} color="#9CA3AF" />
+                    <Text style={styles.fileUploadText}>Tap để tải file lên</Text>
+                    <Text style={styles.fileUploadSubtext}>(PDF, Hình ảnh)</Text>
+                  </TouchableOpacity>
+                )}
               </View>
 
               {/* Submit Button */}
@@ -210,7 +384,12 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
                 {recentRequests.slice(0, 2).map((request) => {
                   const statusConfig = getStatusConfig(request.status);
                   return (
-                    <View key={request.id} style={styles.requestCard}>
+                    <TouchableOpacity
+                      key={request.id}
+                      style={styles.requestCard}
+                      onPress={() => openDetailModal(request)}
+                      activeOpacity={0.95}
+                    >
                       <View style={styles.requestHeader}>
                         <View style={styles.requestBadges}>
                           <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
@@ -224,15 +403,7 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
                       </View>
                       <Text style={styles.requestReason}>{request.reason}</Text>
                       <Text style={styles.requestDateRange}>{request.dateRange}</Text>
-                      {request.status === 'approved' && (
-                        <TouchableOpacity
-                          onPress={() => openAppealModal(request)}
-                          style={styles.appealButton}
-                        >
-                          <Text style={styles.appealButtonText}>Phúc khảo</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
+                    </TouchableOpacity>
                   );
                 })}
               </View>
@@ -245,12 +416,14 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
               {recentRequests.map((request) => {
                 const statusConfig = getStatusConfig(request.status);
                 return (
-                  <View
+                  <TouchableOpacity
                     key={request.id}
                     style={[
                       styles.requestCard,
                       request.status === 'pending' && styles.requestCardPending,
                     ]}
+                    onPress={() => openDetailModal(request)}
+                    activeOpacity={0.95}
                   >
                     <View style={styles.requestHeader}>
                       <View style={styles.requestBadges}>
@@ -267,13 +440,16 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
                     <Text style={styles.requestDateRange}>{request.dateRange}</Text>
                     {request.status === 'approved' && (
                       <TouchableOpacity
-                        onPress={() => openAppealModal(request)}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          openAppealModal(request);
+                        }}
                         style={styles.appealButton}
                       >
                         <Text style={styles.appealButtonText}>Phúc khảo</Text>
                       </TouchableOpacity>
                     )}
-                  </View>
+                  </TouchableOpacity>
                 );
               })}
             </View>
@@ -333,8 +509,8 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
 
               <View style={styles.formField}>
                 <Text style={styles.fieldLabel}>File đính kèm (nếu có)</Text>
-                <View style={styles.fileUploadBox}>
-                  <Text style={styles.fileUploadText}>Tap để tải file lên</Text>
+                <View style={styles.fileUploadBoxSimple}>
+                  <Text style={styles.fileUploadTextSimple}>Tap để tải file lên</Text>
                 </View>
               </View>
 
@@ -348,6 +524,190 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
           </View>
         </View>
       </Modal>
+
+      {/* Detail/Edit Modal */}
+      <Modal
+        visible={detailModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeDetailModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{editMode ? 'Chỉnh sửa đơn' : 'Chi tiết đơn xin nghỉ'}</Text>
+              <TouchableOpacity onPress={closeDetailModal} style={styles.modalCloseButton}>
+                <Text style={styles.modalCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Request Info or Edit Form */}
+            {selectedRequest && (
+              <View style={styles.appealForm}>
+                {editMode ? (
+                  <>
+                    {/* Edit Form */}
+                    <View style={styles.formField}>
+                      <Text style={styles.fieldLabel}>Lý do nghỉ</Text>
+                      <TextInput
+                        value={editReason}
+                        onChangeText={setEditReason}
+                        style={styles.inputBox}
+                      />
+                    </View>
+
+                    <View style={styles.formField}>
+                      <Text style={styles.fieldLabel}>Từ ngày</Text>
+                      <TextInput
+                        value={editStartDate}
+                        onChangeText={setEditStartDate}
+                        style={styles.inputBox}
+                        placeholder="DD/MM/YYYY"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                    </View>
+
+                    <View style={styles.formField}>
+                      <Text style={styles.fieldLabel}>Đến ngày</Text>
+                      <TextInput
+                        value={editEndDate}
+                        onChangeText={setEditEndDate}
+                        style={styles.inputBox}
+                        placeholder="DD/MM/YYYY"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                    </View>
+
+                    <View style={styles.formField}>
+                      <Text style={styles.fieldLabel}>Chi tiết</Text>
+                      <TextInput
+                        value={editDetail}
+                        onChangeText={setEditDetail}
+                        placeholder="Nhập chi tiết thêm..."
+                        placeholderTextColor="#9CA3AF"
+                        multiline
+                        numberOfLines={3}
+                        style={styles.inputBox}
+                        textAlignVertical="top"
+                      />
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    {/* View Mode */}
+                    <View style={styles.modalRequestInfo}>
+                      <Text style={styles.modalInfoLabel}>Lý do:</Text>
+                      <Text style={styles.modalInfoReason}>{selectedRequest.reason}</Text>
+                      <Text style={styles.modalInfoLabel}>Thời gian:</Text>
+                      <Text style={styles.modalInfoDateRange}>{selectedRequest.dateRange}</Text>
+                      <Text style={styles.modalInfoLabel}>Số ngày:</Text>
+                      <Text style={styles.modalInfoDateRange}>{selectedRequest.duration}</Text>
+                      <Text style={styles.modalInfoLabel}>Trạng thái:</Text>
+                      <View style={[styles.statusBadge, { backgroundColor: getStatusConfig(selectedRequest.status).bg, marginTop: 4 }]}>
+                        <Text style={[styles.statusBadgeText, { color: getStatusConfig(selectedRequest.status).text }]}>
+                          {getStatusConfig(selectedRequest.status).label}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Action buttons based on status */}
+                    {selectedRequest.status === 'pending' && (
+                      <TouchableOpacity
+                        onPress={startEdit}
+                        style={styles.editButton}
+                      >
+                        <Text style={styles.editButtonText}>Chỉnh sửa đơn</Text>
+                      </TouchableOpacity>
+                    )}
+                  </>
+                )}
+
+                {/* Footer Actions */}
+                {editMode && (
+                  <View style={styles.modalActions}>
+                    <TouchableOpacity
+                      onPress={cancelEdit}
+                      style={styles.cancelButton}
+                    >
+                      <Text style={styles.cancelButtonText}>Hủy</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={saveEdit}
+                      style={styles.submitButton}
+                    >
+                      <Text style={styles.submitButtonText}>Lưu thay đổi</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Reason Picker Modal */}
+      <Modal
+        visible={showReasonPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowReasonPicker(false)}
+      >
+        <View style={styles.bottomModalOverlay}>
+          <Pressable style={styles.pressableOverlay} onPress={() => setShowReasonPicker(false)} />
+          <View style={styles.bottomModalContent}>
+            <View style={styles.bottomModalHeader}>
+              <TouchableOpacity onPress={() => setShowReasonPicker(false)}>
+                <Text style={styles.bottomModalCancelText}>Hủy</Text>
+              </TouchableOpacity>
+              <Text style={styles.bottomModalTitle}>Chọn lý do nghỉ</Text>
+              <View style={{ width: 40 }} />
+            </View>
+            <ScrollView style={styles.pickerScroll}>
+              {LEAVE_REASONS.map((reason) => (
+                <TouchableOpacity
+                  key={reason}
+                  style={[styles.pickerItem, selectedReason === reason && styles.pickerItemSelected]}
+                  onPress={() => handleReasonChange(reason)}
+                >
+                  <Text style={[
+                    styles.pickerItemText,
+                    selectedReason === reason && styles.pickerItemTextSelected
+                  ]}>
+                    {reason}
+                  </Text>
+                  {selectedReason === reason && (
+                    <Icon name="check" size={18} color="#0284C7" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Date Pickers */}
+      {showStartDatePicker && (
+        <DateTimePicker
+          value={startDate}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleStartDateChange}
+          minimumDate={new Date(2020, 0, 1)}
+          maximumDate={new Date(2030, 11, 31)}
+        />
+      )}
+
+      {showEndDatePicker && (
+        <DateTimePicker
+          value={endDate}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleEndDateChange}
+          minimumDate={startDate}
+          maximumDate={new Date(2030, 11, 31)}
+        />
+      )}
     </View>
   );
 };
@@ -656,7 +1016,7 @@ const styles = StyleSheet.create({
   appealForm: {
     gap: 12,
   },
-  fileUploadBox: {
+  fileUploadBoxSimple: {
     borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: '#D1D5DB',
@@ -664,10 +1024,163 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
   },
-  fileUploadText: {
+  fileUploadTextSimple: {
     color: '#9CA3AF',
     fontSize: 12,
     fontWeight: '500',
     textAlign: 'center',
+  },
+  editButton: {
+    backgroundColor: '#0284C7',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  editButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#6B7280',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  // Interactive form elements
+  valueBoxTouchable: {
+    backgroundColor: '#F9FAFB',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  // File upload styles
+  fileAttachedBox: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    borderRadius: 12,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  fileInfo: {
+    flex: 1,
+  },
+  fileName: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  fileSize: {
+    color: '#9CA3AF',
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  removeFileButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#FEE2E2',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fileUploadBox: {
+    backgroundColor: '#F9FAFB',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+    gap: 8,
+  },
+  fileUploadText: {
+    color: '#6B7280',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  fileUploadSubtext: {
+    color: '#9CA3AF',
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  // Bottom modal (picker) styles
+  bottomModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  pressableOverlay: {
+    flex: 1,
+  },
+  bottomModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+    maxHeight: '70%',
+  },
+  bottomModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  bottomModalCancelText: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    fontWeight: '600',
+    width: 40,
+  },
+  bottomModalTitle: {
+    color: '#1F2937',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  pickerScroll: {
+    maxHeight: 400,
+  },
+  pickerItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  pickerItemSelected: {
+    backgroundColor: '#EFF6FF',
+  },
+  pickerItemText: {
+    color: '#1F2937',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  pickerItemTextSelected: {
+    color: '#0284C7',
+    fontWeight: '600',
   },
 });

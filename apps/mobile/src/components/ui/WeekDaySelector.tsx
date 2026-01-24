@@ -3,10 +3,11 @@
  * Horizontal scrollable day tabs for schedule
  * T2-T7 labels with date numbers below
  * Active state styling with touch feedback
+ * Supports 5-day (THCS) or 7-day (THPT) week
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, type ViewStyle, type TextStyle } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, type ViewStyle, type TextStyle } from 'react-native';
 
 // Vietnamese weekday labels
 const WEEKDAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
@@ -19,13 +20,17 @@ interface WeekDaySelectorProps {
   selectedDay: number; // 1-7 (Mon-Sun, where 1=Monday/T2, 7=Sunday/CN)
   weekStart: Date;
   onChange: (day: number) => void;
+  numberOfDays?: 5 | 7; // 5 days for THCS (T2-T6), 7 days for THPT (T2-CN)
 }
 
 export const WeekDaySelector: React.FC<WeekDaySelectorProps> = ({
   selectedDay,
   weekStart,
   onChange,
+  numberOfDays = 7,
 }) => {
+  const visibleLabels = WEEKDAY_LABELS.slice(0, numberOfDays);
+
   const getDateForDay = (dayIndex: number): Date => {
     const date = new Date(weekStart);
     date.setDate(date.getDate() + dayIndex);
@@ -47,12 +52,8 @@ export const WeekDaySelector: React.FC<WeekDaySelectorProps> = ({
   };
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.container}
-    >
-      {WEEKDAY_LABELS.map((label, index) => {
+    <View style={styles.container}>
+      {visibleLabels.map((label, index) => {
         const dayNum = index + 1; // 1-7
         const isSelected = selectedDay === dayNum;
         const today = isToday(index);
@@ -83,66 +84,62 @@ export const WeekDaySelector: React.FC<WeekDaySelectorProps> = ({
             <Text style={weekdayLabelStyle}>
               {label}
             </Text>
-            <Text style={dayNumberStyle}>
-              {getDayNumber(index)}
-            </Text>
             {today && !isSelected && <View style={styles.todayDot} />}
           </TouchableOpacity>
         );
       })}
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  dayTab: {
-    width: 48,
-    height: 64,
-    borderRadius: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 8,
+    borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  dayTab: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
   },
   dayTabSelected: {
     backgroundColor: '#0284C7',
-    borderColor: '#0284C7',
   },
   dayTabToday: {
-    borderColor: '#0284C7',
-    borderWidth: 1.5,
+    backgroundColor: 'transparent',
   },
   weekdayLabel: {
-    color: '#6B7280',
-    fontSize: 11,
-    fontWeight: '700',
+    color: '#9CA3AF',
+    fontSize: 9,
+    fontWeight: '800',
     textTransform: 'uppercase',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   weekdayLabelSelected: {
     color: '#FFFFFF',
   },
   dayNumber: {
-    color: '#1F2937',
-    fontSize: 16,
+    color: '#9CA3AF',
+    fontSize: 14,
     fontWeight: '700',
   },
   dayNumberSelected: {
     color: '#FFFFFF',
   },
   dayNumberToday: {
-    color: '#0284C7',
+    color: '#9CA3AF',
   },
   todayDot: {
     position: 'absolute',

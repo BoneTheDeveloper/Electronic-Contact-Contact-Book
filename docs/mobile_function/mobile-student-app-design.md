@@ -1,14 +1,15 @@
 # Mobile Student App - Functional Design
 
 **Date:** 2026-01-24
-**Status:** Design Complete
+**Status:** Updated for THCS (Middle School)
+**Last Updated:** Schedule screen fixed - removed duplicate bottom nav, updated for middle school
 **Reference Wireframes:** `docs/wireframe/Mobile/student/`
 
 ---
 
 ## Overview
 
-Mobile-first React Native/Expo app for students with 9 functional screens. Design follows the wireframes with consistent styling, smooth animations, and Vietnamese localization.
+Mobile-first React Native/Expo app for **middle school (THCS)** students with 9 functional screens. Design follows the wireframes with consistent styling, smooth animations, and Vietnamese localization.
 
 ---
 
@@ -38,13 +39,18 @@ Mobile-first React Native/Expo app for students with 9 functional screens. Desig
 --danger: #EF4444;            /* Red-500 */
 --info: #0284C7;              /* Blue-500 */
 
-/* Subject Colors */
---math: #F97316;              /* Orange */
---literature: #A855F7;        /* Purple */
---english: #10B981;           /* Emerald */
---physics: #6366F1;           /* Indigo */
---chemistry: #F59E0B;         /* Amber */
---history: #E11D48;           /* Rose */
+/* Subject Colors (THCS) */
+--math: #FFEDD5/#EA580C;              /* Toán học - Orange */
+--literature: #F3E8FF/#9333EA;        /* Ngữ văn - Purple */
+--english: #D1FAE5/#059669;           /* Tiếng Anh - Emerald */
+--physics: #EEF2FF/#6366F1;           /* Vật lý - Indigo */
+--chemistry: #FEF3C7/#D97706;         /* Hóa học - Amber */
+--history: #FEE2E2/#DC2626;           /* Lịch sử - Red */
+--geography: #ECFEFF/#0891B2;         /* Địa lý - Cyan */
+--biology: #DCFCE7/#16A34A;           /* Sinh học - Green */
+--civics: #FEF3C7/#D97706;            /* GDCD - Amber */
+--pe: #DBEAFE/#2563EB;                /* Thể dục - Blue */
+--it: #E0E7FF/#4F46E5;                /* Tin học - Indigo */
 ```
 
 ### Typography
@@ -159,27 +165,56 @@ font-family: 'Inter', sans-serif;
 
 ---
 
-### 3. Schedule (`/student/schedule`)
+### 3. Schedule (`/student/schedule`) ✅ UPDATED
+
+**Target:** Middle School (THCS) - Grades 6-9
 
 **Layout:**
-- Header with week range
-- Day selector (T2-T7 horizontal scroll)
-- Morning/Afternoon sections
-- Period cards
+- Gradient header background (140px, #0284C7)
+- Header with week range: `Tuần XX - Từ DD/MM đến DD/MM/YYYY`
+- Day selector (T2-T6 only, no T7 for THCS)
+- Morning/Afternoon sections with colored dot indicators
+- Period cards with subject color badges
+
+**Middle School Subjects:**
+- Toán học (Orange #FFEDD5)
+- Ngữ văn (Purple #F3E8FF)
+- Tiếng Anh (Emerald #D1FAE5)
+- Vật lý (Indigo #EEF2FF)
+- Hóa học (Amber #FEF3C7)
+- Lịch sử (Red #FEE2E2)
+- Địa lý (Cyan #ECFEFF)
+- Sinh học (Green #DCFCE7)
+- Giáo dục công dân (Amber #FEF3C7)
+- Thể dục (Blue #DBEAFE)
+- Tin học (Indigo #E0E7FF)
+- Hạnh kiểm (Red #FEE2E2)
+
+**Period Times:**
+- Morning: Tiết 1-5 (07:00-11:10)
+- Afternoon: Tiết 6-10 (13:30-17:35)
 
 **Data:**
 ```tsx
 interface Period {
   id: string;
-  period: number;        // 1-10
-  dayOfWeek: number;     // 1-7
-  subject: Subject;
-  teacher: Teacher;
+  periodNumber: number;     // 1-10
+  dayOfWeek: number;        // 1-5 (Mon-Fri only for THCS)
+  subjectName: string;
+  subjectShort: string;     // Toán, Văn, Anh, Lý, Hóa...
+  teacherName: string;
   room: string;
-  startTime: string;     // "07:00"
-  endTime: string;       // "07:45"
+  session: "morning" | "afternoon";
+  time: string;             // "07:00 - 07:45"
+  color: { bg: string; text: string };
 }
 ```
+
+**Key Features:**
+- NO bottom nav (handled by StudentTabs at root)
+- Touchable period cards with scale feedback (0.95)
+- Empty state when no classes
+- Week number calculation based on current date
 
 ---
 
@@ -267,16 +302,19 @@ interface Period {
 
 ## Navigation
 
-### Bottom Navigation (3 Tabs)
+### Bottom Navigation (2 Tabs)
 ```
 ┌─────────────────────────┐
-│  🏠 Home   💬 Chat   👤  │
+│  🏠 Trang chủ   👤 Cá nhân  │
 └─────────────────────────┘
 ```
 
+**Note:** Messages/Tin nhắn tab removed - messaging not in scope for current phase
+
 ### Stack Navigation
-- Main tab contains all 9 functions as stack screens
+- Main tab (Trang chủ) contains all 9 functions as stack screens
 - Each function has its own header with back button
+- NO individual bottom nav in sub-screens
 
 ---
 
