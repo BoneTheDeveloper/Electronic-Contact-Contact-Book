@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Student Bottom Navigation (Mobile)
  * 3-item bottom nav for mobile screens
