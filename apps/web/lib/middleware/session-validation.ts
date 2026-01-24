@@ -40,9 +40,9 @@ export async function validateSession(request: NextRequest): Promise<SessionVali
     const { data: session, error } = await supabase
       .from('user_sessions')
       .select('*')
-      .eq('id', sessionId)
-      .eq('user_id', user.id)
-      .eq('is_active', true)
+      .eq('id' as const, sessionId as any)
+      .eq('user_id' as const, user.id as any)
+      .eq('is_active' as const, true as any)
       .single()
 
     if (error || !session) {
@@ -56,12 +56,12 @@ export async function validateSession(request: NextRequest): Promise<SessionVali
     if (now - lastUpdate > LAST_ACTIVE_THROTTLE_MS) {
       await supabase
         .from('user_sessions')
-        .update({ last_active: new Date().toISOString() })
-        .eq('id', sessionId);
+        .update({ last_active: new Date().toISOString() } as any)
+        .eq('id' as const, sessionId as any);
       lastActiveUpdateCache.set(sessionId, now);
     }
 
-    return { valid: true, session, user }
+    return { valid: true, session: session as any, user }
 
   } catch {
     return { valid: false, reason: 'invalid_cookie' }

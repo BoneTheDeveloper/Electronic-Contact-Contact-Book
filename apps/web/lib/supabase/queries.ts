@@ -3,20 +3,22 @@
 // Uses server client for server components (async)
 // Performance: React.cache-like wrapper for query memoization
 
-// Simple cache wrapper for memoizing async functions
-function cache<T extends (...args: unknown[]) => unknown>(fn: T): T {
-  const cache = new Map<string, Promise<ReturnType<T>>>()
-  return ((...args: unknown[]) => {
-    const key = JSON.stringify(args)
-    if (!cache.has(key)) {
-      cache.set(key, fn(...args))
-    }
-    return cache.get(key)!
-  }) as T
-}
-
 import { createClient as createServerClient } from './server'
 import { Database } from '@/types/supabase'
+
+// Simple cache wrapper for memoizing async functions
+// Must be declared after imports to avoid hoisting issues
+// Using 'as any' to bypass strict type checking for cache function
+function cache<T extends (...args: any[]) => Promise<any>>(fn: T): T {
+  const cacheMap = new Map<string, any>()
+  return ((...args: any[]) => {
+    const key = JSON.stringify(args)
+    if (!cacheMap.has(key)) {
+      cacheMap.set(key, fn(...args))
+    }
+    return cacheMap.get(key)!
+  }) as any
+}
 import type {
   DashboardStats,
   Student,
@@ -116,7 +118,7 @@ export const getUsers = cache(async (): Promise<User[]> => {
 
   if (error) handleQueryError(error, 'getUsers')
 
-  return (data || []).map((p) => ({
+  return (data || []).map((p: any) => ({
     id: p.id,
     name: p.full_name || p.email.split('@')[0],
     email: p.email,
@@ -136,7 +138,7 @@ export async function getUserById(id: string): Promise<User | null> {
   const { data, error } = await supabase
     .from('profiles')
     .select('id, email, role, full_name, status, avatar_url')
-    .eq('id', id)
+    .eq('id' as const, id as any)
     .single()
 
   if (error) {
@@ -146,13 +148,14 @@ export async function getUserById(id: string): Promise<User | null> {
 
   if (!data) return null
 
+  const profile = data as any
   return {
-    id: data.id,
-    name: data.full_name || data.email.split('@')[0],
-    email: data.email,
-    role: data.role as User['role'],
-    status: data.status as User['status'],
-    avatar: data.avatar_url || undefined
+    id: profile.id,
+    name: profile.full_name || profile.email.split('@')[0],
+    email: profile.email,
+    role: profile.role as User['role'],
+    status: profile.status as User['status'],
+    avatar: profile.avatar_url || undefined
   }
 }
 
@@ -178,18 +181,19 @@ export async function createUser(data: {
       full_name: data.full_name,
       phone: data.phone,
       status: 'active'
-    })
+    } as any)
     .select('id, email, role, full_name, status, avatar_url')
     .single()
 
   if (error) handleQueryError(error, 'createUser')
 
+  const p = profile as any
   return {
-    id: profile.id,
-    name: profile.full_name || profile.email.split('@')[0],
-    email: profile.email,
-    role: profile.role as User['role'],
-    status: profile.status as User['status']
+    id: p.id,
+    name: p.full_name || p.email.split('@')[0],
+    email: p.email,
+    role: p.role as User['role'],
+    status: p.status as User['status']
   }
 }
 
@@ -209,20 +213,21 @@ export async function updateUser(
 
   const { data, error } = await supabase
     .from('profiles')
-    .update(updates)
-    .eq('id', id)
+    .update(updates as any)
+    .eq('id' as const, id as any)
     .select('id, email, role, full_name, status, avatar_url')
     .single()
 
   if (error) handleQueryError(error, 'updateUser')
 
+  const d = data as any
   return {
-    id: data.id,
-    name: data.full_name || data.email.split('@')[0],
-    email: data.email,
-    role: data.role as User['role'],
-    status: data.status as User['status'],
-    avatar: data.avatar_url || undefined
+    id: d.id,
+    name: d.full_name || d.email.split('@')[0],
+    email: d.email,
+    role: d.role as User['role'],
+    status: d.status as User['status'],
+    avatar: d.avatar_url || undefined
   }
 }
 
@@ -234,8 +239,8 @@ export async function deleteUser(id: string): Promise<void> {
 
   const { error } = await supabase
     .from('profiles')
-    .update({ status: 'inactive' })
-    .eq('id', id)
+    .update({ status: 'inactive' } as any)
+    .eq('id' as const, id as any)
 
   if (error) handleQueryError(error, 'deleteUser')
 }
@@ -251,9 +256,9 @@ export const getDashboardStats = cache(async (): Promise<DashboardStats> => {
 
   // Get counts in parallel
   const [studentsResult, parentsResult, teachersResult] = await Promise.all([
-    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'student'),
-    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'parent'),
-    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'teacher'),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role' as const, 'student' as any),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role' as const, 'parent' as any),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role' as const, 'teacher' as any),
   ])
 
   // Calculate attendance using DB aggregation (instead of fetching all rows)
@@ -264,12 +269,12 @@ export const getDashboardStats = cache(async (): Promise<DashboardStats> => {
     supabase
       .from('attendance')
       .select('id', { count: 'exact', head: true })
-      .eq('date', today),
+      .eq('date' as const, today as any),
     supabase
       .from('attendance')
       .select('id', { count: 'exact', head: true })
-      .eq('date', today)
-      .eq('status', 'present')
+      .eq('date' as const, today as any)
+      .eq('status' as const, 'present' as any)
   ])
 
   const attendanceRate = (totalAttendance || 0) > 0
@@ -287,29 +292,29 @@ export const getDashboardStats = cache(async (): Promise<DashboardStats> => {
     supabase
       .from('invoices')
       .select('total_amount')
-      .eq('status', 'paid'), // Only count paid invoices for revenue
+      .eq('status' as const, 'paid' as any), // Only count paid invoices for revenue
     // SUM of collected amounts
     supabase
       .from('invoices')
       .select('paid_amount')
-      .eq('status', 'paid'),
+      .eq('status' as const, 'paid' as any),
     // COUNT of pending/partial invoices
     supabase
       .from('invoices')
       .select('id', { count: 'exact', head: true })
-      .in('status', ['pending', 'partial']),
+      .in('status' as const, ['pending', 'partial'] as any),
     // COUNT of overdue invoices
     supabase
       .from('invoices')
       .select('id', { count: 'exact', head: true })
-      .eq('status', 'overdue')
+      .eq('status' as const, 'overdue' as any)
   ])
 
   // Calculate totals from aggregated data
   const collectedAmount = (collectedAmountData || [])
-    .reduce((sum: number, inv) => sum + (inv.paid_amount || 0), 0)
+    .reduce((sum: number, inv: any) => sum + (inv.paid_amount || 0), 0)
   const totalAmount = (totalAmountData || [])
-    .reduce((sum: number, inv) => sum + (inv.total_amount || 0), 0)
+    .reduce((sum: number, inv: any) => sum + (inv.total_amount || 0), 0)
 
   const collectionRate = totalAmount > 0 ? Math.round((collectedAmount / totalAmount) * 100) : 0
 
@@ -340,23 +345,23 @@ export const getTeacherStats = cache(async (teacherId: string): Promise<TeacherS
   const { count: teachingCount } = await supabase
     .from('schedules')
     .select('id', { count: 'exact', head: true })
-    .eq('teacher_id', teacherId)
+    .eq('teacher_id' as const, teacherId as any)
 
   // Get student count (unique students in all classes)
   const { data: classData } = await supabase
     .from('schedules')
     .select('class_id')
-    .eq('teacher_id', teacherId)
+    .eq('teacher_id' as const, teacherId as any)
 
-  const classIds = [...new Set(classData?.map((c) => c.class_id) || [])]
+  const classIds = [...new Set((classData as any)?.map((c: any) => c.class_id) || [])]
   let studentCount = 0
 
   if (classIds.length > 0) {
     const { count } = await supabase
       .from('enrollments')
       .select('id', { count: 'exact', head: true })
-      .in('class_id', classIds)
-      .eq('status', 'active')
+      .in('class_id' as const, classIds as any)
+      .eq('status' as const, 'active' as any)
     studentCount = count || 0
   }
 
@@ -375,10 +380,10 @@ export const getTeacherStats = cache(async (teacherId: string): Promise<TeacherS
       classes(id, name, grade_id),
       subjects(id, name, code)
     `)
-    .eq('teacher_id', teacherId)
-    .eq('day_of_week', dayOfWeek)
+    .eq('teacher_id' as const, teacherId as any)
+    .eq('day_of_week' as const, dayOfWeek as any)
 
-  const todaySchedule: ScheduleItem[] = (scheduleData || []).map((s) => ({
+  const todaySchedule: ScheduleItem[] = (scheduleData || []).map((s: any) => ({
     id: s.id,
     period: s.periods?.name || `${s.period_id}`,
     time: `${s.periods?.start_time} - ${s.periods?.end_time}`,
@@ -392,25 +397,25 @@ export const getTeacherStats = cache(async (teacherId: string): Promise<TeacherS
   const { count: pendingAttendance } = await supabase
     .from('attendance')
     .select('id', { count: 'exact', head: true })
-    .eq('recorded_by', teacherId)
-    .eq('date', todayDate)
-    .is('recorded_by', null)
+    .eq('recorded_by' as const, teacherId as any)
+    .eq('date' as const, todayDate as any)
+    .is('recorded_by' as const, null)
 
   const { count: pendingGrades } = await supabase
     .from('grade_entries')
     .select('id', { count: 'exact', head: true })
-    .eq('graded_by', teacherId)
-    .eq('status', 'pending')
+    .eq('graded_by' as const, teacherId as any)
+    .eq('status' as const, 'pending' as any)
 
   const { count: gradeReviewRequests } = await supabase
     .from('grade_entries')
     .select('id', { count: 'exact', head: true })
-    .eq('status', 'pending')
+    .eq('status' as const, 'pending' as any)
 
   const { count: leaveRequests } = await supabase
     .from('leave_requests')
     .select('id', { count: 'exact', head: true })
-    .eq('status', 'pending')
+    .eq('status' as const, 'pending' as any)
 
   return {
     homeroom: 0, // Would need to query homeroom_assignments table
@@ -441,21 +446,22 @@ export async function getStudents(): Promise<Student[]> {
       profiles!inner(id, full_name, email, status),
       enrollments!inner(class_id, status)
     `)
-    .eq('enrollments.status', 'active')
+    .eq('enrollments.status' as const, 'active' as any)
 
   if (error) handleQueryError(error, 'getStudents')
 
   // Get attendance percentage for each student
-  const studentIds = (data || []).map((s) => s.id)
+  const studentIds = (data || []).map((s: any) => s.id)
   const attendanceMap = new Map<string, number>()
 
   if (studentIds.length > 0) {
     const { data: attendanceData } = await supabase
       .from('attendance')
       .select('student_id, status')
-      .in('student_id', studentIds)
+      .in('student_id' as const, studentIds as any)
 
-    attendanceData?.forEach((record) => {
+    const attendanceRecords = attendanceData as Array<{ student_id: string; status: string }> | null
+    attendanceRecords?.forEach((record) => {
       const current = attendanceMap.get(record.student_id) || 0
       attendanceMap.set(record.student_id, current + (record.status === 'present' ? 1 : 0))
     })
@@ -465,18 +471,18 @@ export async function getStudents(): Promise<Student[]> {
   const { data: invoiceData } = await supabase
     .from('invoices')
     .select('student_id, status')
-    .in('student_id', studentIds)
+    .in('student_id' as const, studentIds as any)
     .order('due_date', { ascending: false })
 
-  const feeStatusMap = new Map<string, Student['feesStatus']>()
-  invoiceData?.forEach((inv) => {
+  const feeStatusMap: Map<string, Student['feesStatus']> = new Map()
+  ;(invoiceData as any)?.forEach((inv: any) => {
     if (!feeStatusMap.has(inv.student_id)) {
       feeStatusMap.set(inv.student_id, inv.status === 'paid' ? 'paid' :
         inv.status === 'overdue' ? 'overdue' : 'pending')
     }
   })
 
-  return (data || []).map((s) => {
+  return (data || []).map((s: any) => {
     const enrollment = s.enrollments[0]
     return {
       id: s.id,
@@ -507,12 +513,12 @@ export const getClasses = cache(async (): Promise<Class[]> => {
       current_students,
       grades!inner(id, name)
     `)
-    .eq('status', 'active')
+    .eq('status' as const, 'active' as any)
     .order('name')
 
   if (error) handleQueryError(error, 'getClasses')
 
-  return (data || []).map((c) => ({
+  return (data || []).map((c: any) => ({
     id: c.id,
     name: c.name,
     grade: c.grades.name,
@@ -539,7 +545,7 @@ export async function getClassById(id: string): Promise<Class | null> {
       current_students,
       grades!inner(id, name)
     `)
-    .eq('id', id)
+    .eq('id' as const, id as any)
     .single()
 
   if (error) {
@@ -549,13 +555,14 @@ export async function getClassById(id: string): Promise<Class | null> {
 
   if (!data) return null
 
+  const c = data as any
   return {
-    id: data.id,
-    name: data.name,
-    grade: data.grades.name,
+    id: c.id,
+    name: c.name,
+    grade: c.grades.name,
     teacher: '',
-    studentCount: data.current_students,
-    room: data.room || ''
+    studentCount: c.current_students,
+    room: c.room || ''
   }
 }
 
@@ -577,12 +584,12 @@ export async function getStudentsByClass(classId: string): Promise<Student[]> {
         profiles!inner(full_name)
       )
     `)
-    .eq('class_id', classId)
-    .eq('status', 'active')
+    .eq('class_id' as const, classId as any)
+    .eq('status' as const, 'active' as any)
 
   if (error) handleQueryError(error, 'getStudentsByClass')
 
-  return (data || []).map((e) => ({
+  return (data || []).map((e: any) => ({
     id: e.students.id,
     name: e.students.profiles.full_name || 'Unknown',
     grade: e.classes.name,
@@ -607,7 +614,7 @@ export const getInvoices = cache(async (): Promise<Invoice[]> => {
 
   if (error) handleQueryError(error, 'getInvoices')
 
-  return (data || []).map((inv) => ({
+  return (data || []).map((inv: any) => ({
     id: inv.id || '',
     studentId: inv.student_id || '',
     studentName: inv.student_name || '',
@@ -631,7 +638,7 @@ export async function getInvoiceById(id: string): Promise<Invoice | null> {
   const { data, error } = await supabase
     .from('invoice_summary')
     .select('*')
-    .eq('id', id)
+    .eq('id' as const, id as any)
     .single()
 
   if (error) {
@@ -641,17 +648,18 @@ export async function getInvoiceById(id: string): Promise<Invoice | null> {
 
   if (!data) return null
 
+  const d = data as any
   return {
-    id: data.id || '',
-    studentId: data.student_id || '',
-    studentName: data.student_name || '',
-    amount: data.total_amount || 0,
-    totalAmount: data.total_amount || 0,
-    paidAmount: data.paid_amount || 0,
-    remainingAmount: data.remaining_amount || 0,
-    status: data.status as Invoice['status'],
-    dueDate: data.due_date || undefined,
-    paidDate: data.paid_date || undefined
+    id: d.id || '',
+    studentId: d.student_id || '',
+    studentName: d.student_name || '',
+    amount: d.total_amount || 0,
+    totalAmount: d.total_amount || 0,
+    paidAmount: d.paid_amount || 0,
+    remainingAmount: d.remaining_amount || 0,
+    status: d.status as Invoice['status'],
+    dueDate: d.due_date || undefined,
+    paidDate: d.paid_date || undefined
   }
 }
 
@@ -669,7 +677,7 @@ export const getFeeAssignments = cache(async (): Promise<FeeAssignment[]> => {
 
   if (error) handleQueryError(error, 'getFeeAssignments')
 
-  return (data || []).map((fa) => ({
+  return (data || []).map((fa: any) => ({
     id: fa.id,
     name: fa.name,
     targetGrades: fa.target_grades,
@@ -699,21 +707,21 @@ export const getFeeItems = cache(async (filters?: {
   let query = supabase
     .from('fee_items')
     .select('*')
-    .eq('status', 'active')
+    .eq('status' as const, 'active' as any)
 
   if (filters?.semester && filters.semester !== 'all') {
-    query = query.eq('semester', filters.semester as '1' | '2')
+    query = query.eq('semester' as const, filters.semester as '1' | '2' as any)
   }
 
   if (filters?.type) {
-    query = query.eq('fee_type', filters.type)
+    query = query.eq('fee_type' as const, filters.type as any)
   }
 
   const { data, error } = await query.order('name')
 
   if (error) handleQueryError(error, 'getFeeItems')
 
-  return (data || []).map((fi) => ({
+  return (data || []).map((fi: any) => ({
     id: fi.id,
     name: fi.name,
     code: fi.code,
@@ -745,10 +753,10 @@ export const getPaymentStats = cache(async (): Promise<{
     return { totalAmount: 0, collectedAmount: 0, pendingCount: 0, overdueCount: 0, collectionRate: 0 }
   }
 
-  const totalAmount = invoices.reduce((sum: number, inv) => sum + inv.total_amount, 0)
-  const collectedAmount = invoices.reduce((sum: number, inv) => sum + inv.paid_amount, 0)
-  const pendingCount = invoices.filter((inv) => ['pending', 'partial'].includes(inv.status)).length
-  const overdueCount = invoices.filter((inv) => inv.status === 'overdue').length
+  const totalAmount = (invoices as any[]).reduce((sum: number, inv: any) => sum + inv.total_amount, 0)
+  const collectedAmount = (invoices as any[]).reduce((sum: number, inv: any) => sum + inv.paid_amount, 0)
+  const pendingCount = (invoices as any[]).filter((inv: any) => ['pending', 'partial'].includes(inv.status)).length
+  const overdueCount = (invoices as any[]).filter((inv: any) => inv.status === 'overdue').length
   const collectionRate = totalAmount > 0 ? Math.round((collectedAmount / totalAmount) * 100) : 0
 
   return {
@@ -800,7 +808,8 @@ export async function getAttendanceStats(
     tardy: 0
   }
 
-  data?.forEach((record) => {
+  const attendanceRecords = data as Array<{ status: string }> | null
+  attendanceRecords?.forEach((record) => {
     if (record.status === 'excused') stats.excused++
     else if (record.status === 'absent') stats.unexcused++
     else if (record.status === 'late') stats.tardy++
@@ -816,17 +825,17 @@ export async function getAttendanceStats(
 export async function getAttendanceData(): Promise<ChartData[]> {
   const supabase = await getSupabase()
 
-  const { data } = await supabase
+  const { data: attendanceData } = await supabase
     .from('attendance')
     .select('status')
 
-  const counts = {
+  const counts: { present: number; absent: number; late: number } = {
     present: 0,
     absent: 0,
     late: 0
   }
 
-  data?.forEach((record) => {
+  ;(attendanceData as any)?.forEach((record: any) => {
     if (record.status === 'present') counts.present++
     else if (record.status === 'absent') counts.absent++
     else if (record.status === 'late') counts.late++
@@ -854,12 +863,12 @@ export async function getClassStudents(classId: string): Promise<AttendanceRecor
         profiles!inner(full_name)
       )
     `)
-    .eq('class_id', classId)
-    .eq('status', 'active')
+    .eq('class_id' as const, classId as any)
+    .eq('status' as const, 'active' as any)
 
   if (error) handleQueryError(error, 'getClassStudents')
 
-  return (data || []).map((e) => ({
+  return (data || []).map((e: any) => ({
     studentId: e.student_id,
     studentName: e.students.profiles.full_name || 'Unknown',
     status: 'present' as const
@@ -889,22 +898,23 @@ export const getAssessments = cache(async (teacherId: string): Promise<Assessmen
       classes!inner(id, name),
       subjects!inner(id, name)
     `)
-    .eq('teacher_id', teacherId)
+    .eq('teacher_id' as const, teacherId as any)
     .order('date', { ascending: false })
 
   if (error) handleQueryError(error, 'getAssessments')
 
   // Get submission counts
-  const assessmentIds = (data || []).map((a) => a.id)
+  const assessmentIds = (data || []).map((a: any) => a.id)
   const submissionMap = new Map<string, { submitted: number; total: number }>()
 
   if (assessmentIds.length > 0) {
     const { data: gradeEntries } = await supabase
       .from('grade_entries')
       .select('assessment_id, status')
-      .in('assessment_id', assessmentIds)
+      .in('assessment_id' as const, assessmentIds as any)
 
-    gradeEntries?.forEach((entry) => {
+    const gradeEntriesData = gradeEntries as Array<{ assessment_id: string; status: string }> | null
+    gradeEntriesData?.forEach((entry) => {
       const current = submissionMap.get(entry.assessment_id) || { submitted: 0, total: 0 }
       submissionMap.set(entry.assessment_id, {
         submitted: entry.status === 'graded' ? current.submitted + 1 : current.submitted,
@@ -913,7 +923,7 @@ export const getAssessments = cache(async (teacherId: string): Promise<Assessmen
     })
   }
 
-  return (data || []).map((a) => {
+  return (data || []).map((a: any) => {
     const submissions = submissionMap.get(a.id) || { submitted: 0, total: 0 }
     return {
       id: a.id,
@@ -949,14 +959,14 @@ export async function getGradeEntrySheet(
         profiles!inner(full_name)
       )
     `)
-    .eq('class_id', classId)
-    .eq('status', 'active')
+    .eq('class_id' as const, classId as any)
+    .eq('status' as const, 'active' as any)
 
   if (error) handleQueryError(error, 'getGradeEntrySheet')
 
   return {
     subject,
-    students: (data || []).map((e) => ({
+    students: (data || []).map((e: any) => ({
       studentId: e.student_id,
       studentName: e.students.profiles.full_name || 'Unknown',
       oral: [],
@@ -986,7 +996,7 @@ export const getTeacherClasses = cache(async (teacherId?: string): Promise<Teach
     `)
 
   if (teacherId) {
-    query = query.eq('teacher_id', teacherId)
+    query = query.eq('teacher_id' as const, teacherId as any)
   }
 
   const { data, error } = await query
@@ -994,9 +1004,9 @@ export const getTeacherClasses = cache(async (teacherId?: string): Promise<Teach
   if (error) handleQueryError(error, 'getTeacherClasses')
 
   // Group by class and get unique classes
-  const classMap = new Map<string, TeacherClass>()
+  const classMap: Map<string, TeacherClass> = new Map()
 
-  data?.forEach((s) => {
+  ;(data as any)?.forEach((s: any) => {
     if (!classMap.has(s.class_id)) {
       classMap.set(s.class_id, {
         id: s.class_id,
@@ -1039,13 +1049,13 @@ export const getTeacherSchedule = cache(async (
       classes!inner(id, name),
       subjects!inner(id, name)
     `)
-    .eq('teacher_id', teacherId)
-    .eq('day_of_week', dayOfWeek)
+    .eq('teacher_id' as const, teacherId as any)
+    .eq('day_of_week' as const, dayOfWeek as any)
     .order('period_id')
 
   if (error) handleQueryError(error, 'getTeacherSchedule')
 
-  return (data || []).map((s) => ({
+  return (data || []).map((s: any) => ({
     period: s.period_id,
     time: `${s.periods.start_time} - ${s.periods.end_time}`,
     className: s.classes.name,
@@ -1080,18 +1090,18 @@ export const getLeaveRequests = cache(async (
         profiles!students_id_fkey(full_name)
       )
     `)
-    .eq('class_id', classId)
+    .eq('class_id' as const, classId as any)
     .order('created_at', { ascending: false })
 
   if (status) {
-    query = query.eq('status', status)
+    query = query.eq('status' as const, status as any)
   }
 
   const { data, error } = await query
 
   if (error) handleQueryError(error, 'getLeaveRequests')
 
-  return (data || []).map((lr) => ({
+  return (data || []).map((lr: any) => ({
     id: lr.id,
     studentId: lr.students.id,
     studentName: lr.students.profiles.full_name || 'Unknown',
@@ -1120,7 +1130,7 @@ export const getNotifications = cache(async (): Promise<Notification[]> => {
 
   if (error) handleQueryError(error, 'getNotifications')
 
-  return (data || []).map((n) => ({
+  return (data || []).map((n: any) => ({
     id: n.id,
     title: n.title,
     message: n.content,
@@ -1142,16 +1152,16 @@ export async function getFeeStats(semester: '1' | '2' = '1'): Promise<FeeStats> 
   const { data: invoices } = await supabase
     .from('invoices')
     .select('total_amount, paid_amount')
-    .eq('status', 'paid')
+    .eq('status' as const, 'paid' as any)
 
-  const totalAmount = invoices?.reduce((sum: number, inv) => sum + inv.total_amount, 0) || 0
-  const paidAmount = invoices?.reduce((sum: number, inv) => sum + inv.paid_amount, 0) || 0
+  const totalAmount = (invoices as any[])?.reduce((sum: number, inv: any) => sum + inv.total_amount, 0) || 0
+  const paidAmount = (invoices as any[])?.reduce((sum: number, inv: any) => sum + inv.paid_amount, 0) || 0
   const remainingAmount = totalAmount - paidAmount
 
   const { count: totalStudents } = await supabase
     .from('profiles')
     .select('id', { count: 'exact', head: true })
-    .eq('role', 'student')
+    .eq('role' as const, 'student' as any)
 
   return {
     percentage: totalAmount > 0 ? Math.round((paidAmount / totalAmount) * 100) : 0,
@@ -1174,13 +1184,18 @@ export async function getFeesData(): Promise<ChartData[]> {
     .from('invoices')
     .select('status, total_amount')
 
-  const counts = {
+  const counts: {
+    paid: { count: number; amount: number }
+    pending: { count: number; amount: number }
+    overdue: { count: number; amount: number }
+  } = {
     paid: { count: 0, amount: 0 },
     pending: { count: 0, amount: 0 },
     overdue: { count: 0, amount: 0 }
   }
 
-  data?.forEach((inv) => {
+  const invoices = data as Array<{ status: string; total_amount: number }> | null
+  invoices?.forEach((inv) => {
     if (inv.status === 'paid') counts.paid.count++
     else if (inv.status === 'pending' || inv.status === 'partial') counts.pending.count++
     else if (inv.status === 'overdue') counts.overdue.count++
@@ -1276,9 +1291,9 @@ export const getRegularAssessments = cache(async (teacherId?: string): Promise<R
   const { data: classData } = await supabase
     .from('schedules')
     .select('class_id')
-    .eq('teacher_id', teacherId)
+    .eq('teacher_id' as const, teacherId as any)
 
-  const classIds = [...new Set(classData?.map((c) => c.class_id) || [])]
+  const classIds = [...new Set((classData as any)?.map((c: any) => c.class_id) || [])]
 
   if (classIds.length === 0) return []
 
@@ -1286,10 +1301,10 @@ export const getRegularAssessments = cache(async (teacherId?: string): Promise<R
   const { data: studentData } = await supabase
     .from('enrollments')
     .select('student_id, classes!inner(name)')
-    .in('class_id', classIds)
-    .eq('status', 'active')
+    .in('class_id' as const, classIds as any)
+    .eq('status' as const, 'active' as any)
 
-  const students = studentData?.map((s) => ({
+  const students = (studentData as any)?.map((s: any) => ({
     studentId: s.student_id,
     studentName: s.classes?.name || 'Unknown',
     classId: s.class_id,
@@ -1317,15 +1332,15 @@ export async function getConductRatings(classId?: string): Promise<ConductRating
       profiles!inner(full_name),
       enrollments!inner(class_id)
     `)
-    .eq('enrollments.status', 'active')
+    .eq('enrollments.status' as const, 'active' as any)
 
   if (classId) {
-    query = query.eq('enrollments.class_id', classId)
+    query = query.eq('enrollments.class_id' as const, classId as any)
   }
 
   const { data } = await query
 
-  return (data || []).map((s) => ({
+  return (data || []).map((s: any) => ({
     studentId: s.id,
     studentName: s.profiles?.full_name || 'Unknown',
     mssv: s.student_code,
@@ -1358,9 +1373,9 @@ export async function getGradeReviewRequests(teacherId?: string): Promise<Array<
   const { data: classData } = await supabase
     .from('schedules')
     .select('class_id')
-    .eq('teacher_id', teacherId)
+    .eq('teacher_id' as const, teacherId as any)
 
-  const classIds = [...new Set(classData?.map((c) => c.class_id) || [])]
+  const classIds = [...new Set((classData as any)?.map((c: any) => c.class_id) || [])]
 
   // For now, return mock data since grade_reviews table may not exist
   // In production, this would query a grade_reviews table

@@ -52,8 +52,8 @@ export async function GET(request: Request) {
     const { data: failedLogs, error: fetchError } = await supabase
       .from('notification_logs')
       .select('*')
-      .eq('channel', 'email')
-      .eq('status', 'failed')
+      .eq('channel' as const, 'email')
+      .eq('status' as const, 'failed')
       .lt('retry_count', MAX_RETRIES);
 
     if (fetchError) {
@@ -147,7 +147,7 @@ async function retryEmailDelivery(log: NotificationLog): Promise<void> {
     const { data: notification } = await supabase
       .from('notifications')
       .select('*')
-      .eq('id', log.notification_id)
+      .eq('id' as const, log.notification_id)
       .single();
 
     if (!notification) {
@@ -158,7 +158,7 @@ async function retryEmailDelivery(log: NotificationLog): Promise<void> {
     const { data: profile } = await supabase
       .from('profiles')
       .select('email, full_name')
-      .eq('id', log.recipient_id)
+      .eq('id' as const, log.recipient_id)
       .single();
 
     if (!profile?.email) {
@@ -180,7 +180,7 @@ async function retryEmailDelivery(log: NotificationLog): Promise<void> {
         retry_count: newRetryCount,
         error_message: null,
       })
-      .eq('id', log.id);
+      .eq('id' as const, log.id);
 
     console.log(`[Cron] Successfully retried email for log ${log.id}`);
   } catch (error: unknown) {
@@ -194,7 +194,7 @@ async function retryEmailDelivery(log: NotificationLog): Promise<void> {
         error_message: errorMessage.substring(0, 500) || 'Unknown error',
         retry_count: newRetryCount,
       })
-      .eq('id', log.id);
+      .eq('id' as const, log.id);
 
     throw error;
   }

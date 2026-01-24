@@ -6,7 +6,7 @@ import { requireAuth } from '@/lib/auth'
 
 export default async function ConductPage() {
   const user = await requireAuth()
-  const classes = await getTeacherClasses(user.id)
+  const classes = await getTeacherClasses(user.id) as any[]
   const homeroomClass = classes.find((c: { isHomeroom: boolean }) => c.isHomeroom)
 
   const initialRatings = homeroomClass

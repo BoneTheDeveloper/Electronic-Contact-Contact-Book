@@ -82,7 +82,7 @@ async function fetchDashboardData(): Promise<DashboardData> {
   const teacherId = user.id
 
   // Get classes first to find homeroom class
-  const teacherClasses = await getTeacherClasses(teacherId).catch(() => [])
+  const teacherClasses = await getTeacherClasses(teacherId).catch(() => []) as any[]
   const homeroomClass = teacherClasses.find((c: { isHomeroom: boolean }) => c.isHomeroom)
   const homeroomClassId = homeroomClass?.id || '6A1'
 
@@ -103,7 +103,7 @@ async function fetchDashboardData(): Promise<DashboardData> {
     getTeacherSchedule(teacherId).catch(() => []),
     Promise.resolve(teacherClasses),
     getRegularAssessments(teacherId).catch(() => []),
-  ])
+  ]) as any[]
 
   // Calculate assessment stats
   const evaluated = regularAssessments.filter((a: { status: string }) => a.status === 'evaluated').length
@@ -113,7 +113,7 @@ async function fetchDashboardData(): Promise<DashboardData> {
 
   return {
     stats: {
-      ...stats,
+      ...(stats as any),
       homeroomClassId,
     },
     gradeReviews: [],

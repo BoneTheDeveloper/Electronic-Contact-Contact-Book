@@ -120,8 +120,8 @@ export function DataTable<T extends object & { id: string }>({
                   className="whitespace-nowrap px-4 py-3 text-sm text-slate-700"
                 >
                   {column.render
-                    ? column.render(row[column.key], row)
-                    : String(row[column.key] ?? '')}
+                    ? column.render((row as any)[column.key], row)
+                    : String((row as any)[column.key] ?? '')}
                 </td>
               ))}
             </tr>

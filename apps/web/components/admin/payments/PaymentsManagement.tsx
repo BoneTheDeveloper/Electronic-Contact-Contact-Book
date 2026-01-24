@@ -155,7 +155,7 @@ export function PaymentsManagement() {
       label: 'Số tiền',
       render: (value) => (
         <span className="text-sm font-bold text-slate-800">
-          {formatCurrency(value)} đ
+          {formatCurrency(Number(value) || 0)} đ
         </span>
       ),
     },
@@ -163,14 +163,14 @@ export function PaymentsManagement() {
       key: 'dueDate',
       label: 'Hạn thanh toán',
       render: (value) => (
-        <span className="text-sm text-slate-600">{value}</span>
+        <span className="text-sm text-slate-600">{String(value || '')}</span>
       ),
     },
     {
       key: 'paidDate',
       label: 'Ngày thanh toán',
       render: (value) => value ? (
-        <span className="text-sm text-slate-600">{value}</span>
+        <span className="text-sm text-slate-600">{String(value)}</span>
       ) : (
         <span className="text-xs text-slate-400">—</span>
       ),
@@ -179,13 +179,13 @@ export function PaymentsManagement() {
       key: 'status',
       label: 'Trạng thái',
       render: (value) => {
-        const statusConfig = {
+        const statusConfig: Record<string, { label: string; status: 'success' | 'warning' | 'error' }> = {
           paid: { label: 'Đã thanh toán', status: 'success' as const },
           pending: { label: 'Chờ thanh toán', status: 'warning' as const },
           overdue: { label: 'Quá hạn', status: 'error' as const },
         }
-        const config = statusConfig[value]
-        return <StatusBadge status={config.status} label={config.label} />
+        const config = statusConfig[String(value)]
+        return config ? <StatusBadge status={config.status} label={config.label} /> : null
       },
     },
     {

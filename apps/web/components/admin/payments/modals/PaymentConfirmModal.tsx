@@ -96,12 +96,12 @@ export function PaymentConfirmModal({
   }
 
   const getStatusBadge = (status: string) => {
-    const config = {
+    const config: Record<string, { label: string; color: string }> = {
       paid: { label: 'Đã thanh toán', color: 'bg-green-100 text-green-700' },
       pending: { label: 'Chờ thanh toán', color: 'bg-amber-100 text-amber-700' },
       overdue: { label: 'Quá hạn', color: 'bg-red-100 text-red-700' },
     }
-    const { label, color } = config[value] || config.pending
+    const { label, color } = config[status] || config.pending
     return (
       <span className={`px-3 py-1 text-xs font-black uppercase rounded-lg ${color}`}>
         {label}

@@ -5,15 +5,17 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput, ActivityIndicator, StyleSheet } from 'react-native';
 import { useStudentStore } from '../../stores';
 import { useAuthStore } from '../../stores';
+import { GradePicker } from '../../components/ui/GradePicker';
 
 interface SubjectGradeData {
   subjectId: string;
   subjectName: string;
   shortName: string;
   iconColor: string;
+  textColor: string;
   grades: Array<{
     id: string;
     label: string;
@@ -33,25 +35,58 @@ interface GradeCellProps {
 }
 
 const GradeCell: React.FC<GradeCellProps> = ({ label, score, maxScore, bgColor, textColor }) => (
-  <View className={`${bgColor} rounded-lg p-2 items-center`}>
-    <Text className={`${textColor} text-[8px] font-black mb-1 uppercase`}>{label}</Text>
-    <Text className={`${textColor} text-sm font-extrabold`}>
+  <View style={[styles.gradeCell, { backgroundColor: bgColor }]}>
+    <Text style={[styles.gradeCellLabel, { color: textColor }]}>{label}</Text>
+    <Text style={[styles.gradeCellScore, { color: textColor }]}>
       {score !== null ? score.toFixed(1) : '-'}
     </Text>
   </View>
 );
 
-const SUBJECT_ICONS: Record<string, { shortName: string; iconColor: string }> = {
-  'Toán': { shortName: 'Toán', iconColor: 'bg-orange-100 text-orange-500' },
-  'Ngữ văn': { shortName: 'Văn', iconColor: 'bg-purple-100 text-purple-600' },
-  'Tiếng Anh': { shortName: 'Anh', iconColor: 'bg-emerald-100 text-emerald-600' },
-  'Anh': { shortName: 'Anh', iconColor: 'bg-emerald-100 text-emerald-600' },
-  'Vật lý': { shortName: 'Lý', iconColor: 'bg-indigo-100 text-indigo-600' },
-  'Hóa học': { shortName: 'Hóa', iconColor: 'bg-amber-100 text-amber-600' },
-  'Lịch sử': { shortName: 'Sử', iconColor: 'bg-rose-100 text-rose-600' },
-  'Địa lý': { shortName: 'Địa', iconColor: 'bg-cyan-100 text-cyan-600' },
-  'Sinh học': { shortName: 'Sinh', iconColor: 'bg-green-100 text-green-600' },
+const SUBJECT_ICONS: Record<string, { shortName: string; iconColor: { bg: string; text: string } }> = {
+  'Toán': { shortName: 'Toán', iconColor: { bg: '#FFF7ED', text: '#F97316' } },
+  'Ngữ văn': { shortName: 'Văn', iconColor: { bg: '#FAF5FF', text: '#A855F7' } },
+  'Tiếng Anh': { shortName: 'Anh', iconColor: { bg: '#ECFDF5', text: '#10B981' } },
+  'Anh': { shortName: 'Anh', iconColor: { bg: '#ECFDF5', text: '#10B981' } },
+  'Vật lý': { shortName: 'Lý', iconColor: { bg: '#EEF2FF', text: '#6366F1' } },
+  'Hóa học': { shortName: 'Hóa', iconColor: { bg: '#FFFBEB', text: '#F59E0B' } },
+  'Lịch sử': { shortName: 'Sử', iconColor: { bg: '#FFF1F2', text: '#E11D48' } },
+  'Địa lý': { shortName: 'Địa', iconColor: { bg: '#ECFEFF', text: '#06B6D4' } },
+  'Sinh học': { shortName: 'Sinh', iconColor: { bg: '#F0FDF4', text: '#22C55E' } },
 };
+
+// Grade cell colors matching wireframe
+const GRADE_CELL_COLORS: Record<string, { bg: string; text: string }> = {
+  'TX': { bg: '#EFF6FF', text: '#1D4ED8' },      // Blue for quizzes (TX)
+  'GK': { bg: '#FAF5FF', text: '#9333EA' },      // Purple for midterm (GK)
+  'CK': { bg: '#FFF7ED', text: '#EA580C' },      // Orange for final (CK)
+  'default': { bg: '#EFF6FF', text: '#1D4ED8' }, // Default blue
+};
+
+const getGradeCellColors = (label: string): { bg: string; text: string } => {
+  if (label.startsWith('TX')) return GRADE_CELL_COLORS['TX']!;
+  if (label === 'GK') return GRADE_CELL_COLORS['GK']!;
+  if (label === 'CK') return GRADE_CELL_COLORS['CK']!;
+  return GRADE_CELL_COLORS['default']!;
+};
+
+// Appeal options matching wireframe
+const APPEAL_GRADE_TYPES = [
+  { label: 'Điểm TX1', value: 'TX1' },
+  { label: 'Điểm TX2', value: 'TX2' },
+  { label: 'Điểm TX3', value: 'TX3' },
+  { label: 'Điểm Giữa kỳ (GK)', value: 'GK' },
+  { label: 'Điểm Cuối kỳ (CK)', value: 'CK' },
+  { label: 'Điểm trung bình môn', value: 'DTB' },
+];
+
+const APPEAL_REASONS = [
+  { label: 'Thầy cô tính sai điểm', value: 'wrong_calculation' },
+  { label: 'Thiếu bài tập được thêm vào', value: 'missing_assignment' },
+  { label: 'Mình đã làm bài nhưng bị vắng', value: 'absent_with_work' },
+  { label: 'Yêu cầu xem lại bài', value: 'review_request' },
+  { label: 'Khác', value: 'other' },
+];
 
 export const StudentGradesScreen: React.FC = () => {
   const { user } = useAuthStore();
@@ -61,6 +96,8 @@ export const StudentGradesScreen: React.FC = () => {
   const [appealModalVisible, setAppealModalVisible] = useState(false);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<SubjectGradeData | null>(null);
+  const [appealGradeType, setAppealGradeType] = useState('TX1');
+  const [appealReason, setAppealReason] = useState('wrong_calculation');
   const [appealDetail, setAppealDetail] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
@@ -95,14 +132,15 @@ export const StudentGradesScreen: React.FC = () => {
       if (!subjectMap.has(grade.subjectId)) {
         const iconInfo = SUBJECT_ICONS[grade.subjectName] || {
           shortName: grade.subjectName.substring(0, 3),
-          iconColor: 'bg-gray-100 text-gray-600'
+          iconColor: { bg: '#F3F4F6', text: '#6B7280' }
         };
 
         subjectMap.set(grade.subjectId, {
           subjectId: grade.subjectId,
           subjectName: grade.subjectName,
           shortName: iconInfo.shortName,
-          iconColor: iconInfo.iconColor,
+          iconColor: iconInfo.iconColor.bg,
+          textColor: iconInfo.iconColor.text,
           grades: [],
           average: 0,
         });
@@ -163,6 +201,10 @@ export const StudentGradesScreen: React.FC = () => {
   const openAppealModal = (subject: SubjectGradeData) => {
     setSelectedSubject(subject);
     setAppealModalVisible(true);
+    // Reset form
+    setAppealGradeType('TX1');
+    setAppealReason('wrong_calculation');
+    setAppealDetail('');
   };
 
   const closeAppealModal = () => {
@@ -185,9 +227,9 @@ export const StudentGradesScreen: React.FC = () => {
   // Loading state
   if (isLoading && grades.length === 0) {
     return (
-      <View className="flex-1 bg-slate-50 justify-center items-center">
+      <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#0284C7" />
-        <Text className="mt-4 text-sm text-gray-500">Đang tải dữ liệu...</Text>
+        <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
       </View>
     );
   }
@@ -195,18 +237,18 @@ export const StudentGradesScreen: React.FC = () => {
   // Error state
   if (error && grades.length === 0) {
     return (
-      <View className="flex-1 bg-slate-50 justify-center items-center px-6">
-        <View className="w-20 h-20 bg-rose-100 rounded-full items-center justify-center mb-4">
-          <Text className="text-rose-600 text-3xl">⚠</Text>
+      <View style={styles.centerContainer}>
+        <View style={styles.errorIconContainer}>
+          <Text style={styles.errorIcon}>⚠</Text>
         </View>
-        <Text className="text-gray-800 font-extrabold text-lg mb-2">Lỗi tải dữ liệu</Text>
-        <Text className="text-gray-500 text-sm text-center mb-6">{error}</Text>
+        <Text style={styles.errorTitle}>Lỗi tải dữ liệu</Text>
+        <Text style={styles.errorMessage}>{error}</Text>
         <TouchableOpacity
           onPress={handleReload}
           disabled={refreshing}
-          className={`bg-[#0284C7] py-3 px-8 rounded-xl ${refreshing ? 'opacity-50' : ''}`}
+          style={refreshing ? [styles.retryButton, styles.retryButtonDisabled] : styles.retryButton}
         >
-          <Text className="text-white font-extrabold text-sm">
+          <Text style={styles.retryButtonText}>
             {refreshing ? 'Đang tải...' : 'Thử lại'}
           </Text>
         </TouchableOpacity>
@@ -215,103 +257,108 @@ export const StudentGradesScreen: React.FC = () => {
   }
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View style={styles.container}>
       {/* Header */}
-      <View className="bg-gradient-to-br from-[#0284C7] to-[#0369A1] pt-[60px] px-6 pb-6 rounded-b-[30px]">
-        <View className="flex-row justify-between items-start">
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
           <View>
-            <Text className="text-[20px] font-extrabold text-white">Bảng điểm môn học</Text>
-            <Text className="text-[12px] text-blue-100 font-medium mt-0.5">Năm học 2025 - 2026</Text>
+            <Text style={styles.headerTitle}>Bảng điểm môn học</Text>
+            <Text style={styles.headerSubtitle}>Năm học 2025 - 2026</Text>
           </View>
           <TouchableOpacity
             onPress={handleReload}
             disabled={refreshing}
-            className={`w-10 h-10 bg-white/20 rounded-full items-center justify-center ${refreshing ? 'opacity-50' : ''}`}
+            style={refreshing ? [styles.refreshButton, styles.refreshButtonDisabled] : styles.refreshButton}
           >
-            <Text className={`text-white ${refreshing ? 'animate-spin' : ''}`}>{refreshing ? '⟳' : '↻'}</Text>
+            <Text style={styles.refreshIcon}>{refreshing ? '⟳' : '↻'}</Text>
           </TouchableOpacity>
         </View>
         {error && (
-          <View className="mt-3 bg-rose-500/20 px-3 py-2 rounded-lg">
-            <Text className="text-rose-100 text-xs">{error}</Text>
+          <View style={styles.errorBanner}>
+            <Text style={styles.errorBannerText}>{error}</Text>
           </View>
         )}
       </View>
 
-      <ScrollView contentContainerClassName="px-6 pt-6 pb-[140px]" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Semester Selector */}
-        <View className="flex-row space-x-2 mb-6">
+        <View style={styles.semesterSelector}>
           <TouchableOpacity
             onPress={() => setSelectedSemester('I')}
-            className={`flex-1 py-2.5 rounded-xl ${selectedSemester === 'I' ? 'bg-[#0284C7]' : 'bg-white border border-gray-200'}`}
+            style={selectedSemester === 'I' ? [styles.semesterTab, styles.semesterTabActive] : styles.semesterTab}
           >
-            <Text className={`text-sm font-black text-center ${selectedSemester === 'I' ? 'text-white' : 'text-gray-400'}`}>
+            <Text style={selectedSemester === 'I' ? styles.semesterTabTextActive : styles.semesterTabTextInactive}>
               Học kỳ I
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setSelectedSemester('II')}
-            className={`flex-1 py-2.5 rounded-xl ${selectedSemester === 'II' ? 'bg-[#0284C7]' : 'bg-white border border-gray-200'}`}
+            style={selectedSemester === 'II' ? [styles.semesterTab, styles.semesterTabActive] : styles.semesterTab}
           >
-            <Text className={`text-sm font-black text-center ${selectedSemester === 'II' ? 'text-white' : 'text-gray-400'}`}>
+            <Text style={selectedSemester === 'II' ? styles.semesterTabTextActive : styles.semesterTabTextInactive}>
               Học kỳ II
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Overall Summary Card */}
-        <View className="bg-gradient-to-r from-[#0284C7] to-[#0369A1] p-5 rounded-[24px] shadow-lg mb-6">
-          <View className="flex-row justify-between items-center">
+        <View style={styles.summaryCard}>
+          <View style={styles.summaryContent}>
             <View>
-              <Text className="text-blue-100 text-[9px] font-black uppercase tracking-wider mb-1">Điểm trung bình</Text>
-              <Text className="text-white text-[36px] font-extrabold">{overallAverage.toFixed(1)}</Text>
-              <Text className="text-blue-100 text-xs font-medium mt-1">Xếp loại: {overallRating}</Text>
+              <Text style={styles.summaryLabel}>Điểm trung bình</Text>
+              <Text style={styles.summaryScore}>{overallAverage.toFixed(1)}</Text>
+              <Text style={styles.summaryRating}>Xếp loại: {overallRating}</Text>
             </View>
-            <View className="w-16 h-16 bg-white/20 rounded-2xl items-center justify-center">
-              <Text className="text-white text-3xl">✓</Text>
+            <View style={styles.summaryIcon}>
+              <Text style={styles.summaryIconText}>✓</Text>
             </View>
           </View>
         </View>
 
         {/* Subject Grades List */}
-        <Text className="text-gray-800 font-extrabold text-sm mb-3">Chi tiết các môn</Text>
+        <Text style={styles.sectionTitle}>Chi tiết các môn</Text>
 
-        <View className="space-y-3">
+        <View style={styles.subjectsList}>
           {subjectsData.map((subjectData) => (
-            <View key={subjectData.subjectId} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-              <View className="flex-row justify-between items-center mb-3">
-                <View className="flex-row items-center space-x-3">
-                  <View className={`w-11 h-11 ${subjectData.iconColor} rounded-xl items-center justify-center`}>
-                    <Text className="text-sm font-black">{subjectData.shortName}</Text>
+            <View key={subjectData.subjectId} style={styles.subjectCard}>
+              <View style={styles.subjectHeader}>
+                <View style={styles.subjectInfo}>
+                  <View style={[styles.subjectIcon, { backgroundColor: subjectData.iconColor }]}>
+                    <Text style={[styles.subjectIconText, { color: subjectData.textColor }]}>
+                      {subjectData.shortName}
+                    </Text>
                   </View>
                   <View>
-                    <Text className="text-gray-800 font-bold text-sm">{subjectData.subjectName}</Text>
+                    <Text style={styles.subjectName}>{subjectData.subjectName}</Text>
                   </View>
                 </View>
-                <View className="flex-row items-center space-x-2">
-                  <View className="items-right">
-                    <Text className="text-[#0284C7] font-extrabold text-lg">{subjectData.average.toFixed(2)}</Text>
-                    <Text className="text-gray-400 text-[9px] font-medium text-right">ĐTB</Text>
+                <View style={styles.subjectGrade}>
+                  <View style={styles.subjectGradeTextContainer}>
+                    <Text style={styles.subjectGradeText}>{subjectData.average.toFixed(2)}</Text>
+                    <Text style={styles.subjectGradeLabel}>ĐTB</Text>
                   </View>
                   <TouchableOpacity
                     onPress={() => openAppealModal(subjectData)}
-                    className="w-8 h-8 bg-amber-50 border border-amber-200 rounded-xl items-center justify-center"
+                    style={styles.appealButton}
                   >
-                    <Text className="text-amber-600 text-sm">✏</Text>
+                    <Text style={styles.appealButtonText}>✏</Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
-              {/* Grade Grid - Display up to 5 most recent grades */}
-              <View className="flex flex-row justify-between gap-2">
-                {subjectData.grades.slice(0, 5).map((grade) => (
-                  <View key={grade.id} className="bg-blue-50 rounded-lg p-2 items-center flex-1">
-                    <Text className="text-blue-700 text-[8px] font-black mb-1 uppercase">{grade.label}</Text>
-                    <Text className="text-blue-700 text-sm font-extrabold">
-                      {grade.score !== null ? (grade.score / grade.maxScore * 10).toFixed(1) : '-'}
-                    </Text>
-                  </View>
-                ))}
+              {/* Grade Grid - Display up to 5 most recent grades with color coding */}
+              <View style={styles.gradeGrid}>
+                {subjectData.grades.slice(0, 5).map((grade) => {
+                  const colors = getGradeCellColors(grade.label);
+                  return (
+                    <View key={grade.id} style={[styles.gradeCell, { backgroundColor: colors.bg }]}>
+                      <Text style={[styles.gradeCellLabel, { color: colors.text }]}>{grade.label}</Text>
+                      <Text style={[styles.gradeCellScore, { color: colors.text }]}>
+                        {grade.score !== null ? (grade.score / grade.maxScore * 10).toFixed(1) : '-'}
+                      </Text>
+                    </View>
+                  );
+                })}
               </View>
             </View>
           ))}
@@ -319,8 +366,8 @@ export const StudentGradesScreen: React.FC = () => {
 
         {/* Empty state */}
         {subjectsData.length === 0 && !isLoading && (
-          <View className="bg-white p-8 rounded-2xl border border-gray-100 items-center">
-            <Text className="text-gray-400 text-sm text-center">Chưa có dữ liệu điểm</Text>
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>Chưa có dữ liệu điểm</Text>
           </View>
         )}
       </ScrollView>
@@ -332,42 +379,45 @@ export const StudentGradesScreen: React.FC = () => {
         animationType="fade"
         onRequestClose={closeAppealModal}
       >
-        <View className="flex-1 bg-black/60 justify-end px-4">
-          <View className="bg-white rounded-[28px] p-6 w-full">
+        <View style={styles.modalOverlay}>
+          <View style={styles.appealModalContent}>
             {/* Drag Handle */}
-            <View className="w-10 h-1 bg-gray-300 rounded-2xl self-center mb-4" />
+            <View style={styles.dragHandle} />
 
             {/* Header */}
-            <View className="flex-row justify-between items-center mb-5">
+            <View style={styles.modalHeader}>
               <View>
-                <Text className="text-gray-800 font-extrabold text-xl">Phúc khảo điểm</Text>
-                <Text className="text-gray-400 text-xs font-medium mt-0.5">Yêu cầu xem lại điểm</Text>
+                <Text style={styles.modalTitle}>Phúc khảo điểm</Text>
+                <Text style={styles.modalSubtitle}>Yêu cầu xem lại điểm</Text>
               </View>
-              <TouchableOpacity onPress={closeAppealModal} className="w-9 h-9 bg-gray-100 rounded-full items-center justify-center">
-                <Text className="text-gray-500 text-lg">✕</Text>
+              <TouchableOpacity onPress={closeAppealModal} style={styles.modalCloseButton}>
+                <Text style={styles.modalCloseButtonText}>✕</Text>
               </TouchableOpacity>
             </View>
 
             {/* Grade Info Card */}
             {selectedSubject && (
-              <View className="bg-blue-50 p-4 rounded-2xl mb-5 border border-blue-100">
-                <View className="flex-row items-start space-x-3">
-                  <View className="w-10 h-10 bg-[#0284C7] rounded-xl items-center justify-center">
-                    <Text className="text-white text-lg">📄</Text>
+              <View style={styles.gradeInfoCard}>
+                <View style={styles.gradeInfoContent}>
+                  <View style={styles.gradeInfoIcon}>
+                    <Text style={styles.gradeInfoIconText}>📄</Text>
                   </View>
-                  <View className="flex-1">
-                    <Text className="text-gray-500 text-[10px] font-black uppercase tracking-wider mb-1">Môn học</Text>
-                    <Text className="text-gray-800 font-extrabold text-base mb-2">{selectedSubject.subjectName}</Text>
-                    <View className="flex-row items-center space-x-4">
+                  <View style={styles.gradeInfoDetails}>
+                    <Text style={styles.gradeInfoLabel}>Môn học</Text>
+                    <Text style={styles.gradeInfoSubject}>{selectedSubject.subjectName}</Text>
+                    <View style={styles.gradeInfoStats}>
                       <View>
-                        <Text className="text-gray-500 text-[9px] font-black uppercase tracking-wider mb-0.5">ĐTB</Text>
-                        <Text className="text-[#0284C7] font-extrabold text-lg">{selectedSubject.average.toFixed(2)}</Text>
+                        <Text style={styles.gradeInfoStatLabel}>ĐTB</Text>
+                        <Text style={styles.gradeInfoStatValue}>{selectedSubject.average.toFixed(2)}</Text>
                       </View>
-                      <View className="h-8 w-px bg-gray-300" />
-                      <View className="flex-1">
-                        <Text className="text-gray-500 text-[9px] font-black uppercase tracking-wider mb-0.5">Chi tiết</Text>
-                        <Text className="text-gray-700 font-bold text-[10px]">
-                          {selectedSubject.grades.length > 0 ? selectedSubject.grades.map(g => `${g.label}: ${g.score !== null ? (g.score / g.maxScore * 10).toFixed(1) : '-'}`).join(' • ') : 'Chưa có điểm'}
+                      <View style={styles.gradeInfoDivider} />
+                      <View style={styles.gradeInfoDetail}>
+                        <Text style={styles.gradeInfoStatLabel}>Chi tiết</Text>
+                        <Text style={styles.gradeInfoDetailText}>
+                          {selectedSubject.grades.length > 0
+                            ? selectedSubject.grades.map(g => `${g.label}: ${g.score !== null ? (g.score / g.maxScore * 10).toFixed(1) : '-'}`).join(' • ')
+                            : 'Chưa có điểm'
+                          }
                         </Text>
                       </View>
                     </View>
@@ -377,23 +427,23 @@ export const StudentGradesScreen: React.FC = () => {
             )}
 
             {/* Appeal Form */}
-            <View className="space-y-4">
-              <View>
-                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Loại điểm cần phúc khảo</Text>
-                <View className="w-full bg-gray-50 p-3.5 rounded-xl border border-gray-200">
-                  <Text className="text-gray-800 text-sm font-medium">Điểm TX1</Text>
-                </View>
-              </View>
+            <View style={styles.appealForm}>
+              <GradePicker
+                label="Loại điểm cần phúc khảo"
+                options={APPEAL_GRADE_TYPES}
+                value={appealGradeType}
+                onChange={setAppealGradeType}
+              />
+
+              <GradePicker
+                label="Lý do phúc khảo"
+                options={APPEAL_REASONS}
+                value={appealReason}
+                onChange={setAppealReason}
+              />
 
               <View>
-                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Lý do phúc khảo</Text>
-                <View className="w-full bg-gray-50 p-3.5 rounded-xl border border-gray-200">
-                  <Text className="text-gray-800 text-sm font-medium">Thầy cô tính sai điểm</Text>
-                </View>
-              </View>
-
-              <View>
-                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Giải trình chi tiết</Text>
+                <Text style={styles.textAreaLabel}>Giải trình chi tiết</Text>
                 <TextInput
                   value={appealDetail}
                   onChangeText={setAppealDetail}
@@ -401,19 +451,19 @@ export const StudentGradesScreen: React.FC = () => {
                   placeholderTextColor="#9CA3AF"
                   multiline
                   numberOfLines={4}
-                  className="w-full bg-gray-50 p-3.5 rounded-xl border border-gray-200 text-gray-800 text-sm font-medium"
+                  style={styles.textArea}
                   textAlignVertical="top"
                 />
-                <Text className="text-gray-400 text-[10px] font-medium mt-1.5">
+                <Text style={styles.textAreaHint}>
                   ℹ Cung cấp càng nhiều chi tiết càng tốt
                 </Text>
               </View>
 
               <TouchableOpacity
                 onPress={submitAppeal}
-                className="w-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] py-4 rounded-xl shadow-lg items-center"
+                style={styles.submitButton}
               >
-                <Text className="text-white font-extrabold text-sm text-center">Gửi yêu cầu phúc khảo</Text>
+                <Text style={styles.submitButtonText}>Gửi yêu cầu phúc khảo</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -427,24 +477,24 @@ export const StudentGradesScreen: React.FC = () => {
         animationType="fade"
         onRequestClose={closeSuccessModal}
       >
-        <View className="flex-1 bg-black/60 justify-center items-center px-6">
-          <View className="bg-white rounded-[28px] p-6 w-full items-center">
-            <View className="w-10 h-1 bg-gray-300 rounded-2xl self-center mb-4" />
+        <View style={styles.modalOverlay}>
+          <View style={styles.successModalContent}>
+            <View style={styles.dragHandle} />
 
-            <View className="w-20 h-20 bg-emerald-500 rounded-full items-center justify-center mb-4">
-              <Text className="text-white text-4xl">✓</Text>
+            <View style={styles.successIconContainer}>
+              <Text style={styles.successIcon}>✓</Text>
             </View>
 
-            <Text className="text-gray-800 font-extrabold text-xl mb-2">Đã gửi thành công!</Text>
-            <Text className="text-gray-500 text-sm font-medium mb-6 text-center">
+            <Text style={styles.successTitle}>Đã gửi thành công!</Text>
+            <Text style={styles.successMessage}>
               Yêu cầu phúc khảo của bạn đã được gửi đến giáo viên. Chúng tôi sẽ thông báo kết quả sớm nhất.
             </Text>
 
             <TouchableOpacity
               onPress={closeSuccessModal}
-              className="w-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] py-4 rounded-xl shadow-lg items-center"
+              style={styles.successCloseButton}
             >
-              <Text className="text-white font-extrabold text-sm text-center">Đóng</Text>
+              <Text style={styles.successCloseButtonText}>Đóng</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -452,3 +502,553 @@ export const StudentGradesScreen: React.FC = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  centerContainer: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  errorIconContainer: {
+    width: 80,
+    height: 80,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  errorIcon: {
+    fontSize: 32,
+    color: '#DC2626',
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1F2937',
+    marginBottom: 8,
+  },
+  errorMessage: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  retryButton: {
+    backgroundColor: '#0284C7',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+  },
+  retryButtonDisabled: {
+    opacity: 0.5,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+
+  // Header
+  header: {
+    backgroundColor: '#0284C7',
+    paddingTop: 60,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: '#DBEAFE',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  refreshButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  refreshButtonDisabled: {
+    opacity: 0.5,
+  },
+  refreshIcon: {
+    color: '#FFFFFF',
+    fontSize: 18,
+  },
+  errorBanner: {
+    marginTop: 12,
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  errorBannerText: {
+    color: '#FEE2E2',
+    fontSize: 12,
+  },
+
+  // Scroll content
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 140,
+  },
+
+  // Semester selector
+  semesterSelector: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 24,
+  },
+  semesterTab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    alignItems: 'center',
+  },
+  semesterTabActive: {
+    backgroundColor: '#0284C7',
+    borderColor: '#0284C7',
+  },
+  semesterTabText: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  semesterTabTextActive: {
+    color: '#FFFFFF',
+  },
+  semesterTabTextInactive: {
+    color: '#9CA3AF',
+  },
+
+  // Summary card
+  summaryCard: {
+    backgroundColor: '#0284C7',
+    padding: 20,
+    borderRadius: 24,
+    marginBottom: 24,
+    shadowColor: '#0284C7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  summaryContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  summaryLabel: {
+    color: '#DBEAFE',
+    fontSize: 9,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  summaryScore: {
+    color: '#FFFFFF',
+    fontSize: 36,
+    fontWeight: '800',
+  },
+  summaryRating: {
+    color: '#DBEAFE',
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 4,
+  },
+  summaryIcon: {
+    width: 64,
+    height: 64,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  summaryIconText: {
+    color: '#FFFFFF',
+    fontSize: 24,
+  },
+
+  // Section title
+  sectionTitle: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '800',
+    marginBottom: 12,
+  },
+
+  // Subjects list
+  subjectsList: {
+    gap: 12,
+  },
+  subjectCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  subjectHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  subjectInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  subjectIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  subjectIconText: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  subjectName: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  subjectGrade: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  subjectGradeTextContainer: {
+    alignItems: 'flex-end',
+  },
+  subjectGradeText: {
+    color: '#0284C7',
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  subjectGradeLabel: {
+    color: '#9CA3AF',
+    fontSize: 9,
+    fontWeight: '500',
+  },
+  appealButton: {
+    width: 32,
+    height: 32,
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  appealButtonText: {
+    color: '#F59E0B',
+    fontSize: 14,
+  },
+
+  // Grade grid
+  gradeGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  gradeCell: {
+    borderRadius: 8,
+    padding: 8,
+    alignItems: 'center',
+    flex: 1,
+  },
+  gradeCellLabel: {
+    fontSize: 8,
+    fontWeight: '800',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  gradeCellScore: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+
+  // Empty state
+  emptyState: {
+    backgroundColor: '#FFFFFF',
+    padding: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    alignItems: 'center',
+  },
+  emptyStateText: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+
+  // Modal overlay
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'flex-end',
+  },
+
+  // Appeal modal
+  appealModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    paddingTop: 24,
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#D1D5DB',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    color: '#1F2937',
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  modalSubtitle: {
+    color: '#9CA3AF',
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  modalCloseButton: {
+    width: 36,
+    height: 36,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCloseButtonText: {
+    color: '#6B7280',
+    fontSize: 18,
+  },
+
+  // Grade info card
+  gradeInfoCard: {
+    backgroundColor: '#EFF6FF',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+  },
+  gradeInfoContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  gradeInfoIcon: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#0284C7',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gradeInfoIconText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+  },
+  gradeInfoDetails: {
+    flex: 1,
+  },
+  gradeInfoLabel: {
+    color: '#6B7280',
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  gradeInfoSubject: {
+    color: '#1F2937',
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  gradeInfoStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  gradeInfoStatLabel: {
+    color: '#6B7280',
+    fontSize: 9,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  gradeInfoStatValue: {
+    color: '#0284C7',
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  gradeInfoDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: '#D1D5DB',
+  },
+  gradeInfoDetail: {
+    flex: 1,
+  },
+  gradeInfoDetailText: {
+    color: '#374151',
+    fontSize: 10,
+    fontWeight: '700',
+    lineHeight: 14,
+  },
+
+  // Appeal form
+  appealForm: {
+    gap: 16,
+  },
+  textAreaLabel: {
+    color: '#374151',
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  textArea: {
+    backgroundColor: '#F9FAFB',
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1F2937',
+    minHeight: 100,
+  },
+  textAreaHint: {
+    color: '#9CA3AF',
+    fontSize: 10,
+    fontWeight: '500',
+    marginTop: 6,
+  },
+  submitButton: {
+    backgroundColor: '#0284C7',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#0284C7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    marginTop: 8,
+  },
+  submitButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+
+  // Success modal
+  successModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 28,
+    padding: 24,
+    marginHorizontal: 24,
+    alignItems: 'center',
+  },
+  successIconContainer: {
+    width: 80,
+    height: 80,
+    backgroundColor: '#10B981',
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  successIcon: {
+    color: '#FFFFFF',
+    fontSize: 40,
+    fontWeight: '800',
+  },
+  successTitle: {
+    color: '#1F2937',
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  successMessage: {
+    color: '#6B7280',
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  successCloseButton: {
+    backgroundColor: '#0284C7',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    width: '100%',
+    shadowColor: '#0284C7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  successCloseButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+});

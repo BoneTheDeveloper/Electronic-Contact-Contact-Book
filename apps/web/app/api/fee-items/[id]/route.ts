@@ -5,7 +5,7 @@ import type { FeeItem } from '@/lib/types'
 
 // Helper function to get fee item by ID
 async function getFeeItemById(id: string): Promise<FeeItem | undefined> {
-  const items = await getFeeItems()
+  const items: FeeItem[] = await getFeeItems() as any
   return items.find((item: FeeItem) => item.id === id)
 }
 

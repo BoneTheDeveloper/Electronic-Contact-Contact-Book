@@ -42,19 +42,21 @@ export function subscribeToNotifications(
         filter: `recipient_id=eq.${userId}`,
       },
       (payload: RealtimePostgresChangesPayload<Notification>) => {
-        const newNotification = payload.new;
+        const newNotification = payload.new as Notification;
+        if (!newNotification) return;
+
         callback({
           id: newNotification.id,
           title: newNotification.title,
           content: newNotification.content,
           category: newNotification.category || 'announcement',
           priority: newNotification.priority || 'normal',
-          created_at: newNotification.created_at,
+          created_at: newNotification.created_at || '',
         });
       }
     )
     .subscribe((status) => {
-      if (status === 'SUBSCRIPTION_ERROR') {
+      if (status === 'CHANNEL_ERROR' || (status as any) === 'SUBSCRIPTION_ERROR') {
         console.error('[Realtime] Failed to subscribe to notifications');
       } else if (status === 'SUBSCRIBED') {
         console.log('[Realtime] Subscribed to notifications for user:', userId);
@@ -91,15 +93,18 @@ export function subscribeToNotificationUpdates(
         filter: `recipient_id=eq.${userId}`,
       },
       (payload: RealtimePostgresChangesPayload<Notification>) => {
+        const newRecord = payload.new as Notification;
+        if (!newRecord) return;
+
         callback({
-          id: payload.new.id,
-          isRead: payload.new.is_read,
-          readAt: payload.new.read_at,
+          id: newRecord.id,
+          isRead: newRecord.is_read || false,
+          readAt: newRecord.read_at || null,
         });
       }
     )
     .subscribe((status) => {
-      if (status === 'SUBSCRIPTION_ERROR') {
+      if (status === 'CHANNEL_ERROR' || (status as any) === 'SUBSCRIPTION_ERROR') {
         console.error('[Realtime] Failed to subscribe to notification updates');
       }
     });
@@ -131,15 +136,18 @@ export function subscribeToAllNotifications(
         table: 'notifications',
       },
       (payload: RealtimePostgresChangesPayload<Notification>) => {
+        const newRecord = payload.new as Notification | undefined;
+        const oldRecord = payload.old as Notification | undefined;
+
         callback({
           event: payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE',
-          notification: payload.new,
-          oldNotification: payload.old,
+          notification: newRecord,
+          oldNotification: oldRecord,
         });
       }
     )
     .subscribe((status) => {
-      if (status === 'SUBSCRIPTION_ERROR') {
+      if (status === 'CHANNEL_ERROR' || (status as any) === 'SUBSCRIPTION_ERROR') {
         console.error('[Realtime] Failed to subscribe to all notifications');
       }
     });
@@ -174,15 +182,18 @@ export function subscribeToDeliveryStatus(
         filter: `notification_id=eq.${notificationId}`,
       },
       (payload: RealtimePostgresChangesPayload<Database['public']['Tables']['notification_logs']['Row']>) => {
+        const newRecord = payload.new as Database['public']['Tables']['notification_logs']['Row'];
+        if (!newRecord) return;
+
         callback({
-          channel: payload.new.channel,
-          status: payload.new.status,
-          recipientId: payload.new.recipient_id,
+          channel: newRecord.channel,
+          status: newRecord.status,
+          recipientId: newRecord.recipient_id,
         });
       }
     )
     .subscribe((status) => {
-      if (status === 'SUBSCRIPTION_ERROR') {
+      if (status === 'CHANNEL_ERROR' || (status as any) === 'SUBSCRIPTION_ERROR') {
         console.error('[Realtime] Failed to subscribe to delivery status');
       }
     });

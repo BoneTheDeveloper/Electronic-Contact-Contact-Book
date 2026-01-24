@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       admins: {
@@ -266,79 +241,7 @@ export type Database = {
             foreignKeyName: "attendance_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
-            referencedRelation: "student_attendance_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "attendance_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_fee_status"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "attendance_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_grade_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "attendance_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
             referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      class_teachers: {
-        Row: {
-          academic_year: string | null
-          appointed_date: string | null
-          class_id: string
-          created_at: string | null
-          id: string
-          is_primary: boolean | null
-          notes: string | null
-          semester: string | null
-          teacher_id: string
-        }
-        Insert: {
-          academic_year?: string | null
-          appointed_date?: string | null
-          class_id: string
-          created_at?: string | null
-          id?: string
-          is_primary?: boolean | null
-          notes?: string | null
-          semester?: string | null
-          teacher_id: string
-        }
-        Update: {
-          academic_year?: string | null
-          appointed_date?: string | null
-          class_id?: string
-          created_at?: string | null
-          id?: string
-          is_primary?: boolean | null
-          notes?: string | null
-          semester?: string | null
-          teacher_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "class_teachers_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "class_teachers_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
         ]
@@ -434,27 +337,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "enrollments_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_attendance_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "enrollments_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_fee_status"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "enrollments_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_grade_summary"
-            referencedColumns: ["student_id"]
           },
           {
             foreignKeyName: "enrollments_student_id_fkey"
@@ -578,164 +460,6 @@ export type Database = {
         }
         Relationships: []
       }
-      grade_entries: {
-        Row: {
-          assessment_id: string
-          created_at: string | null
-          graded_at: string | null
-          graded_by: string | null
-          id: string
-          notes: string | null
-          score: number | null
-          status: string | null
-          student_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          assessment_id: string
-          created_at?: string | null
-          graded_at?: string | null
-          graded_by?: string | null
-          id?: string
-          notes?: string | null
-          score?: number | null
-          status?: string | null
-          student_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          assessment_id?: string
-          created_at?: string | null
-          graded_at?: string | null
-          graded_by?: string | null
-          id?: string
-          notes?: string | null
-          score?: number | null
-          status?: string | null
-          student_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "grade_entries_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "grade_entries_graded_by_fkey"
-            columns: ["graded_by"]
-            isOneToOne: false
-            referencedRelation: "teachers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "grade_entries_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_attendance_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "grade_entries_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_fee_status"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "grade_entries_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_grade_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "grade_entries_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      grades: {
-        Row: {
-          created_at: string | null
-          display_order: number
-          id: string
-          name: string
-        }
-        Insert: {
-          created_at?: string | null
-          display_order: number
-          id: string
-          name: string
-        }
-        Update: {
-          created_at?: string | null
-          display_order?: number
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
-      invoice_items: {
-        Row: {
-          amount: number | null
-          created_at: string | null
-          fee_item_id: string | null
-          id: string
-          invoice_id: string
-          item_name: string
-          quantity: number | null
-          unit_price: number
-        }
-        Insert: {
-          amount?: number | null
-          created_at?: string | null
-          fee_item_id?: string | null
-          id?: string
-          invoice_id: string
-          item_name: string
-          quantity?: number | null
-          unit_price: number
-        }
-        Update: {
-          amount?: number | null
-          created_at?: string | null
-          fee_item_id?: string | null
-          id?: string
-          invoice_id?: string
-          item_name?: string
-          quantity?: number | null
-          unit_price?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invoice_items_fee_item_id_fkey"
-            columns: ["fee_item_id"]
-            isOneToOne: false
-            referencedRelation: "fee_items"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invoice_items_invoice_id_fkey"
-            columns: ["invoice_id"]
-            isOneToOne: false
-            referencedRelation: "invoice_summary"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invoice_items_invoice_id_fkey"
-            columns: ["invoice_id"]
-            isOneToOne: false
-            referencedRelation: "invoices"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       invoices: {
         Row: {
           amount: number
@@ -822,27 +546,6 @@ export type Database = {
             foreignKeyName: "invoices_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
-            referencedRelation: "student_attendance_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "invoices_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_fee_status"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "invoices_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_grade_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "invoices_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
             referencedRelation: "students"
             referencedColumns: ["id"]
           },
@@ -858,11 +561,9 @@ export type Database = {
           created_by: string | null
           end_date: string
           id: string
-          makeup_notes: string | null
           reason: string
           rejection_reason: string | null
           request_type: string | null
-          requires_makeup: boolean | null
           start_date: string
           status: string | null
           student_id: string
@@ -877,11 +578,9 @@ export type Database = {
           created_by?: string | null
           end_date: string
           id?: string
-          makeup_notes?: string | null
           reason: string
           rejection_reason?: string | null
           request_type?: string | null
-          requires_makeup?: boolean | null
           start_date: string
           status?: string | null
           student_id: string
@@ -896,11 +595,9 @@ export type Database = {
           created_by?: string | null
           end_date?: string
           id?: string
-          makeup_notes?: string | null
           reason?: string
           rejection_reason?: string | null
           request_type?: string | null
-          requires_makeup?: boolean | null
           start_date?: string
           status?: string | null
           student_id?: string
@@ -932,243 +629,7 @@ export type Database = {
             foreignKeyName: "leave_requests_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
-            referencedRelation: "student_attendance_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "leave_requests_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_fee_status"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "leave_requests_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_grade_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "leave_requests_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
             referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      message_participants: {
-        Row: {
-          is_admin: boolean | null
-          joined_at: string | null
-          last_read_at: string | null
-          thread_id: string
-          user_id: string
-        }
-        Insert: {
-          is_admin?: boolean | null
-          joined_at?: string | null
-          last_read_at?: string | null
-          thread_id: string
-          user_id: string
-        }
-        Update: {
-          is_admin?: boolean | null
-          joined_at?: string | null
-          last_read_at?: string | null
-          thread_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "message_participants_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      messages: {
-        Row: {
-          content: string
-          created_at: string | null
-          id: string
-          is_forwarded: boolean | null
-          is_read: boolean | null
-          read_at: string | null
-          recipient_id: string
-          related_id: string | null
-          related_type: string | null
-          reply_to_id: string | null
-          sender_id: string
-          subject: string | null
-          thread_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string | null
-          id?: string
-          is_forwarded?: boolean | null
-          is_read?: boolean | null
-          read_at?: string | null
-          recipient_id: string
-          related_id?: string | null
-          related_type?: string | null
-          reply_to_id?: string | null
-          sender_id: string
-          subject?: string | null
-          thread_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string | null
-          id?: string
-          is_forwarded?: boolean | null
-          is_read?: boolean | null
-          read_at?: string | null
-          recipient_id?: string
-          related_id?: string | null
-          related_type?: string | null
-          reply_to_id?: string | null
-          sender_id?: string
-          subject?: string | null
-          thread_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_reply_to_id_fkey"
-            columns: ["reply_to_id"]
-            isOneToOne: false
-            referencedRelation: "messages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notification_logs: {
-        Row: {
-          channel: string
-          created_at: string | null
-          delivered_at: string | null
-          error_message: string | null
-          external_id: string | null
-          failed_at: string | null
-          id: string
-          notification_id: string
-          recipient_id: string
-          retry_count: number | null
-          sent_at: string | null
-          status: string
-        }
-        Insert: {
-          channel: string
-          created_at?: string | null
-          delivered_at?: string | null
-          error_message?: string | null
-          external_id?: string | null
-          failed_at?: string | null
-          id?: string
-          notification_id: string
-          recipient_id: string
-          retry_count?: number | null
-          sent_at?: string | null
-          status: string
-        }
-        Update: {
-          channel?: string
-          created_at?: string | null
-          delivered_at?: string | null
-          error_message?: string | null
-          external_id?: string | null
-          failed_at?: string | null
-          id?: string
-          notification_id?: string
-          recipient_id?: string
-          retry_count?: number | null
-          sent_at?: string | null
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notification_logs_notification_id_fkey"
-            columns: ["notification_id"]
-            isOneToOne: false
-            referencedRelation: "notifications"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notification_logs_notification_id_fkey"
-            columns: ["notification_id"]
-            isOneToOne: false
-            referencedRelation: "recent_notifications"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notification_logs_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notification_recipients: {
-        Row: {
-          created_at: string | null
-          id: string
-          notification_id: string
-          recipient_id: string
-          role: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          notification_id: string
-          recipient_id: string
-          role: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          notification_id?: string
-          recipient_id?: string
-          role?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notification_recipients_notification_id_fkey"
-            columns: ["notification_id"]
-            isOneToOne: false
-            referencedRelation: "notifications"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notification_recipients_notification_id_fkey"
-            columns: ["notification_id"]
-            isOneToOne: false
-            referencedRelation: "recent_notifications"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notification_recipients_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1316,13 +777,6 @@ export type Database = {
             foreignKeyName: "payment_transactions_invoice_id_fkey"
             columns: ["invoice_id"]
             isOneToOne: false
-            referencedRelation: "invoice_summary"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payment_transactions_invoice_id_fkey"
-            columns: ["invoice_id"]
-            isOneToOne: false
             referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
@@ -1334,36 +788,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      periods: {
-        Row: {
-          created_at: string | null
-          display_order: number
-          end_time: string
-          id: number
-          is_break: boolean | null
-          name: string
-          start_time: string
-        }
-        Insert: {
-          created_at?: string | null
-          display_order: number
-          end_time: string
-          id: number
-          is_break?: boolean | null
-          name: string
-          start_time: string
-        }
-        Update: {
-          created_at?: string | null
-          display_order?: number
-          end_time?: string
-          id?: number
-          is_break?: boolean | null
-          name?: string
-          start_time?: string
-        }
-        Relationships: []
       }
       profiles: {
         Row: {
@@ -1475,94 +899,6 @@ export type Database = {
           },
         ]
       }
-      student_comments: {
-        Row: {
-          comment_type: string | null
-          content: string
-          created_at: string | null
-          id: string
-          is_private: boolean | null
-          school_year: string | null
-          semester: string | null
-          student_id: string
-          subject_id: string | null
-          teacher_id: string
-          title: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          comment_type?: string | null
-          content: string
-          created_at?: string | null
-          id?: string
-          is_private?: boolean | null
-          school_year?: string | null
-          semester?: string | null
-          student_id: string
-          subject_id?: string | null
-          teacher_id: string
-          title?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          comment_type?: string | null
-          content?: string
-          created_at?: string | null
-          id?: string
-          is_private?: boolean | null
-          school_year?: string | null
-          semester?: string | null
-          student_id?: string
-          subject_id?: string | null
-          teacher_id?: string
-          title?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "student_comments_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_attendance_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "student_comments_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_fee_status"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "student_comments_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_grade_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "student_comments_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_comments_subject_id_fkey"
-            columns: ["subject_id"]
-            isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_comments_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       student_guardians: {
         Row: {
           created_at: string | null
@@ -1589,27 +925,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "parents"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_guardians_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_attendance_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "student_guardians_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_fee_status"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "student_guardians_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_grade_summary"
-            referencedColumns: ["student_id"]
           },
           {
             foreignKeyName: "student_guardians_student_id_fkey"
@@ -1798,6 +1113,485 @@ export type Database = {
           },
         ]
       }
+      grades: {
+        Row: {
+          created_at: string | null
+          display_order: number
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order: number
+          id: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      periods: {
+        Row: {
+          created_at: string | null
+          display_order: number
+          end_time: string
+          id: number
+          is_break: boolean | null
+          name: string
+          start_time: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order: number
+          end_time: string
+          id: number
+          is_break?: boolean | null
+          name: string
+          start_time: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number
+          end_time?: string
+          id?: number
+          is_break?: boolean | null
+          name?: string
+          start_time?: string
+        }
+        Relationships: []
+      }
+      class_teachers: {
+        Row: {
+          academic_year: string | null
+          appointed_date: string | null
+          class_id: string
+          created_at: string | null
+          id: string
+          is_primary: boolean | null
+          notes: string | null
+          semester: string | null
+          teacher_id: string
+        }
+        Insert: {
+          academic_year?: string | null
+          appointed_date?: string | null
+          class_id: string
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          notes?: string | null
+          semester?: string | null
+          teacher_id: string
+        }
+        Update: {
+          academic_year?: string | null
+          appointed_date?: string | null
+          class_id?: string
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          notes?: string | null
+          semester?: string | null
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_teachers_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_teachers_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grade_entries: {
+        Row: {
+          assessment_id: string
+          created_at: string | null
+          graded_at: string | null
+          graded_by: string | null
+          id: string
+          notes: string | null
+          score: number | null
+          status: string | null
+          student_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          assessment_id: string
+          created_at?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          notes?: string | null
+          score?: number | null
+          status?: string | null
+          student_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          assessment_id?: string
+          created_at?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          notes?: string | null
+          score?: number | null
+          status?: string | null
+          student_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grade_entries_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grade_entries_graded_by_fkey"
+            columns: ["graded_by"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grade_entries_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_items: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          fee_item_id: string | null
+          id: string
+          invoice_id: string
+          item_name: string
+          quantity: number | null
+          unit_price: number
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          fee_item_id?: string | null
+          id?: string
+          invoice_id: string
+          item_name: string
+          quantity?: number | null
+          unit_price: number
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          fee_item_id?: string | null
+          id?: string
+          invoice_id?: string
+          item_name?: string
+          quantity?: number | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_fee_item_id_fkey"
+            columns: ["fee_item_id"]
+            isOneToOne: false
+            referencedRelation: "fee_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_comments: {
+        Row: {
+          comment_type: string | null
+          content: string
+          created_at: string | null
+          id: string
+          is_private: boolean | null
+          school_year: string | null
+          semester: string | null
+          student_id: string
+          subject_id: string | null
+          teacher_id: string
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          comment_type?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          is_private?: boolean | null
+          school_year?: string | null
+          semester?: string | null
+          student_id: string
+          subject_id?: string | null
+          teacher_id: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          comment_type?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_private?: boolean | null
+          school_year?: string | null
+          semester?: string | null
+          student_id?: string
+          subject_id?: string | null
+          teacher_id?: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_comments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_comments_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_comments_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_participants: {
+        Row: {
+          is_admin: boolean | null
+          joined_at: string | null
+          last_read_at: string | null
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          is_admin?: boolean | null
+          joined_at?: string | null
+          last_read_at?: string | null
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          is_admin?: boolean | null
+          joined_at?: string | null
+          last_read_at?: string | null
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_forwarded: boolean | null
+          is_read: boolean | null
+          read_at: string | null
+          recipient_id: string
+          related_id: string | null
+          related_type: string | null
+          reply_to_id: string | null
+          sender_id: string
+          subject: string | null
+          thread_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_forwarded?: boolean | null
+          is_read?: boolean | null
+          read_at?: string | null
+          recipient_id: string
+          related_id?: string | null
+          related_type?: string | null
+          reply_to_id?: string | null
+          sender_id: string
+          subject?: string | null
+          thread_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_forwarded?: boolean | null
+          is_read?: boolean | null
+          read_at?: string | null
+          recipient_id?: string
+          related_id?: string | null
+          related_type?: string | null
+          reply_to_id?: string
+          sender_id?: string
+          subject?: string | null
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_recipients: {
+        Row: {
+          created_at: string | null
+          id: string
+          notification_id: string
+          recipient_id: string
+          role: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          notification_id: string
+          recipient_id: string
+          role: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          notification_id?: string
+          recipient_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_recipients_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_recipients_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_logs: {
+        Row: {
+          channel: string
+          created_at: string | null
+          delivered_at: string | null
+          error_message: string | null
+          external_id: string | null
+          failed_at: string | null
+          id: string
+          notification_id: string
+          recipient_id: string
+          retry_count: number | null
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          failed_at?: string | null
+          id?: string
+          notification_id: string
+          recipient_id: string
+          retry_count?: number | null
+          sent_at?: string | null
+          status: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          failed_at?: string | null
+          id?: string
+          notification_id?: string
+          recipient_id?: string
+          retry_count?: number | null
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_logs_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_logs_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       active_announcements: {
@@ -1894,27 +1688,6 @@ export type Database = {
             foreignKeyName: "invoices_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
-            referencedRelation: "student_attendance_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "invoices_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_fee_status"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "invoices_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_grade_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "invoices_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
             referencedRelation: "students"
             referencedColumns: ["id"]
           },
@@ -1958,11 +1731,9 @@ export type Database = {
           created_by: string | null
           end_date: string | null
           id: string | null
-          makeup_notes: string | null
           reason: string | null
           rejection_reason: string | null
           request_type: string | null
-          requires_makeup: boolean | null
           start_date: string | null
           status: string | null
           student_code: string | null
@@ -1991,27 +1762,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "leave_requests_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_attendance_summary"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "leave_requests_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_fee_status"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "leave_requests_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_grade_summary"
-            referencedColumns: ["student_id"]
           },
           {
             foreignKeyName: "leave_requests_student_id_fkey"
@@ -2330,9 +2080,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

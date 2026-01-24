@@ -86,12 +86,12 @@ export function InvoiceDetailModal({ isOpen, onClose, invoiceId }: InvoiceDetail
   }
 
   const getStatusBadge = (status: string) => {
-    const config = {
+    const config: Record<string, { label: string; color: string; icon: any }> = {
       paid: { label: 'Đã thanh toán', color: 'bg-green-100 text-green-700', icon: CheckCircle2 },
       pending: { label: 'Chờ thanh toán', color: 'bg-amber-100 text-amber-700', icon: Clock },
       overdue: { label: 'Quá hạn', color: 'bg-red-100 text-red-700', icon: Clock },
     }
-    const { label, color, icon: Icon } = config[value] || config.pending
+    const { label, color, icon: Icon } = config[status] || config.pending
     return (
       <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase rounded-lg ${color}`}>
         <Icon className="w-3.5 h-3.5" />

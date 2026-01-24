@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 export default async function GradesListPage() {
   // TODO: Get real teacher ID from auth
-  const classes = await getTeacherClasses('current-teacher-id')
+  const classes = await getTeacherClasses('current-teacher-id') as any[]
 
   return (
     <div className="space-y-6 p-8">

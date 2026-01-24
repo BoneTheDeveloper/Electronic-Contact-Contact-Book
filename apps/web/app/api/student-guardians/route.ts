@@ -43,8 +43,8 @@ export async function GET(request: Request) {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email, phone, role')
-        .eq('role', 'parent')
-        .eq('status', 'active')
+        .eq('role' as const, 'parent' as any)
+        .eq('status' as const, 'active' as any)
         .or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`)
         .limit(10)
 
@@ -53,14 +53,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: false, error: error.message }, { status: 400 })
       }
 
-      interface ProfileResult {
-        id: string
-        full_name: string | null
-        email: string
-        phone: string | null
-      }
-
-      const results: ParentResult[] = (data || []).map((p: ProfileResult) => ({
+      const results: ParentResult[] = (data || []).map((p: any) => ({
         id: p.id,
         name: p.full_name || '',
         code: p.id.slice(0, 10),
@@ -73,22 +66,26 @@ export async function GET(request: Request) {
         data: results,
       })
     } else {
-      // Search students by name, student_code, or class
+      // Search students by name, student_code, or class (via enrollments)
       const { data, error } = await supabase
         .from('students')
         .select(`
           id,
           student_code,
-          grade,
-          section,
-          class_id,
           profiles!inner(
             full_name,
             status
+          ),
+          enrollments(
+            classes(
+              id,
+              name,
+              grades(name)
+            )
           )
         `)
-        .eq('profiles.status', 'active')
-        .or(`student_code.ilike.%${search}%,profiles.full_name.ilike.%${search}%,class_id.ilike.%${search}%`)
+        .eq('profiles.status' as const, 'active' as any)
+        .or(`student_code.ilike.%${search}%,profiles.full_name.ilike.%${search}%`)
         .limit(10)
 
       if (error) {
@@ -96,25 +93,18 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: false, error: error.message }, { status: 400 })
       }
 
-      interface StudentQueryResult {
-        id: string
-        student_code: string
-        grade: string
-        section: string
-        class_id: string
-        profiles: {
-          full_name: string
-        }
-      }
-
-      const results: StudentResult[] = (data || []).map((s: StudentQueryResult) => ({
-        id: s.id,
-        name: s.profiles?.full_name || '',
-        code: s.student_code,
-        classId: s.class_id,
-        grade: s.grade,
-        section: s.section,
-      }))
+      const results: StudentResult[] = (data || []).map((s: any) => {
+        const enrollment = s.enrollments && s.enrollments.length > 0 ? s.enrollments[0] : null;
+        const classData = enrollment?.classes;
+        return {
+          id: s.id,
+          name: s.profiles?.full_name || '',
+          code: s.student_code,
+          classId: classData?.id || '',
+          grade: classData?.grades?.name || '',
+          section: '',
+        };
+      })
 
       return NextResponse.json({
         success: true,
@@ -152,8 +142,8 @@ export async function POST(request: Request) {
     const { data: existing } = await supabase
       .from('student_guardians')
       .select('*')
-      .eq('student_id', studentId)
-      .eq('guardian_id', parentId)
+      .eq('student_id' as const, studentId)
+      .eq('guardian_id' as const, parentId)
       .maybeSingle()
 
     if (existing) {
@@ -167,20 +157,18 @@ export async function POST(request: Request) {
     if (isPrimary) {
       await supabase
         .from('student_guardians')
-        .update({ is_primary: false })
-        .eq('student_id', studentId)
+        .update({ is_primary: false } as any)
+        .eq('student_id' as const, studentId as any)
     }
 
     // Create the link
-    const insertData: GuardiansInsert = {
-      student_id: studentId,
-      guardian_id: parentId,
-      is_primary: isPrimary || false,
-    }
-
     const { data, error } = await supabase
       .from('student_guardians')
-      .insert(insertData)
+      .insert({
+        student_id: studentId,
+        guardian_id: parentId,
+        is_primary: isPrimary || false,
+      } as any)
       .select()
       .single()
 
@@ -220,8 +208,8 @@ export async function DELETE(request: Request) {
     const { error } = await supabase
       .from('student_guardians')
       .delete()
-      .eq('student_id', studentId)
-      .eq('guardian_id', guardianId)
+      .eq('student_id' as const, studentId as any)
+      .eq('guardian_id' as const, guardianId as any)
 
     if (error) {
       console.error('[API] Error deleting link:', error)

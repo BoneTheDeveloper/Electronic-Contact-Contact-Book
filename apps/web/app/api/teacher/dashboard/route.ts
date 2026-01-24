@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     }
 
     // Get classes first to find homeroom class
-    const teacherClasses = await getTeacherClasses(teacherId).catch(() => [])
+    const teacherClasses = await getTeacherClasses(teacherId).catch(() => []) as any[]
     const homeroomClass = teacherClasses.find((c: TeacherClass) => c.isHomeroom)
     const homeroomClassId = homeroomClass?.id || '6A1'  // Dynamic fallback to grade 6
 
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
       getTeacherSchedule(teacherId || '').catch(() => []),
       getRegularAssessments(teacherId || '').catch(() => []),
       Promise.resolve(teacherClasses),
-    ])
+    ]) as any[]
 
     interface LeaveRequest {
       status: string
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
       success: true,
       data: {
         stats: {
-          ...stats,
+          ...(stats as any),
           homeroomClassId,  // Dynamic class ID (6A1, 7A1, etc.)
         },
         gradeReviews: gradeReviews || [],

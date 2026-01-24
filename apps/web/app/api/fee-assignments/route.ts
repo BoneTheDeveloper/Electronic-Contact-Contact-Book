@@ -11,8 +11,8 @@ type FeeAssignmentsRow = Database['public']['Tables']['fee_assignments']['Row']
 // GET /api/fee-assignments - List all fee assignments
 export async function GET(request: NextRequest) {
   try {
-    const assignments = await getFeeAssignments()
-    const feeItems = await getFeeItems()
+    const assignments: FeeAssignment[] = await getFeeAssignments()
+    const feeItems: any[] = await getFeeItems() as any
 
     // Enrich assignments with fee item details
     const enrichedAssignments = assignments.map((assignment: FeeAssignment) => ({
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate fee items exist
-    const allFeeItems = await getFeeItems()
+    const allFeeItems: any[] = await getFeeItems() as any
     const validFeeItems = feeItems.filter((id: string) => allFeeItems.some((f: { id: string }) => f.id === id))
     if (validFeeItems.length === 0) {
       return NextResponse.json(
@@ -129,20 +129,17 @@ export async function POST(request: NextRequest) {
 
     const startDateValue: string = startDate || new Date().toISOString().split('T')[0]
 
-    // Build insert object matching Supabase Insert type
-    const insertData: FeeAssignmentsInsert = {
-      id: crypto.randomUUID(),
-      name: name.trim(),
-      target_grades: (targetGrades?.length ? targetGrades : null),
-      target_classes: targetClasses,
-      fee_items: validFeeItems,
-      start_date: startDateValue,
-      due_date: finalDueDate,
-    }
-
     const { data, error } = await supabase
       .from('fee_assignments')
-      .insert(insertData)
+      .insert({
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        target_grades: (targetGrades?.length ? targetGrades : null),
+        target_classes: targetClasses,
+        fee_items: validFeeItems,
+        start_date: startDateValue,
+        due_date: finalDueDate,
+      } as any)
       .select()
       .single()
 

@@ -4,14 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run generate-types && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "validate": "npm run lint && npm run typecheck && npm run test:run"
+    "validate": "npm run lint && npm run typecheck && npm run test:run",
+    "predev": "npm run generate-types",
+    "generate-types": "npx supabase gen types typescript --project-id lshmmoenfeodsrthsevf --schema public > types/supabase.ts",
+    "watch:types": "node ../../scripts/watch-types.js"
   },
   "dependencies": {
     "@school-management/shared-types": "workspace:*",

@@ -1,0 +1,97 @@
+name: Check Supabase Types
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/db/**'
+      - 'apps/web/types/supabase.ts'
+  push:
+    branches: [master, main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/db/**'
+  workflow_dispatch:
+
+jobs:
+  check-types:
+    name: Verify Supabase Types are Up-to-Date
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase local
+        run: npx supabase start
+
+      - name: Generate types from local schema
+        run: npx supabase gen types typescript --local > apps/web/types/supabase.ts
+
+      - name: Check if types changed
+        run: |
+          if git diff --quiet apps/web/types/supabase.ts; then
+            echo "✅ Types are up to date"
+          else
+            echo "❌ Types are out of sync with database schema"
+            echo ""
+            echo "Run the following command to update types:"
+            echo "  cd apps/web && npm run generate-types"
+            echo ""
+            echo "Or run from project root:"
+            echo "  npx supabase gen types typescript --local > apps/web/types/supabase.ts"
+            echo ""
+            git diff apps/web/types/supabase.ts
+            exit 1
+          fi
+
+      - name: Stop Supabase local
+        if: always()
+        run: npx supabase stop
+
+  typecheck-web:
+    name: TypeScript Type Check (Web)
+    runs-on: ubuntu-latest
+    needs: check-types
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate types
+        run: cd apps/web && npm run generate-types
+
+      - name: Run TypeScript check
+        run: cd apps/web && npm run typecheck

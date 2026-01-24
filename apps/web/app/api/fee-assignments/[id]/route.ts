@@ -24,7 +24,7 @@ export async function GET(
     }
 
     // Enrich with fee item details
-    const allFeeItems = await getFeeItems()
+    const allFeeItems = await getFeeItems() as any[]
     const enrichedAssignment = {
       ...assignment,
       feeItemDetails: assignment.feeItems.map((feeId: string) => {

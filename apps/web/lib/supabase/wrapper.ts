@@ -42,11 +42,11 @@ export async function safeSelectById<T = Record<string, unknown>>(
   table: keyof Database['public']['Tables'],
   id: string,
   fallback: T | null = null
-): Promise<QueryResult<T>> {
+): Promise<QueryResult<T | null>> {
   const supabase = await createClient()
   return safeQuery(
     async () => {
-      const result = await supabase.from(table).select('*').eq('id' as const, id).single()
+      const result = await supabase.from(table).select('*').eq('id', id as any).single()
       return { data: result.data as T | null, error: result.error }
     },
     fallback

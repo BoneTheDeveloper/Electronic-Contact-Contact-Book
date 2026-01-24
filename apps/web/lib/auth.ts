@@ -40,7 +40,7 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
     const { data } = await supabase
       .from('admins')
       .select('profiles!inner(email)')
-      .eq('admin_code', normalizedId)
+      .eq('admin_code' as const, normalizedId as any)
       .single();
 
     const result = data as { profiles: { email: string } } | null;
@@ -52,7 +52,7 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
     const { data } = await supabase
       .from('teachers')
       .select('profiles!inner(email)')
-      .eq('employee_code', normalizedId)
+      .eq('employee_code' as const, normalizedId as any)
       .single();
 
     const result = data as { profiles: { email: string } } | null;
@@ -64,7 +64,7 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
     const { data } = await supabase
       .from('students')
       .select('profiles!inner(email)')
-      .eq('student_code', normalizedId)
+      .eq('student_code' as const, normalizedId as any)
       .single();
 
     const result = data as { profiles: { email: string } } | null;
@@ -77,9 +77,9 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
     const { data } = await supabase
       .from('profiles')
       .select('email')
-      .eq('phone', cleanPhone)
-      .eq('role', 'parent')
-      .eq('status', 'active')
+      .eq('phone' as const, cleanPhone as any)
+      .eq('role' as const, 'parent' as any)
+      .eq('status' as const, 'active' as any)
       .single();
 
     const result = data as { email: string } | null;
@@ -91,8 +91,8 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
     const { data } = await supabase
       .from('profiles')
       .select('email')
-      .eq('email', identifier.toLowerCase())
-      .eq('status', 'active')
+      .eq('email' as const, identifier.toLowerCase() as any)
+      .eq('status' as const, 'active' as any)
       .single();
 
     const result = data as { email: string } | null;
@@ -111,7 +111,7 @@ async function getUserProfile(userId: string): Promise<User | null> {
   const { data, error } = await supabase
     .from('profiles')
     .select('id, email, role, full_name, status, avatar_url')
-    .eq('id', userId)
+    .eq('id' as const, userId as any)
     .single();
 
   if (error || !data) {
@@ -318,7 +318,7 @@ async function loginImpl(identifier: string, password: string): Promise<LoginSta
 
   const { data: newSession, error: sessionError } = await supabase
     .from('user_sessions')
-    .insert(sessionInsert)
+    .insert(sessionInsert as any)
     .select('id')
     .single();
 
@@ -338,7 +338,9 @@ async function loginImpl(identifier: string, password: string): Promise<LoginSta
     priority: 'high',
   });
 
-  cookieStore.set(SESSION_COOKIE_NAME, newSession?.id || '', {
+  // Type guard to safely access newSession.id
+  const sessionId = (newSession && 'id' in newSession) ? newSession.id : '';
+  cookieStore.set(SESSION_COOKIE_NAME, sessionId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
@@ -417,8 +419,8 @@ export async function logout() {
             is_active: false,
             terminated_at: new Date().toISOString(),
             termination_reason: 'manual'
-          })
-          .eq('id', sessionId);
+          } as any)
+          .eq('id' as const, sessionId as any);
       }
     } catch {
       // Ignore errors during logout

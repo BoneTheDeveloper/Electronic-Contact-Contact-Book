@@ -10,7 +10,7 @@ interface PageProps {
 
 export default async function ClassGradesPage({ params }: PageProps) {
   const { classId } = await params
-  const classes = await getTeacherClasses('current-teacher-id')
+  const classes = await getTeacherClasses('current-teacher-id') as any[]
   const cls = classes.find((c: { id: string }) => c.id === classId)
   const { students, subject } = await getGradeEntrySheet(classId)
 

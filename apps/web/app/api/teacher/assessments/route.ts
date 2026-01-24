@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getRegularAssessments } from '@/lib/supabase/queries'
+import type { RegularAssessment } from '@/lib/types'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -8,18 +9,13 @@ export async function GET(request: Request) {
   const status = searchParams.get('status') as 'evaluated' | 'pending' | 'needs-attention' | undefined
 
   // Filter assessments based on query params (done client-side for now)
-  let assessments = await getRegularAssessments(teacherId)
-
-  interface Assessment {
-    classId: string
-    status: string
-  }
+  let assessments: RegularAssessment[] = await getRegularAssessments(teacherId) as any
 
   if (classId) {
-    assessments = assessments.filter((a: Assessment) => a.classId === classId)
+    assessments = assessments.filter((a: RegularAssessment) => a.classId === classId)
   }
   if (status) {
-    assessments = assessments.filter((a: Assessment) => a.status === status)
+    assessments = assessments.filter((a: RegularAssessment) => a.status === status)
   }
 
   return NextResponse.json({

@@ -35,7 +35,7 @@ export interface Class {
   name: string
   grade: string
   teacher: string
-  studentCount: number
+  studentCount: number | null
   room: string
 }
 
@@ -62,7 +62,7 @@ export interface Notification {
   message: string
   type: 'info' | 'warning' | 'success' | 'error'
   targetRole: 'all' | 'teacher' | 'parent' | 'student'
-  createdAt: string
+  createdAt: string | null
 }
 
 export interface AttendanceStats {
@@ -205,7 +205,7 @@ export interface LeaveRequest {
   endDate: string
   reason: string
   status: 'pending' | 'approved' | 'rejected'
-  submittedDate: string
+  submittedDate: string | null
 }
 
 // ==================== NEW DATA FUNCTIONS TYPES ====================
@@ -281,7 +281,7 @@ export interface LeaveRequestApproval {
   endDate: string
   reason: string
   status: 'pending' | 'approved' | 'rejected'
-  submittedDate: string
+  submittedDate: string | null
   parentContact?: string
 }
 
@@ -310,7 +310,7 @@ export interface FeeAssignment {
   totalStudents: number
   totalAmount: number
   status: 'draft' | 'published' | 'closed'
-  createdAt: string
+  createdAt: string | null
 }
 
 export interface GradeData {
@@ -318,3 +318,8 @@ export interface GradeData {
   classes: string[]
   students: number
 }
+
+// ==================== NOTIFICATION TYPES ====================
+
+export type NotificationCategory = 'announcement' | 'emergency' | 'reminder' | 'system';
+export type NotificationPriority = 'low' | 'normal' | 'high' | 'emergency';

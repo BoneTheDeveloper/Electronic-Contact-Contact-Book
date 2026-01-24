@@ -1,0 +1,158 @@
+__tests__/type-check.test.ts(31,32): error TS2339: Property 'name' does not exist on type 'never'.
+app/api/fee-assignments/[id]/route.ts(31,21): error TS18046: 'allFeeItems' is of type 'unknown'.
+app/api/fee-assignments/route.ts(21,21): error TS18046: 'feeItems' is of type 'unknown'.
+app/api/fee-assignments/route.ts(80,59): error TS18046: 'allFeeItems' is of type 'unknown'.
+app/api/fee-assignments/route.ts(113,27): error TS18046: 'allFeeItems' is of type 'unknown'.
+app/api/fee-items/[id]/route.ts(9,10): error TS18046: 'items' is of type 'unknown'.
+app/api/student-guardians/route.ts(110,57): error TS2345: Argument of type '(s: StudentQueryResult) => { id: string; name: string; code: string; classId: string; grade: string; section: string; }' is not assignable to parameter of type '(value: SelectQueryError<"column 'grade' does not exist on 'students'.">, index: number, array: SelectQueryError<"column 'grade' does not exist on 'students'.">[]) => { ...; }'.
+  Types of parameters 's' and 'value' are incompatible.
+    Type '{ error: true; } & String' is missing the following properties from type 'StudentQueryResult': id, student_code, grade, section, and 2 more.
+app/api/teacher/assessments/route.ts(19,19): error TS18046: 'assessments' is of type 'unknown'.
+app/api/teacher/assessments/route.ts(22,19): error TS18046: 'assessments' is of type 'unknown'.
+app/api/teacher/classes/route.ts(15,24): error TS18046: 'classes' is of type 'unknown'.
+app/api/teacher/dashboard/route.ts(15,34): error TS2571: Object is of type 'unknown'.
+app/api/teacher/dashboard/route.ts(20,7): error TS2571: Object is of type 'unknown'.
+app/api/teacher/dashboard/route.ts(22,7): error TS2571: Object is of type 'unknown'.
+app/api/teacher/dashboard/route.ts(23,7): error TS2571: Object is of type 'unknown'.
+app/api/teacher/dashboard/route.ts(24,7): error TS2571: Object is of type 'unknown'.
+app/student/dashboard/page.tsx(30,34): error TS2339: Property 'class_name' does not exist on type 'SelectQueryError<"Could not embed because more than one relationship was found for 'students' and 'profiles' you need to hint the column with students!<columnName> ?">'.
+app/student/dashboard/page.tsx(31,30): error TS2339: Property 'grade' does not exist on type 'SelectQueryError<"Could not embed because more than one relationship was found for 'students' and 'profiles' you need to hint the column with students!<columnName> ?">'.
+app/student/dashboard/page.tsx(32,32): error TS2339: Property 'section' does not exist on type 'SelectQueryError<"Could not embed because more than one relationship was found for 'students' and 'profiles' you need to hint the column with students!<columnName> ?">'.
+app/student/layout.tsx(35,27): error TS2339: Property 'role' does not exist on type 'SelectQueryError<"column 'student_id' does not exist on 'profiles'.">'.
+app/student/layout.tsx(37,18): error TS2339: Property 'role' does not exist on type 'SelectQueryError<"column 'student_id' does not exist on 'profiles'.">'.
+app/student/layout.tsx(39,25): error TS2339: Property 'role' does not exist on type 'SelectQueryError<"column 'student_id' does not exist on 'profiles'.">'.
+app/student/layout.tsx(50,44): error TS2339: Property 'student_id' does not exist on type 'SelectQueryError<"column 'student_id' does not exist on 'profiles'.">'.
+app/student/layout.tsx(57,45): error TS2339: Property 'student_id' does not exist on type 'SelectQueryError<"column 'student_id' does not exist on 'profiles'.">'.
+app/student/layout.tsx(62,45): error TS2339: Property 'student_id' does not exist on type 'SelectQueryError<"column 'student_id' does not exist on 'profiles'.">'.
+app/teacher/assessments/[id]/page.tsx(18,22): error TS18046: 'assessments' is of type 'unknown'.
+app/teacher/assessments/page.tsx(7,29): error TS2322: Type 'unknown' is not assignable to type 'RegularAssessment[]'.
+app/teacher/attendance/[classId]/page.tsx(15,15): error TS18046: 'classes' is of type 'unknown'.
+app/teacher/attendance/page.tsx(20,10): error TS18046: 'classes' is of type 'unknown'.
+app/teacher/conduct/page.tsx(10,25): error TS18046: 'classes' is of type 'unknown'.
+app/teacher/dashboard/page.tsx(85,32): error TS2571: Object is of type 'unknown'.
+app/teacher/dashboard/page.tsx(101,5): error TS2571: Object is of type 'unknown'.
+app/teacher/dashboard/page.tsx(102,5): error TS2571: Object is of type 'unknown'.
+app/teacher/dashboard/page.tsx(103,5): error TS2571: Object is of type 'unknown'.
+app/teacher/dashboard/page.tsx(105,5): error TS2571: Object is of type 'unknown'.
+app/teacher/grades/[classId]/page.tsx(14,15): error TS18046: 'classes' is of type 'unknown'.
+app/teacher/grades/page.tsx(20,10): error TS18046: 'classes' is of type 'unknown'.
+app/teacher/schedule/page.tsx(15,16): error TS2571: Object is of type 'unknown'.
+components/admin/payments/modals/InvoiceDetailModal.tsx(94,42): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ paid: { label: string; color: string; icon: LucideIcon; }; pending: { label: string; color: string; icon: LucideIcon; }; overdue: { label: string; color: string; icon: LucideIcon; }; }'.
+components/admin/payments/modals/InvoiceDetailModal.tsx(94,49): error TS2304: Cannot find name 'value'.
+components/admin/payments/modals/PaymentConfirmModal.tsx(104,30): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ paid: { label: string; color: string; }; pending: { label: string; color: string; }; overdue: { label: string; color: string; }; }'.
+components/admin/payments/modals/PaymentConfirmModal.tsx(104,37): error TS2304: Cannot find name 'value'.
+components/admin/payments/PaymentsManagement.tsx(158,27): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'number'.
+components/admin/payments/PaymentsManagement.tsx(166,50): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+components/admin/payments/PaymentsManagement.tsx(173,50): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+components/admin/payments/PaymentsManagement.tsx(187,37): error TS2538: Type 'unknown' cannot be used as an index type.
+components/admin/shared/tables/data-table.tsx(123,37): error TS2536: Type 'string | keyof T' cannot be used to index type 'T'.
+components/admin/shared/tables/data-table.tsx(124,30): error TS2536: Type 'string | keyof T' cannot be used to index type 'T'.
+lib/services/notification-service.ts(145,5): error TS2322: Type 'string' is not assignable to type 'NotificationCategory'.
+lib/services/notification-service.ts(146,5): error TS2322: Type 'string' is not assignable to type 'NotificationPriority'.
+lib/services/notification-service.ts(192,5): error TS2322: Type '{ id: string; title: string; content: string; category: string; priority: string; isRead: boolean; createdAt: string; }[]' is not assignable to type 'NotificationListItem[]'.
+  Type '{ id: string; title: string; content: string; category: string; priority: string; isRead: boolean; createdAt: string; }' is not assignable to type 'NotificationListItem'.
+    Types of property 'category' are incompatible.
+      Type 'string' is not assignable to type 'NotificationCategory'.
+lib/services/notification-service.ts(244,5): error TS2322: Type '{ id: string; title: string; content: string; type: string; category: string; priority: string; isRead: boolean; readAt: string | undefined; createdAt: string; }[]' is not assignable to type 'UserNotification[]'.
+  Type '{ id: string; title: string; content: string; type: string; category: string; priority: string; isRead: boolean; readAt: string | undefined; createdAt: string; }' is not assignable to type 'UserNotification'.
+    Types of property 'category' are incompatible.
+      Type 'string' is not assignable to type 'NotificationCategory'.
+lib/services/notification-service.ts(261,3): error TS2322: Type '{ id: string; title: string; content: string; type: string; category: string; priority: string; isRead: boolean; readAt: string | undefined; createdAt: string; }[]' is not assignable to type 'UserNotification[]'.
+  Type '{ id: string; title: string; content: string; type: string; category: string; priority: string; isRead: boolean; readAt: string | undefined; createdAt: string; }' is not assignable to type 'UserNotification'.
+    Types of property 'category' are incompatible.
+      Type 'string' is not assignable to type 'NotificationCategory'.
+lib/supabase/queries.ts(12,22): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Promise<ReturnType<T>>'.
+lib/supabase/queries.ts(331,38): error TS2345: Argument of type '(teacherId: string) => Promise<TeacherStats>' is not assignable to parameter of type '(...args: unknown[]) => unknown'.
+  Types of parameters 'teacherId' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'string'.
+lib/supabase/queries.ts(483,24): error TS2339: Property 'full_name' does not exist on type 'SelectQueryError<"Could not embed because more than one relationship was found for 'profiles' and 'students' you need to hint the column with profiles!<columnName> ?">'.
+lib/supabase/queries.ts(515,3): error TS2322: Type '{ id: string; name: string; grade: string; teacher: string; studentCount: number | null; room: string; }[]' is not assignable to type 'Class[]'.
+  Type '{ id: string; name: string; grade: string; teacher: string; studentCount: number | null; room: string; }' is not assignable to type 'Class'.
+    Types of property 'studentCount' are incompatible.
+      Type 'number | null' is not assignable to type 'number'.
+        Type 'null' is not assignable to type 'number'.
+lib/supabase/queries.ts(557,5): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+lib/supabase/queries.ts(587,31): error TS2339: Property 'full_name' does not exist on type 'SelectQueryError<"Could not embed because more than one relationship was found for 'profiles' and 'students' you need to hint the column with profiles!<columnName> ?">'.
+lib/supabase/queries.ts(672,3): error TS2322: Type '{ id: string; name: string; targetGrades: string[] | null; targetClasses: string[]; feeItems: string[]; startDate: string; dueDate: string; reminderDays: number | null; reminderFrequency: string | null; totalStudents: number | null; totalAmount: number | null; status: "draft" | ... 1 more ... | "closed"; createdAt: ...' is not assignable to type 'FeeAssignment[]'.
+  Type '{ id: string; name: string; targetGrades: string[] | null; targetClasses: string[]; feeItems: string[]; startDate: string; dueDate: string; reminderDays: number | null; reminderFrequency: string | null; totalStudents: number | null; totalAmount: number | null; status: FeeAssignment["status"]; createdAt: string | nul...' is not assignable to type 'FeeAssignment'.
+    Types of property 'targetGrades' are incompatible.
+      Type 'string[] | null' is not assignable to type 'string[]'.
+        Type 'null' is not assignable to type 'string[]'.
+lib/supabase/queries.ts(693,34): error TS2345: Argument of type '(filters?: { semester?: string; type?: "mandatory" | "voluntary"; }) => Promise<FeeItem[]>' is not assignable to parameter of type '(...args: unknown[]) => unknown'.
+  Types of parameters 'filters' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type '{ semester?: string | undefined; type?: "mandatory" | "voluntary" | undefined; } | undefined'.
+lib/supabase/queries.ts(748,67): error TS18047: 'inv.total_amount' is possibly 'null'.
+lib/supabase/queries.ts(749,71): error TS18047: 'inv.paid_amount' is possibly 'null'.
+lib/supabase/queries.ts(750,81): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+lib/supabase/queries.ts(864,38): error TS2339: Property 'full_name' does not exist on type 'SelectQueryError<"Could not embed because more than one relationship was found for 'profiles' and 'students' you need to hint the column with profiles!<columnName> ?">'.
+lib/supabase/queries.ts(875,37): error TS2345: Argument of type '(teacherId: string) => Promise<Assessment[]>' is not assignable to parameter of type '(...args: unknown[]) => unknown'.
+  Types of parameters 'teacherId' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'string'.
+lib/supabase/queries.ts(961,40): error TS2339: Property 'full_name' does not exist on type 'SelectQueryError<"Could not embed because more than one relationship was found for 'profiles' and 'students' you need to hint the column with profiles!<columnName> ?">'.
+lib/supabase/queries.ts(976,40): error TS2345: Argument of type '(teacherId?: string) => Promise<TeacherClass[]>' is not assignable to parameter of type '(...args: unknown[]) => unknown'.
+  Types of parameters 'teacherId' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'string | undefined'.
+lib/supabase/queries.ts(1007,9): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+lib/supabase/queries.ts(1021,41): error TS2345: Argument of type '(teacherId?: string, date?: string) => Promise<TeacherScheduleItem[]>' is not assignable to parameter of type '(...args: unknown[]) => unknown'.
+  Types of parameters 'teacherId' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'string | undefined'.
+lib/supabase/queries.ts(1064,39): error TS2345: Argument of type '(classId: string, status?: "pending" | "approved" | "rejected") => Promise<LeaveRequest[]>' is not assignable to parameter of type '(...args: unknown[]) => unknown'.
+  Types of parameters 'classId' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'string'.
+lib/supabase/queries.ts(1094,3): error TS2322: Type '{ id: string; studentId: any; studentName: string; startDate: string; endDate: string; reason: string; status: "pending" | "approved" | "rejected"; submittedDate: string | null; }[]' is not assignable to type 'LeaveRequest[]'.
+  Type '{ id: string; studentId: any; studentName: string; startDate: string; endDate: string; reason: string; status: LeaveRequest["status"]; submittedDate: string | null; }' is not assignable to type 'LeaveRequest'.
+    Types of property 'submittedDate' are incompatible.
+      Type 'string | null' is not assignable to type 'string'.
+        Type 'null' is not assignable to type 'string'.
+lib/supabase/queries.ts(1096,28): error TS2339: Property 'id' does not exist on type '{ profiles: { full_name: string | null; }; }'.
+lib/supabase/queries.ts(1123,3): error TS2322: Type '{ id: string; title: string; message: string; type: "error" | "info" | "warning" | "success"; targetRole: "all"; createdAt: string | null; }[]' is not assignable to type 'Notification[]'.
+  Type '{ id: string; title: string; message: string; type: Notification["type"]; targetRole: "all"; createdAt: string | null; }' is not assignable to type 'Notification'.
+    Types of property 'createdAt' are incompatible.
+      Type 'string | null' is not assignable to type 'string'.
+        Type 'null' is not assignable to type 'string'.
+lib/supabase/queries.ts(1147,68): error TS18047: 'inv.total_amount' is possibly 'null'.
+lib/supabase/queries.ts(1148,67): error TS18047: 'inv.paid_amount' is possibly 'null'.
+lib/supabase/queries.ts(1270,44): error TS2345: Argument of type '(teacherId?: string) => Promise<RegularAssessment[]>' is not assignable to parameter of type '(...args: unknown[]) => unknown'.
+  Types of parameters 'teacherId' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'string | undefined'.
+lib/supabase/queries.ts(1295,16): error TS2339: Property 'class_id' does not exist on type '{ student_id: string; classes: { name: string; }; }'.
+lib/supabase/queries.ts(1330,30): error TS2339: Property 'full_name' does not exist on type 'SelectQueryError<"Could not embed because more than one relationship was found for 'profiles' and 'students' you need to hint the column with profiles!<columnName> ?">'.
+lib/supabase/realtime.ts(47,31): error TS2339: Property 'id' does not exist on type '{} | { category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; }'.
+  Property 'id' does not exist on type '{}'.
+lib/supabase/realtime.ts(48,34): error TS2339: Property 'title' does not exist on type '{} | { category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; }'.
+  Property 'title' does not exist on type '{}'.
+lib/supabase/realtime.ts(49,36): error TS2339: Property 'content' does not exist on type '{} | { category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; }'.
+  Property 'content' does not exist on type '{}'.
+lib/supabase/realtime.ts(50,37): error TS2339: Property 'category' does not exist on type '{} | { category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; }'.
+  Property 'category' does not exist on type '{}'.
+lib/supabase/realtime.ts(51,37): error TS2339: Property 'priority' does not exist on type '{} | { category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; }'.
+  Property 'priority' does not exist on type '{}'.
+lib/supabase/realtime.ts(52,39): error TS2339: Property 'created_at' does not exist on type '{} | { category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; }'.
+  Property 'created_at' does not exist on type '{}'.
+lib/supabase/realtime.ts(57,11): error TS2367: This comparison appears to be unintentional because the types 'REALTIME_SUBSCRIBE_STATES' and '"SUBSCRIPTION_ERROR"' have no overlap.
+lib/supabase/realtime.ts(95,27): error TS2339: Property 'id' does not exist on type '{} | { category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; }'.
+  Property 'id' does not exist on type '{}'.
+lib/supabase/realtime.ts(96,31): error TS2339: Property 'is_read' does not exist on type '{} | { category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; }'.
+  Property 'is_read' does not exist on type '{}'.
+lib/supabase/realtime.ts(97,31): error TS2339: Property 'read_at' does not exist on type '{} | { category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; }'.
+  Property 'read_at' does not exist on type '{}'.
+lib/supabase/realtime.ts(102,11): error TS2367: This comparison appears to be unintentional because the types 'REALTIME_SUBSCRIBE_STATES' and '"SUBSCRIPTION_ERROR"' have no overlap.
+lib/supabase/realtime.ts(136,11): error TS2322: Type '{} | { category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; }' is not assignable to type '{ category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; } | undefined'.
+  Type '{}' is missing the following properties from type '{ category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; }': category, content, created_at, expires_at, and 11 more.
+lib/supabase/realtime.ts(137,11): error TS2322: Type '{} | Partial<{ category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; }>' is not assignable to type '{ category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; } | undefined'.
+  Type '{}' is missing the following properties from type '{ category: string | null; content: string; created_at: string | null; expires_at: string | null; id: string; is_read: boolean | null; priority: string | null; read_at: string | null; ... 6 more ...; type: string | null; }': category, content, created_at, expires_at, and 11 more.
+lib/supabase/realtime.ts(142,11): error TS2367: This comparison appears to be unintentional because the types 'REALTIME_SUBSCRIBE_STATES' and '"SUBSCRIPTION_ERROR"' have no overlap.
+lib/supabase/realtime.ts(178,32): error TS2339: Property 'channel' does not exist on type '{} | { channel: string; created_at: string | null; delivered_at: string | null; error_message: string | null; external_id: string | null; failed_at: string | null; id: string; notification_id: string; recipient_id: string; retry_count: number | null; sent_at: string | null; status: string; }'.
+  Property 'channel' does not exist on type '{}'.
+lib/supabase/realtime.ts(179,31): error TS2339: Property 'status' does not exist on type '{} | { channel: string; created_at: string | null; delivered_at: string | null; error_message: string | null; external_id: string | null; failed_at: string | null; id: string; notification_id: string; recipient_id: string; retry_count: number | null; sent_at: string | null; status: string; }'.
+  Property 'status' does not exist on type '{}'.
+lib/supabase/realtime.ts(180,36): error TS2339: Property 'recipient_id' does not exist on type '{} | { channel: string; created_at: string | null; delivered_at: string | null; error_message: string | null; external_id: string | null; failed_at: string | null; id: string; notification_id: string; recipient_id: string; retry_count: number | null; sent_at: string | null; status: string; }'.
+  Property 'recipient_id' does not exist on type '{}'.
+lib/supabase/realtime.ts(185,11): error TS2367: This comparison appears to be unintentional because the types 'REALTIME_SUBSCRIBE_STATES' and '"SUBSCRIPTION_ERROR"' have no overlap.
+lib/supabase/server.ts(20,39): error TS2344: Type '{ PostgrestVersion: "14.1"; }' does not satisfy the constraint '"public"'.
+lib/supabase/wrapper.ts(47,3): error TS2322: Type 'QueryResult<T | null>' is not assignable to type 'QueryResult<T>'.
+  Type 'T | null' is not assignable to type 'T'.
+    'T' could be instantiated with an arbitrary type which could be unrelated to 'T | null'.

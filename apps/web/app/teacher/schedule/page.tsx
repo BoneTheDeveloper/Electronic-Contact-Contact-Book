@@ -12,7 +12,7 @@ interface ScheduleItem {
 }
 
 async function fetchSchedule(): Promise<ScheduleItem[]> {
-  return await getTeacherSchedule('current-teacher-id').catch(() => [])
+  return await getTeacherSchedule('current-teacher-id').catch(() => []) as ScheduleItem[]
 }
 
 export default async function TeachingSchedulePage() {

@@ -56,7 +56,7 @@ export async function createNotification(
       scheduled_for: input.scheduledFor || null,
       type: getCategoryType(input.category),
       is_read: false,
-    })
+    } as any)
     .select()
     .single();
 
@@ -81,22 +81,22 @@ export async function createNotification(
     throw new Error(`Failed to resolve recipients: ${recipientsError.message}`);
   }
 
-  if (!recipients || recipients.length === 0) {
+  if (!recipients || (recipients as any).length === 0) {
     // Clean up notification if no recipients
-    await supabase.from('notifications').delete().eq('id', notification.id);
+    await supabase.from('notifications').delete().eq('id' as const, (notification as any).id as any);
     throw new Error('No recipients found for the given criteria');
   }
 
   // 4. Create notification_recipients entries
-  const recipientEntries = recipients.map((r: { user_id: string; role: string }) => ({
-    notification_id: notification.id,
+  const recipientEntries = (recipients as unknown as any[]).map((r: { user_id: string; role: string }) => ({
+    notification_id: (notification as any).id,
     recipient_id: r.user_id,
     role: r.role,
   }));
 
   const { error: insertError } = await supabase
     .from('notification_recipients')
-    .insert(recipientEntries);
+    .insert(recipientEntries as any);
 
   if (insertError) {
     console.error('[Notification] Failed to create recipients:', insertError);
@@ -105,7 +105,7 @@ export async function createNotification(
 
   // 5. Trigger delivery (non-blocking)
   // Don't await - let it run in background
-  deliverNotification(notification.id, recipientEntries).catch((error) => {
+  deliverNotification((notification as any).id, recipientEntries).catch((error) => {
     console.error('[Notification] Delivery error:', error);
   });
 
@@ -133,25 +133,25 @@ export async function createNotification(
         created_at
       )
     `)
-    .eq('notification_id', notification.id)
+    .eq('notification_id' as const, (notification as any).id as any)
     .limit(1);
 
   return {
-    id: notification.id,
-    senderId: notification.sender_id || '',
-    title: notification.title,
-    content: notification.content,
-    type: notification.type || 'info',
-    category: (notification.category || "info"),
-    priority: (notification.priority || "normal"),
-    scheduledFor: notification.scheduled_for || undefined,
-    expiresAt: notification.expires_at || undefined,
-    isRead: notification.is_read || false,
-    readAt: notification.read_at || undefined,
-    createdAt: notification.created_at || new Date().toISOString(),
+    id: (notification as any).id,
+    senderId: (notification as any).sender_id || '',
+    title: (notification as any).title,
+    content: (notification as any).content,
+    type: (notification as any).type || 'info',
+    category: ((notification as any).category || "info"),
+    priority: ((notification as any).priority || "normal"),
+    scheduledFor: (notification as any).scheduled_for || undefined,
+    expiresAt: (notification as any).expires_at || undefined,
+    isRead: (notification as any).is_read || false,
+    readAt: (notification as any).read_at || undefined,
+    createdAt: (notification as any).created_at || new Date().toISOString(),
     recipients: recipientEntries.map((r, i) => ({
       id: `temp-${i}`,
-      notificationId: notification.id,
+      notificationId: (notification as any).id,
       recipientId: r.recipient_id,
       role: r.role,
       createdAt: new Date().toISOString(),
@@ -189,7 +189,7 @@ export async function getNotifications(options: {
   }
 
   return {
-    data: (data || []).map((n) => ({
+    data: (data || []).map((n: any) => ({
       id: n.id,
       title: n.title,
       content: n.content,
@@ -227,7 +227,7 @@ export async function getMyNotifications(
         sender_id
       )
     `)
-    .eq('recipient_id', userId)
+    .eq('recipient_id' as const, userId as any)
     .order('created_at', { ascending: false, foreignTable: 'notifications' });
 
   if (unreadOnly) {
@@ -235,13 +235,13 @@ export async function getMyNotifications(
     const { data, error } = await supabase
       .from('notifications')
       .select('id, title, content, type, category, priority, is_read, read_at, created_at, sender_id')
-      .eq('recipient_id', userId)
-      .eq('is_read', false)
+      .eq('recipient_id' as const, userId as any)
+      .eq('is_read' as const, false as any)
       .order('created_at', { ascending: false });
 
     if (error) throw new Error(`Failed to fetch notifications: ${error.message}`);
 
-    return (data || []).map((n) => ({
+    return (data || []).map((n: any) => ({
       id: n.id,
       title: n.title,
       content: n.content,
@@ -259,7 +259,7 @@ export async function getMyNotifications(
   if (error) throw new Error(`Failed to fetch notifications: ${error.message}`);
 
   return (
-    data?.map((item) => ({
+    (data as any)?.map((item: any) => ({
       id: item.notifications.id,
       title: item.notifications.title,
       content: item.notifications.content,
@@ -284,9 +284,9 @@ export async function markAsRead(notificationIds: string[], userId: string): Pro
     .update({
       is_read: true,
       read_at: new Date().toISOString(),
-    })
-    .in('id', notificationIds)
-    .eq('recipient_id', userId);
+    } as any)
+    .in('id' as const, notificationIds as any)
+    .eq('recipient_id' as const, userId as any);
 
   if (error) {
     throw new Error(`Failed to mark as read: ${error.message}`);
@@ -303,13 +303,13 @@ export async function getDeliveryStatus(notificationId: string): Promise<Deliver
   const { count: totalRecipients } = await supabase
     .from('notification_recipients')
     .select('*', { count: 'exact', head: true })
-    .eq('notification_id', notificationId);
+    .eq('notification_id' as const, notificationId as any);
 
   // Get logs by status
   const { data: logs } = await supabase
     .from('notification_logs')
     .select('status, channel')
-    .eq('notification_id', notificationId);
+    .eq('notification_id' as const, notificationId as any);
 
   const stats = {
     notificationId,
@@ -327,7 +327,7 @@ export async function getDeliveryStatus(notificationId: string): Promise<Deliver
   };
 
   // Calculate stats
-  logs?.forEach((log) => {
+  (logs as any)?.forEach((log: any) => {
     if (log.status === 'delivered') stats.delivered++;
     else if (log.status === 'failed') stats.failed++;
     else if (log.status === 'pending') stats.pending++;
@@ -353,7 +353,7 @@ async function deliverNotification(
   const { data: notification } = await supabase
     .from('notifications')
     .select('*')
-    .eq('id', notificationId)
+    .eq('id' as const, notificationId as any)
     .single();
 
   if (!notification) {
@@ -362,7 +362,7 @@ async function deliverNotification(
   }
 
   // Determine channels based on priority
-  const channels = getChannelsForPriority(notification.priority || 'normal', notification.category || 'info');
+  const channels = getChannelsForPriority((notification as any).priority || 'normal', (notification as any).category || 'info');
 
   console.log(
     `[Notification] Delivering ${notificationId} via ${channels.join(', ')} to ${recipients.length} recipients`
@@ -422,7 +422,7 @@ async function deliverViaChannel(
       recipient_id: recipientId,
       channel,
       status: 'pending',
-    })
+    } as any)
     .select()
     .single();
 
@@ -430,6 +430,8 @@ async function deliverViaChannel(
     console.error('[Notification] Failed to create log:', logError);
     throw logError;
   }
+
+  const logEntry = log as any;
 
   try {
     let externalId: string | undefined;
@@ -458,8 +460,8 @@ async function deliverViaChannel(
         status: 'sent',
         sent_at: new Date().toISOString(),
         external_id: externalId,
-      })
-      .eq('id', log.id);
+      } as any)
+      .eq('id' as const, logEntry.id as any);
 
     console.log(
       `[Notification] Delivered via ${channel} to ${recipientId}: ${notification.id}`
@@ -473,8 +475,8 @@ async function deliverViaChannel(
         failed_at: new Date().toISOString(),
         error_message: error instanceof Error ? error.message.substring(0, 500) : 'Unknown error',
         retry_count: 1,
-      })
-      .eq('id', log.id);
+      } as any)
+      .eq('id' as const, logEntry.id as any);
 
     throw error;
   }
@@ -505,17 +507,17 @@ async function sendEmail(notification: Database['public']['Tables']['notificatio
   const { data: profile } = await supabase
     .from('profiles')
     .select('email, full_name')
-    .eq('id', recipientId)
+    .eq('id' as const, recipientId as any)
     .single();
 
-  if (!profile?.email) {
+  if (!(profile as any)?.email) {
     throw new Error('Recipient email not found');
   }
 
   // TODO: Integrate with email service (Resend/SendGrid)
   // For now, just log that email would be sent
   console.log(
-    `[Notification] Email would be sent to ${profile.email}: ${notification.title}`
+    `[Notification] Email would be sent to ${(profile as any).email}: ${(notification as any).title}`
   );
 
   // Return placeholder ID
