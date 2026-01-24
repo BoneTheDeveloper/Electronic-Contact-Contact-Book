@@ -114,24 +114,33 @@ export async function POST(request: NextRequest) {
     // Insert into Supabase
     const supabase = await createClient()
 
+    // Validate due_date is provided (NOT NULL column)
+    const finalDueDate = dueDate || startDate || new Date().toISOString().split('T')[0]
+    if (!finalDueDate) {
+      return NextResponse.json(
+        { success: false, error: 'Due date is required' },
+        { status: 400 }
+      )
+    }
+
     type FeeAssignmentInsert = Database['public']['Tables']['fee_assignments']['Insert']
 
     const { data, error } = await supabase
       .from('fee_assignments')
       .insert({
         name: name.trim(),
-        target_grades: targetGrades || [],
+        target_grades: (targetGrades?.length ? targetGrades : null),
         target_classes: targetClasses,
         fee_items: validFeeItems,
         start_date: startDate || new Date().toISOString().split('T')[0],
-        due_date: dueDate || '',
-        reminder_days: reminderDays || 7,
-        reminder_frequency: reminderFrequency || 'weekly',
-        total_students: totalStudents,
-        total_amount: totalAmount,
+        due_date: finalDueDate,
+        reminder_days: reminderDays ?? null,
+        reminder_frequency: reminderFrequency ?? null,
+        total_students: totalStudents ?? null,
+        total_amount: totalAmount ?? null,
         collected_amount: 0,
         status: 'draft'
-      } as FeeAssignmentInsert)
+      })
       .select()
       .single()
 

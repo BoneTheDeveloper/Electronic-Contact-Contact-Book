@@ -1,100 +1,305 @@
 /**
  * Study Materials Screen
- * Learning resources and documents
+ * Learning resources and documents with teacher upload functionality
  */
 
-import React from 'react';
-import { View, FlatList, Text, StyleSheet } from 'react-native';
-import { ScreenHeader } from '../../components/ui';
-import type { StudentHomeStackNavigationProp } from '../../navigation/types';
+import React, { useState } from 'react';
+import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput } from 'react-native';
+import { useStudentStore } from '../../stores';
 
-interface StudyMaterialsScreenProps {
-  navigation?: StudentHomeStackNavigationProp;
-}
-
-interface MaterialItem {
+interface LeaveRequestItem {
   id: string;
-  title: string;
-  subject: string;
-  type: 'document' | 'video' | 'link';
+  reason: string;
+  dateRange: string;
   date: string;
+  duration: string;
+  status: 'approved' | 'pending' | 'rejected';
 }
 
-const MOCK_MATERIALS: MaterialItem[] = [
-  { id: '1', title: 'Giáo trình Toán học chương trình mới', subject: 'Toán', type: 'document', date: '2026-01-10' },
-  { id: '2', title: 'Video bài giảng Văn học', subject: 'Văn', type: 'video', date: '2026-01-08' },
-  { id: '3', title: 'Bài tập tiếng Anh bổ trợ', subject: 'Anh', type: 'link', date: '2026-01-05' },
+const SUBJECTS = [
+  'Đi gia đình',
+  'Ốm đau',
+  'Lễ tết',
+  'Việc cá nhân',
+  'Khác',
 ];
 
-const styles = StyleSheet.create({
-  flex1: { flex: 1 },
-  bgSlate50: { backgroundColor: '#f8fafc' },
-  bgWhite: { backgroundColor: '#ffffff' },
-  shadowSm: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
-  textGray900: { color: '#111827' },
-  textGray500: { color: '#6b7280' },
-  textSky600: { color: '#0284c7' },
-  text3xl: { fontSize: 28 },
-  textSm: { fontSize: 14 },
-  textXs: { fontSize: 12 },
-  text10px: { fontSize: 10 },
-  fontSemibold: { fontWeight: '600' },
-  flexRow: { flexDirection: 'row' },
-  itemsCenter: { alignItems: 'center' },
-  justifyBetween: { justifyContent: 'space-between' },
-  justifyCenter: { justifyContent: 'center' },
-  mb1: { marginBottom: 4 },
-  mb3: { marginBottom: 12 },
-  mr3: { marginRight: 12 },
-  px2: { paddingLeft: 8, paddingRight: 8 },
-  px4: { paddingLeft: 16, paddingRight: 16 },
-  py3: { paddingTop: 12, paddingBottom: 12 },
-  h6: { height: 24 },
-  roundedXl: { borderRadius: 8 },
-  roundedFull: { borderRadius: 9999 },
-  bgSky100: { backgroundColor: '#e0f2fe' },
-  contentContainerP4Pb24: { padding: 16, paddingBottom: 96 },
-});
+export const StudentStudyMaterialsScreen: React.FC = () => {
+  const { studentData } = useStudentStore();
+  
+  const [activeTab, setActiveTab] = useState<'new' | 'history'>('new');
+  const [selectedReason, setSelectedReason] = useState('Đi gia đình');
+  const [detailReason, setDetailReason] = useState('Có việc gia đình cần về quê');
+  const [startDate, setStartDate] = useState('2026-01-10');
+  const [endDate, setEndDate] = useState('2026-01-10');
 
-const getMaterialIcon = (type: MaterialItem['type']) => {
-  switch (type) {
-    case 'document': return '📄';
-    case 'video': return '🎥';
-    case 'link': return '🔗';
-  }
-};
+  // Appeal modal state
+  const [appealModalVisible, setAppealModalVisible] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<LeaveRequestItem | null>(null);
+  const [appealType, setAppealType] = useState('Muốn xin thêm ngày nghỉ');
+  const [appealDetail, setAppealDetail] = useState('');
 
-export const StudentStudyMaterialsScreen: React.FC<StudyMaterialsScreenProps> = ({ navigation }) => {
-  const renderMaterialItem = ({ item }: { item: MaterialItem }) => (
-    <View style={[styles.mb3, styles.roundedXl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py3]}>
-      <View style={[styles.flexRow, styles.itemsCenter]}>
-        <Text style={[styles.text3xl, styles.mr3]}>{getMaterialIcon(item.type)}</Text>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.textSm, styles.fontSemibold, styles.textGray900, styles.mb1]}>{item.title}</Text>
-          <View style={[styles.flexRow, styles.itemsCenter, styles.justifyBetween]}>
-            <View style={[styles.bgSky100, styles.h6, styles.px2, styles.roundedFull, styles.itemsCenter, styles.justifyCenter]}>
-              <Text style={[styles.text10px, styles.textSky600, styles.fontSemibold]}>{item.subject}</Text>
-            </View>
-            <Text style={[styles.textXs, styles.textGray500]}>{item.date}</Text>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
+  // Mock recent requests
+  const recentRequests: LeaveRequestItem[] = [
+    {
+      id: '1',
+      reason: 'Đi gia đình',
+      dateRange: '20/12/2025 - 20/12/2025',
+      date: '20/12/2025',
+      duration: '1 ngày',
+      status: 'approved',
+    },
+    {
+      id: '2',
+      reason: 'Ốm đau',
+      dateRange: '10/01/2026 - 11/01/2026',
+      date: 'Hôm nay',
+      duration: '2 ngày',
+      status: 'pending',
+    },
+  ];
+
+  const handleSubmit = () => {
+    // Submit logic here
+    console.log('Submit leave request:', { selectedReason, detailReason, startDate, endDate });
+  };
+
+  const openAppealModal = (request: LeaveRequestItem) => {
+    setSelectedRequest(request);
+    setAppealModalVisible(true);
+  };
+
+  const closeAppealModal = () => {
+    setAppealModalVisible(false);
+    setAppealDetail('');
+    setSelectedRequest(null);
+  };
+
+  const submitAppeal = () => {
+    // Submit appeal logic here
+    console.log('Submit appeal:', { selectedRequest, appealType, appealDetail });
+    setAppealModalVisible(false);
+    setAppealDetail('');
+    setSelectedRequest(null);
+  };
 
   return (
-    <View style={[styles.flex1, styles.bgSlate50]}>
-      <ScreenHeader
-        title="Tài liệu học tập"
-        onBack={() => navigation?.goBack()}
-      />
-      <FlatList
-        data={MOCK_MATERIALS}
-        renderItem={renderMaterialItem}
-        keyExtractor={(item: MaterialItem) => item.id}
-        contentContainerStyle={[styles.contentContainerP4Pb24]}
-        showsVerticalScrollIndicator={false}
-      />
+    <View className="flex-1 bg-slate-50">
+      {/* Header */}
+      <View className="bg-gradient-to-br from-[#0284C7] to-[#0369A1] pt-[60px] px-6 pb-6 rounded-b-[30px]">
+        <Text className="text-[20px] font-extrabold text-white">Đơn xin nghỉ phép</Text>
+        <Text className="text-[12px] text-blue-100 font-medium mt-0.5">Quản lý đơn xin nghỉ học</Text>
+      </View>
+
+      <ScrollView className="px-6 pt-6 pb-[140px]" showsVerticalScrollIndicator={false}>
+        {/* Tabs */}
+        <View className="flex-row space-x-2 mb-6">
+          <TouchableOpacity
+            onPress={() => setActiveTab('new')}
+            className={`flex-1 py-2.5 rounded-xl ${activeTab === 'new' ? 'bg-[#0284C7]' : 'bg-white border border-gray-200'}`}
+          >
+            <Text className={`text-sm font-black text-center ${activeTab === 'new' ? 'text-white' : 'text-gray-400'}`}>
+              Tạo đơn mới
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setActiveTab('history')}
+            className={`flex-1 py-2.5 rounded-xl ${activeTab === 'history' ? 'bg-[#0284C7]' : 'bg-white border border-gray-200'}`}
+          >
+            <Text className={`text-sm font-black text-center ${activeTab === 'history' ? 'text-white' : 'text-gray-400'}`}>
+              Lịch sử đơn
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {activeTab === 'new' ? (
+          <>
+            {/* New Request Form */}
+            <View className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+              {/* Leave Type */}
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Lý do nghỉ</Text>
+                <View className="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                  <Text className="text-gray-800 text-sm font-medium">{selectedReason}</Text>
+                </View>
+              </View>
+
+              {/* Reason Details */}
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Chi tiết lý do</Text>
+                <TextInput
+                  value={detailReason}
+                  onChangeText={setDetailReason}
+                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-gray-800 text-sm font-medium"
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                />
+              </View>
+
+              {/* Date Range */}
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Từ ngày</Text>
+                <View className="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                  <Text className="text-gray-800 text-sm font-medium">{startDate}</Text>
+                </View>
+              </View>
+
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Đến ngày</Text>
+                <View className="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                  <Text className="text-gray-800 text-sm font-medium">{endDate}</Text>
+                </View>
+              </View>
+
+              {/* Submit Button */}
+              <TouchableOpacity
+                onPress={handleSubmit}
+                className="bg-gradient-to-r from-[#0284C7] to-[#0369A1] py-3.5 rounded-xl shadow-lg items-center"
+              >
+                <Text className="text-white font-extrabold text-sm text-center">Gửi đơn xin nghỉ</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Recent Requests Preview */}
+            <View className="mt-6">
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-gray-800 font-extrabold text-sm">Đơn gần đây</Text>
+                <TouchableOpacity onPress={() => setActiveTab('history')}>
+                  <Text className="text-[#0284C7] text-[10px] font-bold uppercase tracking-wider">Xem tất cả</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View className="space-y-3">
+                {recentRequests.slice(0, 2).map((request) => (
+                  <View key={request.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                    <View className="flex-row justify-between items-start mb-2">
+                      <View className="flex-row items-center space-x-2">
+                        <View className={`px-2 py-0.5 rounded-full ${request.status === 'approved' ? 'bg-emerald-100' : 'bg-amber-100'}`}>
+                          <Text className={`text-[8px] font-black uppercase ${request.status === 'approved' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                            {request.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}
+                          </Text>
+                        </View>
+                        <Text className="text-gray-400 text-[9px] font-medium">{request.date}</Text>
+                      </View>
+                      <Text className="text-gray-500 text-[9px] font-medium">{request.duration}</Text>
+                    </View>
+                    <Text className="text-gray-800 font-bold text-sm mb-1">{request.reason}</Text>
+                    <Text className="text-gray-400 text-[9px] font-medium mb-2">{request.dateRange}</Text>
+                    {request.status === 'approved' && (
+                      <TouchableOpacity
+                        onPress={() => openAppealModal(request)}
+                        className="bg-amber-50 border border-amber-200 py-2 rounded-xl items-center"
+                      >
+                        <Text className="text-amber-700 font-bold text-xs text-center">Phúc khảo</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ))}
+              </View>
+            </View>
+          </>
+        ) : (
+          <>
+            {/* History List */}
+            <View className="space-y-3">
+              {recentRequests.map((request) => (
+                <View key={request.id} className={`p-4 rounded-2xl border shadow-sm ${request.status === 'pending' ? 'bg-white border-amber-200' : 'bg-white border-gray-100'}`}>
+                  <View className="flex-row justify-between items-start mb-2">
+                    <View className="flex-row items-center space-x-2">
+                      <View className={`px-2 py-0.5 rounded-full ${request.status === 'approved' ? 'bg-emerald-100' : request.status === 'pending' ? 'bg-amber-100' : 'bg-rose-100'}`}>
+                        <Text className={`text-[8px] font-black uppercase ${request.status === 'approved' ? 'text-emerald-700' : request.status === 'pending' ? 'text-amber-700' : 'text-rose-700'}`}>
+                          {request.status === 'approved' ? 'Đã duyệt' : request.status === 'pending' ? 'Chờ duyệt' : 'Từ chối'}
+                        </Text>
+                      </View>
+                      <Text className="text-gray-400 text-[9px] font-medium">{request.date}</Text>
+                    </View>
+                    <Text className="text-gray-500 text-[9px] font-medium">{request.duration}</Text>
+                  </View>
+                  <Text className="text-gray-800 font-bold text-sm mb-1">{request.reason}</Text>
+                  <Text className="text-gray-400 text-[9px] font-medium mb-2">{request.dateRange}</Text>
+                  {request.status === 'approved' && (
+                    <TouchableOpacity
+                      onPress={() => openAppealModal(request)}
+                      className="bg-amber-50 border border-amber-200 py-2 rounded-xl items-center"
+                    >
+                      <Text className="text-amber-700 font-bold text-xs text-center">Phúc khảo</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ))}
+            </View>
+          </>
+        )}
+      </ScrollView>
+
+      {/* Appeal Modal */}
+      <Modal
+        visible={appealModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeAppealModal}
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center px-5">
+          <View className="bg-white rounded-3xl p-6 w-full max-h-[80%]">
+            {/* Header */}
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-gray-800 font-extrabold text-lg">Phúc khảo đơn</Text>
+              <TouchableOpacity onPress={closeAppealModal} className="w-8 h-8 bg-gray-100 rounded-full items-center justify-center">
+                <Text className="text-gray-500">✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Request Info */}
+            {selectedRequest && (
+              <View className="bg-blue-50 p-3 rounded-xl mb-4">
+                <Text className="text-gray-500 text-[10px] font-medium mb-1">Đơn xin nghỉ:</Text>
+                <Text className="text-gray-800 font-bold text-sm mb-2">{selectedRequest.reason}</Text>
+                <Text className="text-gray-500 text-[10px] font-medium mb-1">Thời gian:</Text>
+                <Text className="text-gray-800 font-bold text-xs">{selectedRequest.dateRange}</Text>
+              </View>
+            )}
+
+            {/* Appeal Form */}
+            <View className="space-y-3">
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Lý do phúc khảo</Text>
+                <View className="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                  <Text className="text-gray-800 text-sm font-medium">{appealType}</Text>
+                </View>
+              </View>
+
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Giải trình chi tiết</Text>
+                <TextInput
+                  value={appealDetail}
+                  onChangeText={setAppealDetail}
+                  placeholder="Nhập chi tiết lý do phúc khảo..."
+                  placeholderTextColor="#9CA3AF"
+                  multiline
+                  numberOfLines={3}
+                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-gray-800 text-sm font-medium"
+                  textAlignVertical="top"
+                />
+              </View>
+
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">File đính kèm (nếu có)</Text>
+                <View className="border-2 border-dashed border-gray-300 rounded-xl p-4 items-center">
+                  <Text className="text-gray-400 text-xs font-medium text-center">Tap để tải file lên</Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                onPress={submitAppeal}
+                className="bg-gradient-to-r from-[#0284C7] to-[#0369A1] py-3.5 rounded-xl shadow-lg items-center"
+              >
+                <Text className="text-white font-extrabold text-sm text-center">Gửi yêu cầu phúc khảo</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
