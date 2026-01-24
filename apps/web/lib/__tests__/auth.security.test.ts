@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { login } from '../auth'
 
+interface MockCookies {
+  set: ReturnType<typeof vi.fn>
+}
+
 const mockCookies = vi.hoisted(() => ({ set: vi.fn() }))
 vi.mock('next/headers', () => ({ cookies: () => mockCookies }))
 vi.mock('next/navigation', () => ({
@@ -9,7 +13,7 @@ vi.mock('next/navigation', () => ({
 
 // Mock Supabase client
 const createQueryBuilder = () => ({
-  eq: vi.fn(function(this: any) {
+  eq: vi.fn(function() {
     // After first eq, return an object that has eq and single
     return {
       eq: vi.fn(() => createQueryBuilder()),
@@ -44,7 +48,7 @@ describe('login - Input Validation', () => {
     formData.set('identifier', '')
     formData.set('password', 'password123')
 
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     expect(result).toHaveProperty('error')
   })
 
@@ -53,7 +57,7 @@ describe('login - Input Validation', () => {
     formData.set('identifier', 'TC001')
     formData.set('password', '')
 
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     expect(result).toHaveProperty('error')
   })
 
@@ -66,7 +70,7 @@ describe('login - Input Validation', () => {
     formData.set('password', 'any')
 
     // New auth validates code format and rejects special chars
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     expect(result).toHaveProperty('error')
   })
 
@@ -76,7 +80,7 @@ describe('login - Input Validation', () => {
     formData.set('password', 'any')
 
     // Sanitization removes script tags, then validation fails format check
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     expect(result).toHaveProperty('error')
   })
 
@@ -87,7 +91,7 @@ describe('login - Input Validation', () => {
 
     // With real Supabase, this will fail if user doesn't exist
     // But email format validation should pass
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     // Either returns error object or redirects (throws)
     if (result && typeof result === 'object' && 'error' in result) {
       // Should NOT be format error (email is valid format)

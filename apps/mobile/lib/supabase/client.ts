@@ -31,9 +31,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: (globalThis as any).localStorage, // Use AsyncStorage if needed
+    storage: (globalThis as typeof globalThis & { localStorage?: StorageLike }).localStorage, // Use AsyncStorage if needed
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
   },
 })
+
+interface StorageLike {
+  getItem: (key: string) => string | null | Promise<string | null>;
+  setItem: (key: string, value: string) => void | Promise<void>;
+  removeItem: (key: string) => void | Promise<void>;
+}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getInvoices } from '@/lib/supabase/queries'
+import type { Invoice } from '@school-management/shared-types'
 
 // Export format options
 type ExportFormat = 'csv' | 'json' | 'pdf'
@@ -14,7 +15,13 @@ export async function POST(request: NextRequest) {
       endDate,
       status,
       include = ['id', 'studentName', 'amount', 'status', 'dueDate', 'paidDate']
-    } = body
+    } = body as {
+      format?: ExportFormat
+      startDate?: string
+      endDate?: string
+      status?: string
+      include?: string[]
+    }
 
     // Validate format
     const validFormats: ExportFormat[] = ['csv', 'json', 'pdf']
@@ -30,23 +37,23 @@ export async function POST(request: NextRequest) {
 
     // Filter by date range (handle null/undefined dueDate)
     if (startDate) {
-      invoices = invoices.filter((inv: any) => inv.dueDate && inv.dueDate >= startDate)
+      invoices = invoices.filter((inv: Invoice) => inv.dueDate && inv.dueDate >= startDate)
     }
     if (endDate) {
-      invoices = invoices.filter((inv: any) => inv.dueDate && inv.dueDate <= endDate)
+      invoices = invoices.filter((inv: Invoice) => inv.dueDate && inv.dueDate <= endDate)
     }
 
     // Filter by status
     if (status && ['paid', 'pending', 'overdue'].includes(status)) {
-      invoices = invoices.filter((inv: any) => inv.status === status)
+      invoices = invoices.filter((inv: Invoice) => inv.status === status)
     }
 
     // Filter included fields
-    const filteredInvoices = invoices.map((inv: any) => {
-      const result: Record<string, any> = {}
+    const filteredInvoices = invoices.map((inv: Invoice) => {
+      const result: Record<string, string | number> = {}
       include.forEach((field: string) => {
         if (field in inv) {
-          result[field] = inv[field as keyof typeof inv]
+          result[field] = inv[field as keyof Invoice] as string | number
         }
       })
       return result
@@ -76,9 +83,9 @@ export async function POST(request: NextRequest) {
       case 'csv': {
         // Generate CSV
         const headers = include.join(',')
-        const rows = filteredInvoices.map((inv: any) =>
+        const rows = filteredInvoices.map((inv: Record<string, string | number>) =>
           include.map((field: string) => {
-            const value = inv[field as keyof typeof inv]
+            const value = inv[field]
             // Escape quotes and wrap in quotes if contains comma
             const stringValue = String(value ?? '')
             if (stringValue.includes(',') || stringValue.includes('"')) {

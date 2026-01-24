@@ -1,0 +1,44 @@
+PART1_HEADER
+/**
+ * Grades Screen
+ * Displays student grades with semester selector, overall summary, and appeal functionality
+ */
+
+import React, { useState } from 'react';
+import { View, ScrollView, Text, Pressable, Modal, TextInput } from 'react-native';
+import { useParentStore } from '../../stores';
+import { getGradesByStudentId } from '../../mock-data';
+import { colors } from '../../theme';
+import Svg, { Path, Polyline, Line } from 'react-native-svg';
+
+interface SubjectGrades {
+  subject: string;
+  shortName: string;
+  iconColor: string;
+  grades: {
+    TX1: number;
+    TX2: number;
+    TX3: number;
+    GK: number;
+    CK: number;
+  };
+  average: number;
+}
+
+interface AppealForm {
+  gradeType: string;
+  reason: string;
+  detail: string;
+}
+
+type ModalState = 'appeal' | 'success' | null;
+
+const SUBJECTS_CONFIG: Record<string, { shortName: string; iconColor: string; name: string }> = {
+  'Mathematics': { shortName: 'Toán', iconColor: '#f97316', name: 'Toán học' },
+  'Literature': { shortName: 'Văn', iconColor: '#a855f7', name: 'Ngữ văn' },
+  'English': { shortName: 'Anh', iconColor: '#10b981', name: 'Tiếng Anh' },
+  'Physics': { shortName: 'Lý', iconColor: '#6366f1', name: 'Vật lý' },
+  'Chemistry': { shortName: 'Hóa', iconColor: '#f59e0b', name: 'Hóa học' },
+  'History': { shortName: 'Sử', iconColor: '#f43f5e', name: 'Lịch sử' },
+};
+PART1_HEADER

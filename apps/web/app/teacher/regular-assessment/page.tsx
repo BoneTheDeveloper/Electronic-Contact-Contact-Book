@@ -36,16 +36,16 @@ export default function RegularAssessmentPage() {
   }, [selectedClass, selectedStatus])
 
   // Filter by search query
-  const filteredAssessments = assessments.filter((assessment: any) =>
+  const filteredAssessments = assessments.filter((assessment: RegularAssessment) =>
     assessment.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     assessment.className.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   // Calculate stats
-  const evaluatedCount = assessments.filter((a: any) => a.status === 'evaluated').length
-  const pendingCount = assessments.filter((a: any) => a.status === 'pending').length
-  const positiveCount = assessments.filter((a: any) => a.rating && a.rating >= 4).length
-  const needsAttentionCount = assessments.filter((a: any) => a.status === 'needs-attention').length
+  const evaluatedCount = assessments.filter((a: RegularAssessment) => a.status === 'evaluated').length
+  const pendingCount = assessments.filter((a: RegularAssessment) => a.status === 'pending').length
+  const positiveCount = assessments.filter((a: RegularAssessment) => a.rating && a.rating >= 4).length
+  const needsAttentionCount = assessments.filter((a: RegularAssessment) => a.status === 'needs-attention').length
 
   if (loading) {
     return (

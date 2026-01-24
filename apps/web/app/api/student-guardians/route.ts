@@ -52,9 +52,16 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: false, error: error.message }, { status: 400 })
       }
 
-      const results: ParentResult[] = (data || []).map((p: any) => ({
+      interface ProfileResult {
+        id: string
+        full_name: string | null
+        email: string
+        phone: string | null
+      }
+
+      const results: ParentResult[] = (data || []).map((p: ProfileResult) => ({
         id: p.id,
-        name: p.full_name,
+        name: p.full_name || '',
         code: p.id.slice(0, 10),
         phone: p.phone || '',
         email: p.email,
@@ -88,7 +95,18 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: false, error: error.message }, { status: 400 })
       }
 
-      const results: StudentResult[] = (data || []).map((s: any) => ({
+      interface StudentQueryResult {
+        id: string
+        student_code: string
+        grade: string
+        section: string
+        class_id: string
+        profiles: {
+          full_name: string
+        }
+      }
+
+      const results: StudentResult[] = (data || []).map((s: StudentQueryResult) => ({
         id: s.id,
         name: s.profiles.full_name,
         code: s.student_code,
@@ -127,8 +145,8 @@ export async function POST(request: Request) {
     }
 
     // Check if link already exists
-    const { data: existing } = await (supabase
-      .from('student_guardians') as any)
+    const { data: existing } = await supabase
+      .from('student_guardians')
       .select('*')
       .eq('student_id', studentId)
       .eq('guardian_id', parentId)
@@ -143,15 +161,15 @@ export async function POST(request: Request) {
 
     // If this is being set as primary, unmark other primary relationships for this student
     if (isPrimary) {
-      await (supabase
-        .from('student_guardians') as any)
+      await supabase
+        .from('student_guardians')
         .update({ is_primary: false })
         .eq('student_id', studentId)
     }
 
     // Create the link
-    const { data, error } = await (supabase
-      .from('student_guardians') as any)
+    const { data, error } = await supabase
+      .from('student_guardians')
       .insert({
         student_id: studentId,
         guardian_id: parentId,
@@ -193,8 +211,8 @@ export async function DELETE(request: Request) {
       }, { status: 400 })
     }
 
-    const { error } = await (supabase
-      .from('student_guardians') as any)
+    const { error } = await supabase
+      .from('student_guardians')
       .delete()
       .eq('student_id', studentId)
       .eq('guardian_id', guardianId)

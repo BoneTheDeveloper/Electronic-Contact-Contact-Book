@@ -1,12 +1,8 @@
 /**
  * Supabase Realtime Subscription Helpers
  * Client-side utilities for subscribing to notification updates
- *
- * NOTE: @ts-nocheck is used due to RealtimePostgresChangesPayload including
- * empty object {} in union type. The types are correctly defined in types/supabase.ts.
  */
 
-// @ts-nocheck
 import { createClient } from './client';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
@@ -177,7 +173,7 @@ export function subscribeToDeliveryStatus(
         table: 'notification_logs',
         filter: `notification_id=eq.${notificationId}`,
       },
-      (payload: RealtimePostgresChangesPayload<any>) => {
+      (payload: RealtimePostgresChangesPayload<Database['public']['Tables']['notification_logs']['Row']>) => {
         callback({
           channel: payload.new.channel,
           status: payload.new.status,

@@ -72,7 +72,7 @@ export function PaymentsManagement() {
   const [editFeeItemModalOpen, setEditFeeItemModalOpen] = useState(false)
   const [selectedFeeItem, setSelectedFeeItem] = useState<FeeItem | null>(null)
   const [paymentConfirmModalOpen, setPaymentConfirmModalOpen] = useState(false)
-  const [selectedInvoice, setSelectedInvoice] = useState<any>(null)
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null)
   const [invoiceDetailModalOpen, setInvoiceDetailModalOpen] = useState(false)
   const [selectedInvoiceId, setSelectedInvoiceId] = useState('')
   const [sendReminderModalOpen, setSendReminderModalOpen] = useState(false)
@@ -133,7 +133,7 @@ export function PaymentsManagement() {
   }, [])
 
   // Handle filter change - memoized
-  const handleFilterChange = useCallback((key: string, value: any) => {
+  const handleFilterChange = useCallback((key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }))
   }, [])
 

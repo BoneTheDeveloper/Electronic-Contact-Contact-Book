@@ -8,8 +8,12 @@ export async function GET(request: Request) {
 
   const requests = await getLeaveApprovalRequests()
 
+  interface LeaveRequest {
+    status: string
+  }
+
   // Filter by status if provided
-  const filtered = status ? requests.filter((r: any) => r.status === status) : requests
+  const filtered = status ? requests.filter((r: LeaveRequest) => r.status === status) : requests
 
   return NextResponse.json({
     success: true,

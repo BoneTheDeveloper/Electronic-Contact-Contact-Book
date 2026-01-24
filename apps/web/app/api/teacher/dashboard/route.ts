@@ -6,9 +6,14 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const teacherId = searchParams.get('teacherId') || undefined
 
+    interface TeacherClass {
+      id: string
+      isHomeroom?: boolean
+    }
+
     // Get classes first to find homeroom class
     const teacherClasses = await getTeacherClasses(teacherId).catch(() => [])
-    const homeroomClass = teacherClasses.find((c: any) => c.isHomeroom)
+    const homeroomClass = teacherClasses.find((c: TeacherClass) => c.isHomeroom)
     const homeroomClassId = homeroomClass?.id || '6A1'  // Dynamic fallback to grade 6
 
     const [stats, gradeReviews, leaveRequests, schedule, assessments, classes] = await Promise.all([
@@ -20,6 +25,15 @@ export async function GET(request: Request) {
       Promise.resolve(teacherClasses),
     ])
 
+    interface LeaveRequest {
+      status: string
+    }
+
+    interface Assessment {
+      status: string
+      rating?: number
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -28,14 +42,14 @@ export async function GET(request: Request) {
           homeroomClassId,  // Dynamic class ID (6A1, 7A1, etc.)
         },
         gradeReviews: gradeReviews || [],
-        leaveRequests: (leaveRequests || []).filter((r: any) => r.status === 'pending'),
+        leaveRequests: (leaveRequests || []).filter((r: LeaveRequest) => r.status === 'pending'),
         schedule: schedule || [],
         classes: classes || [],
         assessments: {
-          evaluated: (assessments || []).filter((a: any) => a.status === 'evaluated').length,
-          pending: (assessments || []).filter((a: any) => a.status === 'pending').length,
-          positive: (assessments || []).filter((a: any) => a.rating && a.rating >= 4).length,
-          needsAttention: (assessments || []).filter((a: any) => a.status === 'needs-attention').length,
+          evaluated: (assessments || []).filter((a: Assessment) => a.status === 'evaluated').length,
+          pending: (assessments || []).filter((a: Assessment) => a.status === 'pending').length,
+          positive: (assessments || []).filter((a: Assessment) => a.rating && a.rating >= 4).length,
+          needsAttention: (assessments || []).filter((a: Assessment) => a.status === 'needs-attention').length,
         },
       },
     })

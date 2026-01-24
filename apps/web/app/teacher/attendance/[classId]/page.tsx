@@ -3,6 +3,7 @@ import { getClassStudents, getTeacherClasses } from '@/lib/supabase/queries'
 import { AttendanceForm } from '@/components/teacher/AttendanceForm'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar } from 'lucide-react'
+import type { AttendanceRecord } from '@/lib/types'
 
 interface PageProps {
   params: Promise<{ classId: string }>
@@ -68,7 +69,7 @@ export default async function ClassAttendancePage({ params }: PageProps) {
             <div>
               <p className="text-gray-500">Vắng hôm nay</p>
               <p className="font-semibold text-red-600">
-                {students.filter((s: any) => s.status !== 'present').length} học sinh
+                {students.filter((s: AttendanceRecord) => s.status !== 'present').length} học sinh
               </p>
             </div>
           </div>

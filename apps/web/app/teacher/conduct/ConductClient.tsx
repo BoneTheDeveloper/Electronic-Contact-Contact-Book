@@ -25,7 +25,7 @@ export function ConductClient({ initialRatings }: ConductClientProps) {
   const itemsPerPage = 10
 
   const filteredRatings = useMemo(() => {
-    return initialRatings.filter((rating: any) => {
+    return initialRatings.filter((rating: ConductRating) => {
       if (filters.academicRating !== 'all' && rating.academicRating !== filters.academicRating) {
         return false
       }
@@ -48,24 +48,24 @@ export function ConductClient({ initialRatings }: ConductClientProps) {
   const paginatedRatings = filteredRatings.slice(startIndex, startIndex + itemsPerPage)
 
   const academicSummary = useMemo(() => ({
-    excellentPlus: filteredRatings.filter((r: any) => r.academicRating === 'excellent-plus').length,
-    excellent: filteredRatings.filter((r: any) => r.academicRating === 'excellent').length,
-    good: filteredRatings.filter((r: any) => r.academicRating === 'good').length,
-    average: filteredRatings.filter((r: any) => r.academicRating === 'average').length,
-    needsImprovement: filteredRatings.filter((r: any) => r.academicRating === 'needs-improvement').length,
+    excellentPlus: filteredRatings.filter((r: ConductRating) => r.academicRating === 'excellent-plus').length,
+    excellent: filteredRatings.filter((r: ConductRating) => r.academicRating === 'excellent').length,
+    good: filteredRatings.filter((r: ConductRating) => r.academicRating === 'good').length,
+    average: filteredRatings.filter((r: ConductRating) => r.academicRating === 'average').length,
+    needsImprovement: filteredRatings.filter((r: ConductRating) => r.academicRating === 'needs-improvement').length,
   }), [filteredRatings])
 
   const conductSummary = useMemo(() => ({
-    good: filteredRatings.filter((r: any) => r.conductRating === 'good').length,
-    fair: filteredRatings.filter((r: any) => r.conductRating === 'fair').length,
-    average: filteredRatings.filter((r: any) => r.conductRating === 'average').length,
-    poor: filteredRatings.filter((r: any) => r.conductRating === 'poor').length,
+    good: filteredRatings.filter((r: ConductRating) => r.conductRating === 'good').length,
+    fair: filteredRatings.filter((r: ConductRating) => r.conductRating === 'fair').length,
+    average: filteredRatings.filter((r: ConductRating) => r.conductRating === 'average').length,
+    poor: filteredRatings.filter((r: ConductRating) => r.conductRating === 'poor').length,
   }), [filteredRatings])
 
   const getAvatarInitials = (name: string) => {
     return name
       .split(' ')
-      .map((n: any) => n[0])
+      .map((n: string) => n[0])
       .join('')
       .slice(-2)
       .toUpperCase()
@@ -239,7 +239,7 @@ export function ConductClient({ initialRatings }: ConductClientProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedRatings.map((rating: any, index: any) => (
+              {paginatedRatings.map((rating: ConductRating, index: number) => (
                 <TableRow key={rating.studentId}>
                   <TableCell>
                     <div className={cn(
@@ -299,7 +299,7 @@ export function ConductClient({ initialRatings }: ConductClientProps) {
             >
               Trước
             </Button>
-            {[...Array(totalPages)].map((_, i: any) => (
+            {[...Array(totalPages)].map((_, i: number) => (
               <Button
                 key={i}
                 size="sm"

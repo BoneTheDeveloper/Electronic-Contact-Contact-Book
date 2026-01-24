@@ -173,7 +173,7 @@ export function FeeAssignmentWizard({ onComplete }: FeeAssignmentWizardProps) {
 
   const toggleFee = (feeId: string) => {
     if (selectedFees.includes(feeId)) {
-      setSelectedFees(selectedFees.filter((f: any) => f !== feeId))
+      setSelectedFees(selectedFees.filter((f: string) => f !== feeId))
     } else {
       setSelectedFees([...selectedFees, feeId])
     }
@@ -184,8 +184,8 @@ export function FeeAssignmentWizard({ onComplete }: FeeAssignmentWizardProps) {
   }
 
   const totalAmount = feeItems
-    .filter((f: any) => selectedFees.includes(f.id))
-    .reduce((sum: any, f: any) => sum + f.amount, 0)
+    .filter((f: FeeItem) => selectedFees.includes(f.id))
+    .reduce((sum: number, f: FeeItem) => sum + f.amount, 0)
 
   return (
     <div className="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
@@ -315,7 +315,14 @@ export function FeeAssignmentWizard({ onComplete }: FeeAssignmentWizardProps) {
 }
 
 // Step 1: Grade Selection
-function Step1GradeSelection({ selectedGrades, selectedClasses, gradeData, onToggleGrade }: any) {
+interface Step1GradeSelectionProps {
+  selectedGrades: string[]
+  selectedClasses: string[]
+  gradeData: Record<string, GradeData>
+  onToggleGrade: (grade: string) => void
+}
+
+function Step1GradeSelection({ selectedGrades, selectedClasses, gradeData, onToggleGrade }: Step1GradeSelectionProps) {
   return (
     <div className="grid grid-cols-2 gap-8">
       <div>
@@ -358,7 +365,16 @@ function Step1GradeSelection({ selectedGrades, selectedClasses, gradeData, onTog
 }
 
 // Step 2: Fee Selection
-function Step2FeeSelection({ selectedFees, invoiceName, feeItems, onNameChange, onToggleFee, totalAmount }: any) {
+interface Step2FeeSelectionProps {
+  selectedFees: string[]
+  invoiceName: string
+  feeItems: FeeItem[]
+  onNameChange: (name: string) => void
+  onToggleFee: (feeId: string) => void
+  totalAmount: number
+}
+
+function Step2FeeSelection({ selectedFees, invoiceName, feeItems, onNameChange, onToggleFee, totalAmount }: Step2FeeSelectionProps) {
   return (
     <div>
       <div className="mb-6">
@@ -412,6 +428,22 @@ function Step2FeeSelection({ selectedFees, invoiceName, feeItems, onNameChange, 
 }
 
 // Step 3: Timeline Configuration
+interface Step3TimelineConfigurationProps {
+  invoiceName: string
+  selectedClasses: string[]
+  selectedFees: string[]
+  feeItems: FeeItem[]
+  totalAmount: number
+  startDate: string
+  dueDate: string
+  reminderDays: number
+  reminderFrequency: 'once' | 'daily' | 'weekly'
+  onStartDateChange: (date: string) => void
+  onDueDateChange: (date: string) => void
+  onReminderDaysChange: (days: number) => void
+  onReminderFrequencyChange: (freq: 'once' | 'daily' | 'weekly') => void
+}
+
 function Step3TimelineConfiguration({
   invoiceName,
   selectedClasses,
@@ -426,7 +458,7 @@ function Step3TimelineConfiguration({
   onDueDateChange,
   onReminderDaysChange,
   onReminderFrequencyChange,
-}: any) {
+}: Step3TimelineConfigurationProps) {
   const formatCurrency = (amount: number) => new Intl.NumberFormat('vi-VN').format(amount)
 
   // Calculate total students (assuming 40 students per class)
@@ -534,6 +566,20 @@ function Step3TimelineConfiguration({
 }
 
 // Step 4: Review
+interface Step4ReviewProps {
+  invoiceName: string
+  selectedClasses: string[]
+  selectedFees: string[]
+  feeItems: FeeItem[]
+  totalAmount: number
+  startDate: string
+  dueDate: string
+  reminderDays: number
+  reminderFrequency: 'once' | 'daily' | 'weekly'
+  termsAccepted: boolean
+  onTermsChange: (accepted: boolean) => void
+}
+
 function Step4Review({
   invoiceName,
   selectedClasses,
@@ -546,7 +592,7 @@ function Step4Review({
   reminderFrequency,
   termsAccepted,
   onTermsChange,
-}: any) {
+}: Step4ReviewProps) {
   const formatCurrency = (amount: number) => new Intl.NumberFormat('vi-VN').format(amount)
 
   // Calculate total students (assuming 40 students per class)

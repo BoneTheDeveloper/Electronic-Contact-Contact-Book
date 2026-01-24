@@ -43,12 +43,12 @@ export function AddFeeItemModal({
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .split(' ')
-        .filter((w: any) => w.length > 0)
+        .filter((w: string) => w.length > 0)
 
       if (words.length >= 2) {
         const code = words
           .slice(0, 2)
-          .map((w: any) => w.substring(0, 2).toUpperCase())
+          .map((w: string) => w.substring(0, 2).toUpperCase())
           .join('')
         const semester = formData.semester === 'all' ? '' : `-HK${formData.semester}`
         setFormData(prev => ({ ...prev, code: `${code}${semester}` }))

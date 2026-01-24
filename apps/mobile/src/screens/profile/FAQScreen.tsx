@@ -17,9 +17,12 @@ import {
 import { colors } from '../../theme';
 import Svg, { Path } from 'react-native-svg';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { StudentProfileStackParamList, ParentProfileStackParamList } from '../../navigation/types';
+
+type ProfileNavigationProp = NativeStackNavigationProp<StudentProfileStackParamList & ParentProfileStackParamList>;
 
 interface FAQScreenProps {
-  navigation?: NativeStackNavigationProp<any>;
+  navigation?: ProfileNavigationProp;
 }
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {

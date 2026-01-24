@@ -37,36 +37,34 @@ import type { ParentTabParamList, ParentHomeStackParamList, ParentProfileStackPa
 // Including News and Payment screens for dashboard navigation
 const HomeStack = createNativeStackNavigator<ParentHomeStackParamList>();
 
-type ScreenComponentType = React.ComponentType<any>;
-
 const HomeStackNavigator = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-    <HomeStack.Screen name="Dashboard" component={DashboardScreen as ScreenComponentType} />
-    <HomeStack.Screen name="ChildSelection" component={ChildSelectionScreen as ScreenComponentType} />
-    <HomeStack.Screen name="Schedule" component={ScheduleScreen as ScreenComponentType} />
-    <HomeStack.Screen name="Grades" component={GradesScreen as ScreenComponentType} />
-    <HomeStack.Screen name="Attendance" component={AttendanceScreen as ScreenComponentType} />
-    <HomeStack.Screen name="TeacherFeedback" component={TeacherFeedbackScreen as ScreenComponentType} />
-    <HomeStack.Screen name="LeaveRequest" component={LeaveRequestScreen as ScreenComponentType} />
-    <HomeStack.Screen name="Summary" component={SummaryScreen as ScreenComponentType} />
-    <HomeStack.Screen name="TeacherDirectory" component={TeacherDirectoryScreen as ScreenComponentType} />
+    <HomeStack.Screen name="Dashboard" component={DashboardScreen} />
+    <HomeStack.Screen name="ChildSelection" component={ChildSelectionScreen} />
+    <HomeStack.Screen name="Schedule" component={ScheduleScreen} />
+    <HomeStack.Screen name="Grades" component={GradesScreen} />
+    <HomeStack.Screen name="Attendance" component={AttendanceScreen} />
+    <HomeStack.Screen name="TeacherFeedback" component={TeacherFeedbackScreen} />
+    <HomeStack.Screen name="LeaveRequest" component={LeaveRequestScreen} />
+    <HomeStack.Screen name="Summary" component={SummaryScreen} />
+    <HomeStack.Screen name="TeacherDirectory" component={TeacherDirectoryScreen} />
     {/* News screen for dashboard navigation */}
-    <HomeStack.Screen name="News" component={NewsScreen as ScreenComponentType} />
+    <HomeStack.Screen name="News" component={NewsScreen} />
     {/* Payment screens for dashboard navigation */}
-    <HomeStack.Screen name="PaymentOverview" component={PaymentOverviewScreen as ScreenComponentType} />
-    <HomeStack.Screen name="PaymentDetail" component={PaymentDetailScreen as ScreenComponentType} />
-    <HomeStack.Screen name="PaymentMethod" component={PaymentMethodScreen as ScreenComponentType} />
-    <HomeStack.Screen name="PaymentReceipt" component={PaymentReceiptScreen as ScreenComponentType} />
+    <HomeStack.Screen name="PaymentOverview" component={PaymentOverviewScreen} />
+    <HomeStack.Screen name="PaymentDetail" component={PaymentDetailScreen} />
+    <HomeStack.Screen name="PaymentMethod" component={PaymentMethodScreen} />
+    <HomeStack.Screen name="PaymentReceipt" component={PaymentReceiptScreen} />
   </HomeStack.Navigator>
 );
 
 // Communication Stack (Messages, Notifications - News is in HomeStack for Dashboard access)
-const CommStack = createNativeStackNavigator();
+const CommStack = createNativeStackNavigator<ParentCommStackParamList>();
 const CommStackNavigator = () => (
   <CommStack.Navigator screenOptions={{ headerShown: false }}>
-    <CommStack.Screen name="Messages" component={MessagesScreen as ScreenComponentType} />
-    <CommStack.Screen name="Notifications" component={NotificationsScreen as ScreenComponentType} />
-    <CommStack.Screen name="ChatDetail" component={ChatDetailScreen as ScreenComponentType} />
+    <CommStack.Screen name="Messages" component={MessagesScreen} />
+    <CommStack.Screen name="Notifications" component={NotificationsScreen} />
+    <CommStack.Screen name="ChatDetail" component={ChatDetailScreen} />
   </CommStack.Navigator>
 );
 
@@ -74,12 +72,12 @@ const CommStackNavigator = () => (
 const ProfileStack = createNativeStackNavigator<ParentProfileStackParamList>();
 const ProfileStackNavigator = () => (
   <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
-    <ProfileStack.Screen name="Profile" component={ProfileScreen as ScreenComponentType} />
-    <ProfileStack.Screen name="UpdateProfile" component={UpdateProfileScreen as ScreenComponentType} />
-    <ProfileStack.Screen name="ChangePassword" component={ChangePasswordScreen as ScreenComponentType} />
-    <ProfileStack.Screen name="BiometricAuth" component={BiometricAuthScreen as ScreenComponentType} />
-    <ProfileStack.Screen name="FAQ" component={FAQScreen as ScreenComponentType} />
-    <ProfileStack.Screen name="Support" component={SupportScreen as ScreenComponentType} />
+    <ProfileStack.Screen name="Profile" component={ProfileScreen} />
+    <ProfileStack.Screen name="UpdateProfile" component={UpdateProfileScreen} />
+    <ProfileStack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+    <ProfileStack.Screen name="BiometricAuth" component={BiometricAuthScreen} />
+    <ProfileStack.Screen name="FAQ" component={FAQScreen} />
+    <ProfileStack.Screen name="Support" component={SupportScreen} />
   </ProfileStack.Navigator>
 );
 

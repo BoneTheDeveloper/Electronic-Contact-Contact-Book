@@ -21,9 +21,12 @@ import { supabase } from '../../lib/supabase/client';
 import { useAuthStore } from '../../stores';
 import Svg, { Path, Circle, Line, Polyline, Polygon } from 'react-native-svg';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { StudentProfileStackParamList, ParentProfileStackParamList } from '../../navigation/types';
+
+type ProfileNavigationProp = NativeStackNavigationProp<StudentProfileStackParamList & ParentProfileStackParamList>;
 
 interface SupportScreenProps {
-  navigation?: NativeStackNavigationProp<any>;
+  navigation?: ProfileNavigationProp;
 }
 
 const BackIcon = () => (

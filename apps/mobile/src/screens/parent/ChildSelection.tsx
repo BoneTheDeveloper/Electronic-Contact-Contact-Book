@@ -4,11 +4,11 @@
  * Based on wireframe: childselection.html
  */
 
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useParentStore } from '../../stores';
-import { ScreenHeader, Icon } from '../../components/ui';
-import type { ParentHomeStackNavigationProp } from '../../navigation/types';
+import React, { useState } from "react";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Pressable } from "react-native";
+import { useParentStore } from "../../stores";
+import { ScreenHeader, Icon } from "../../components/ui";
+import type { ParentHomeStackNavigationProp } from "../../navigation/types";
 
 interface ChildSelectionScreenProps {
   navigation?: ParentHomeStackNavigationProp;
@@ -21,14 +21,14 @@ export const ChildSelectionScreen: React.FC<ChildSelectionScreenProps> = ({ navi
   // Loading state
   if (isLoading && children.length === 0) {
     return (
-      <View style={styles.container}>
+      <View className="flex-1 bg-white">
         <ScreenHeader
           title="Chọn con em"
           onBack={() => navigation?.goBack()}
         />
-        <View style={styles.centerContainer}>
+        <View className="flex-1 justify-center items-center p-8 bg-gray-50">
           <ActivityIndicator size="large" color="#0284C7" />
-          <Text style={styles.centerText}>Đang tải danh sách...</Text>
+          <Text className="mt-4 text-sm text-gray-500 text-center">Đang tải danh sách...</Text>
         </View>
       </View>
     );
@@ -37,16 +37,16 @@ export const ChildSelectionScreen: React.FC<ChildSelectionScreenProps> = ({ navi
   // Empty state
   if (!isLoading && children.length === 0) {
     return (
-      <View style={styles.container}>
+      <View className="flex-1 bg-white">
         <ScreenHeader
           title="Chọn con em"
           onBack={() => navigation?.goBack()}
         />
-        <View style={styles.centerContainer}>
+        <View className="flex-1 justify-center items-center p-8 bg-gray-50">
           <Icon name="user" size={64} color="#9CA3AF" />
-          <Text style={styles.centerTitle}>Không tìm thấy học sinh</Text>
-          {error && <Text style={styles.errorText}>{error}</Text>}
-          <Text style={styles.centerText}>
+          <Text className="mt-4 text-base font-bold text-gray-800">Không tìm thấy học sinh</Text>
+          {error && <Text className="text-sm text-red-500 text-center mt-2 mb-4">{error}</Text>}
+          <Text className="text-sm text-gray-500 text-center">
             Vui lòng liên hệ văn phòng trường để được hỗ trợ.
           </Text>
         </View>
@@ -55,11 +55,11 @@ export const ChildSelectionScreen: React.FC<ChildSelectionScreenProps> = ({ navi
   }
 
   const getInitials = (name: string) => {
-    const parts = name.split(' ').filter(p => p.length > 0);
-    if (parts.length === 0) return 'U';
-    if (parts.length === 1) return parts[0]?.slice(0, 2).toUpperCase() ?? 'U';
-    const first = parts[0]?.charAt(0) ?? '';
-    const last = parts[parts.length - 1]?.charAt(0) ?? '';
+    const parts = name.split(" ").filter(p => p.length > 0);
+    if (parts.length === 0) return "U";
+    if (parts.length === 1) return parts[0]?.slice(0, 2).toUpperCase() ?? "U";
+    const first = parts[0]?.charAt(0) ?? "";
+    const last = parts[parts.length - 1]?.charAt(0) ?? "";
     return `${first}${last}`.toUpperCase();
   };
 
@@ -75,203 +75,75 @@ export const ChildSelectionScreen: React.FC<ChildSelectionScreenProps> = ({ navi
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-white">
       <ScreenHeader
         title="Chọn con em"
         onBack={() => navigation?.goBack()}
       />
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <Text style={styles.description}>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <Text className="text-sm font-medium text-gray-500 text-center mt-8 mb-8 px-4">
           Vui lòng chọn tài khoản học sinh bạn muốn theo dõi thông tin.
         </Text>
 
-        <View style={styles.childrenList}>
+        <View className="px-6 pb-6 gap-4">
           {children.map((child) => {
             const isSelected = tempSelectedId === child.id;
             return (
-              <TouchableOpacity
+              <Pressable
                 key={child.id}
-                style={[styles.childCard, isSelected && styles.childCardActive]}
                 onPress={() => handleSelectChild(child.id)}
-                activeOpacity={0.7}
               >
-                <View style={[styles.avatar, isSelected && styles.avatarActive]}>
-                  <Text style={[styles.avatarText, isSelected && styles.avatarTextActive]}>
-                    {getInitials(child.name)}
-                  </Text>
-                </View>
-                <View style={styles.childInfo}>
-                  <Text style={styles.childName}>{child.name}</Text>
-                  <Text style={[styles.childClass, isSelected && styles.childClassActive]}>
-                    {child.grade}
-                    {child.section && ` ${child.section}`}
-                  </Text>
-                  <Text style={styles.studentCode}>Mã HS: {child.studentCode}</Text>
-                </View>
-                {isSelected && (
-                  <View style={styles.checkIcon}>
-                    <Icon name="check" size={24} color="#0284C7" />
+                <View className={`
+                  flex-row items-center p-5 rounded-[24px]
+                  ${isSelected ? "bg-sky-50 border-2 border-sky-600" : "bg-gray-50 border-2 border-transparent"}
+                `}>
+                  <View className={`
+                    w-16 h-16 rounded-2xl justify-center items-center
+                    ${isSelected ? "bg-sky-600 shadow-lg shadow-sky-200" : "bg-gray-200"}
+                  `}>
+                    <Text className={`
+                      text-xl font-extrabold
+                      ${isSelected ? "text-white" : "text-gray-500"}
+                    `}>
+                      {getInitials(child.name)}
+                    </Text>
                   </View>
-                )}
-              </TouchableOpacity>
+                  <View className="flex-1 ml-4">
+                    <Text className="text-base font-bold text-gray-800">{child.name}</Text>
+                    <Text className={`
+                      text-xs font-extrabold uppercase tracking-widest mt-0.5
+                      ${isSelected ? "text-sky-600" : "text-gray-400"}
+                    `}>
+                      {child.grade}
+                      {child.section && ` ${child.section}`}
+                    </Text>
+                    <Text className="text-[10px] font-bold tracking-tight text-gray-400 mt-1">
+                      Mã HS: {child.studentCode}
+                    </Text>
+                  </View>
+                  {isSelected && (
+                    <View className="w-6 h-6 items-center justify-center">
+                      <Icon name="check" size={24} color="#0284C7" />
+                    </View>
+                  )}
+                </View>
+              </Pressable>
             );
           })}
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.confirmButton}
-          onPress={handleConfirm}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.confirmButtonText}>Xác nhận</Text>
-        </TouchableOpacity>
+      <View className="p-8 bg-white border-t border-gray-100">
+        <Pressable onPress={handleConfirm}>
+          <View className="bg-sky-600 rounded-2xl py-5 items-center shadow-xl shadow-sky-100">
+            <Text className="text-lg font-extrabold text-white uppercase tracking-widest">
+              Xác nhận
+            </Text>
+          </View>
+        </Pressable>
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  scrollView: {
-    flex: 1,
-    paddingHorizontal: 24,
-  },
-  description: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6B7280',
-    textAlign: 'center',
-    marginTop: 32,
-    marginBottom: 32,
-    paddingHorizontal: 16,
-  },
-  childrenList: {
-    gap: 16,
-    marginBottom: 24,
-  },
-  childCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 24,
-    padding: 20,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  childCardActive: {
-    backgroundColor: '#E0F2FE',
-    borderColor: '#0284C7',
-  },
-  avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    backgroundColor: '#E5E7EB',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarActive: {
-    backgroundColor: '#0284C7',
-  },
-  avatarText: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#6B7280',
-  },
-  avatarTextActive: {
-    color: '#FFFFFF',
-  },
-  childInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  childName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  childClass: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#9CA3AF',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  childClassActive: {
-    color: '#0284C7',
-  },
-  studentCode: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#9CA3AF',
-    letterSpacing: 0.5,
-  },
-  checkIcon: {
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  footer: {
-    paddingHorizontal: 32,
-    paddingBottom: 32,
-    paddingTop: 16,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-  },
-  confirmButton: {
-    backgroundColor: '#0284C7',
-    borderRadius: 16,
-    paddingVertical: 20,
-    alignItems: 'center',
-    shadowColor: '#0284C7',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  confirmButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  // Loading/Empty state styles
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-    backgroundColor: '#F9FAFB',
-  },
-  centerText: {
-    marginTop: 16,
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-  },
-  centerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  errorText: {
-    fontSize: 14,
-    color: '#EF4444',
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 16,
-  },
-});

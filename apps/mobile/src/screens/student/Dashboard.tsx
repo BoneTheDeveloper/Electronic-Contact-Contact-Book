@@ -10,7 +10,7 @@ import { useAuthStore } from '../../stores';
 import { useStudentStore } from '../../stores';
 import { colors } from '../../theme';
 import { Icon } from '../../components/ui';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { StudentHomeStackNavigationProp } from '../../navigation/types';
 
 const { width } = Dimensions.get('window');
 const ICON_SIZE = 80;
@@ -40,7 +40,7 @@ const STUDENT_SERVICE_ICONS: ServiceIcon[] = [
 ];
 
 interface DashboardScreenProps {
-  navigation?: NativeStackNavigationProp<any>;
+  navigation?: StudentHomeStackNavigationProp;
 }
 
 export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
@@ -64,11 +64,11 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
       <TouchableOpacity
         key={item.id}
         style={[styles.iconContainer, { width: containerWidth, marginBottom: VERTICAL_GAP }]}
-        onPress={() => navigation?.navigate(item.route as never)}
+        onPress={() => navigation?.navigate(item.route as keyof StudentHomeStackParamList)}
         activeOpacity={0.92}
       >
         <View style={styles.iconBox}>
-          <Icon name={item.icon as any} size={32} color={item.color} />
+          <Icon name={item.icon as 'calendar' | 'check-circle' | 'account-check' | 'book' | 'file-document' | 'message-reply' | 'newspaper' | 'chart-pie' | 'cash'} size={32} color={item.color} />
         </View>
         <Text style={styles.iconLabel}>{item.label}</Text>
       </TouchableOpacity>

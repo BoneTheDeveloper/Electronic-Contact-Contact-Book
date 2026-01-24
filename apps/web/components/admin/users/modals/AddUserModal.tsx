@@ -158,7 +158,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess, initialRole = 'studen
 
     try {
       let formValid = false
-      let formData: any = {}
+      let formData: StudentFormData | TeacherFormData | ParentFormData = {} as StudentFormData | TeacherFormData | ParentFormData
 
       if (activeRole === 'student') {
         const result = studentForm.trigger()
@@ -228,9 +228,9 @@ export function AddUserModal({ isOpen, onClose, onSuccess, initialRole = 'studen
     }
   }
 
-  const gradeOptions = ['6', '7', '8', '9'].map((g: any) => ({ value: g, label: `Khối ${g}` }))
-  const classOptions = ['6A', '6B', '7A', '7B', '8A', '8B', '9A', '9B'].map((c: any) => ({ value: c, label: `Lớp ${c}` }))
-  const subjectOptions = ['Toán', 'Ngữ văn', 'Tiếng Anh', 'Vật lý', 'Hóa học', 'Sinh học', 'Lịch sử', 'Địa lý', 'GDCD', 'Tin học', 'Thể dục', 'Nghệ thuật', 'Công nghệ'].map((s: any) => ({ value: s, label: s }))
+  const gradeOptions = ['6', '7', '8', '9'].map((g: string) => ({ value: g, label: `Khối ${g}` }))
+  const classOptions = ['6A', '6B', '7A', '7B', '8A', '8B', '9A', '9B'].map((c: string) => ({ value: c, label: `Lớp ${c}` }))
+  const subjectOptions = ['Toán', 'Ngữ văn', 'Tiếng Anh', 'Vật lý', 'Hóa học', 'Sinh học', 'Lịch sử', 'Địa lý', 'GDCD', 'Tin học', 'Thể dục', 'Nghệ thuật', 'Công nghệ'].map((s: string) => ({ value: s, label: s }))
 
   // Role radio cards config with shadow colors
   const roleCards: { key: UserRole; label: string; icon: React.ReactNode; shadowClass: string; bgClass: string; borderClass: string }[] = [
@@ -429,7 +429,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess, initialRole = 'studen
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none"
                   >
                     <option value="">Chọn khối</option>
-                    {gradeOptions.map((opt: any) => (
+                    {gradeOptions.map((opt: { value: string; label: string }) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>
@@ -444,7 +444,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess, initialRole = 'studen
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none"
                   >
                     <option value="">Chọn lớp</option>
-                    {classOptions.map((opt: any) => (
+                    {classOptions.map((opt: { value: string; label: string }) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>
@@ -516,7 +516,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess, initialRole = 'studen
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none"
                 >
                   <option value="">Chọn bộ môn</option>
-                  {subjectOptions.map((opt: any) => (
+                  {subjectOptions.map((opt: { value: string; label: string }) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>

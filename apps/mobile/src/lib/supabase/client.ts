@@ -54,12 +54,19 @@ const customStorageAdapter = {
 
 // Create Supabase client without Database type (not exported from shared-types)
 // TODO: Add Database type to shared-types when available
+
+interface StorageLike {
+  getItem: (key: string) => Promise<string | null>;
+  setItem: (key: string, value: string) => Promise<void>;
+  removeItem: (key: string) => Promise<void>;
+}
+
 export const supabase = createClient(
   supabaseUrl,
   supabaseAnonKey,
   {
     auth: {
-      storage: customStorageAdapter as any,
+      storage: customStorageAdapter as StorageLike,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,

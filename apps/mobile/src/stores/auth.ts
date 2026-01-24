@@ -18,7 +18,7 @@ import type { User, UserRole } from '@school-management/shared-types';
 import { supabase } from '@/lib/supabase/client';
 
 // Debug logger
-const log = (tag: string, ...args: any[]) => {
+const log = (tag: string, ...args: unknown[]) => {
   console.log(`[AUTH:${tag}]`, ...args);
 };
 
@@ -58,7 +58,11 @@ async function findUserEmailByIdentifier(identifier: string): Promise<string | n
     log('IDENTIFIER_LOOKUP', 'Student lookup result:', JSON.stringify({ data, error }, null, 2));
 
     // Handle both nested (profiles.email) and flattened (email) response structures
-    const email = (data as any)?.profiles?.email || (data as any)?.email;
+    type StudentData = {
+      profiles?: { email: string };
+      email?: string;
+    };
+    const email = (data as StudentData | null)?.profiles?.email || (data as StudentData | null)?.email;
     if (email) return email;
   }
 
@@ -218,6 +222,32 @@ export const useAuthStore = create<AuthState>()(
             token: null,
           });
           throw error;
+        }
+      },
+
+      // Logout action
+      logout: async () => {
+        set({
+          isLoading: true,
+        });
+
+        try {
+          // Sign out from Supabase Auth
+          await supabase.auth.signOut();
+
+          // Clear auth state
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null,
+            token: null,
+          });
+        } catch (error) {
+          set({
+            isLoading: false,
+            error: error instanceof Error ? error.message : 'Logout failed',
+          });
         }
       },
 

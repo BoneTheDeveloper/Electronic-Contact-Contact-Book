@@ -62,7 +62,7 @@ function LoginForm() {
     formData.set('password', password)
 
     // Login is a server action
-    login(formData as any).then((result) => {
+    login(formData).then((result) => {
       setIsPending(false)
       if (result && 'error' in result) {
         setError(result.error)

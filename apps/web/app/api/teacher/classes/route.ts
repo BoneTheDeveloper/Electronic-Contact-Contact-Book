@@ -7,8 +7,12 @@ export async function GET(request: Request) {
 
   const classes = await getTeacherClasses(teacherId)
 
+  interface TeacherClass {
+    grade: string
+  }
+
   // Validate that all classes are for grades 6-9 (middle school)
-  const validClasses = classes.filter((c: any) =>
+  const validClasses = classes.filter((c: TeacherClass) =>
     ['6', '7', '8', '9'].includes(c.grade)
   )
 

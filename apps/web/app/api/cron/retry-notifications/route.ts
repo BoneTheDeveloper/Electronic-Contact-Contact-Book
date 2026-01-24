@@ -90,8 +90,9 @@ export async function GET(request: Request) {
         if (retried < failedLogs.length) {
           await sleep(RETRY_DELAY_MS);
         }
-      } catch (error: any) {
-        const errorMsg = `Retry failed for log ${log.id}: ${error.message}`;
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+        const errorMsg = `Retry failed for log ${log.id}: ${errorMessage}`;
         console.error(`[Cron] ${errorMsg}`);
         errors.push(errorMsg);
       }
@@ -106,13 +107,14 @@ export async function GET(request: Request) {
       total: failedLogs.length,
       errors: errors.length > 0 ? errors : undefined,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Cron] Email retry job error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
 
     return NextResponse.json(
       {
         success: false,
-        error: error.message || 'Unknown error',
+        error: errorMessage,
       },
       { status: 500 }
     );
@@ -122,7 +124,7 @@ export async function GET(request: Request) {
 /**
  * Determine if a log should be retried based on retry count and time
  */
-function shouldRetryLog(log: any): boolean {
+function shouldRetryLog(log: NotificationLog): boolean {
   // Always retry if under max attempts
   if (log.retry_count < MAX_RETRIES) {
     return true;
@@ -134,7 +136,7 @@ function shouldRetryLog(log: any): boolean {
 /**
  * Retry email delivery for a specific log entry
  */
-async function retryEmailDelivery(log: any): Promise<void> {
+async function retryEmailDelivery(log: NotificationLog): Promise<void> {
   const supabase = await createClient();
 
   // Increment retry count
@@ -181,20 +183,28 @@ async function retryEmailDelivery(log: any): Promise<void> {
       .eq('id', log.id);
 
     console.log(`[Cron] Successfully retried email for log ${log.id}`);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Update log as failed again
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     await supabase
       .from('notification_logs')
       .update({
         status: 'failed',
         failed_at: new Date().toISOString(),
-        error_message: error.message?.substring(0, 500) || 'Unknown error',
+        error_message: errorMessage.substring(0, 500) || 'Unknown error',
         retry_count: newRetryCount,
       })
       .eq('id', log.id);
 
     throw error;
   }
+}
+
+interface NotificationLog {
+  id: string
+  notification_id: string
+  recipient_id: string
+  retry_count: number
 }
 
 /**

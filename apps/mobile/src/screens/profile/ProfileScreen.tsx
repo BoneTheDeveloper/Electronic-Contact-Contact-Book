@@ -18,9 +18,12 @@ import { useUIStore } from '../../stores';
 import { colors } from '../../theme';
 import Svg, { Path, Circle, Polyline, Line, Rect } from 'react-native-svg';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { StudentProfileStackParamList, ParentProfileStackParamList } from '../../navigation/types';
+
+type ProfileNavigationProp = NativeStackNavigationProp<StudentProfileStackParamList & ParentProfileStackParamList>;
 
 interface ProfileScreenProps {
-  navigation?: NativeStackNavigationProp<any>;
+  navigation?: ProfileNavigationProp;
 }
 
 interface MenuItem {

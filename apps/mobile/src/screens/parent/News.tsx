@@ -1,230 +1,116 @@
 /**
- * News Screen
- * School announcements and events
+ * News Screen - Matches news.html wireframe
  */
-
-import React from 'react';
+import React, { useState } from 'react';
 import { View, ScrollView, Text, Pressable, StyleSheet } from 'react-native';
-import { colors } from '../../theme';
-import { ScreenHeader } from '../../components/ui';
+import { Svg } from 'react-native-svg';
+import { Path } from 'react-native-svg';
 import type { ParentHomeStackNavigationProp } from '../../navigation/types';
-
-interface NewsScreenProps {
-  navigation?: ParentHomeStackNavigationProp;
-}
 
 interface NewsItem {
   id: string;
-  type: 'announcement' | 'event' | 'general';
   category: string;
   title: string;
   content: string;
   date: string;
-  read: boolean;
+  views: number;
+  featured?: boolean;
 }
 
 const MOCK_NEWS: NewsItem[] = [
-  {
-    id: '1',
-    type: 'announcement',
-    category: 'Nhà trường',
-    title: 'Thông báo về việc nghỉ lễ Tết Nguyên Đán 2026',
-    content: 'Nhà trường thông báo lịch nghỉ Tết Nguyên Đán từ ngày 28/01/2026 đến hết 05/02/2026. Học sinh tự ôn bài trong dịp nghỉ lễ.',
-    date: '2026-01-12T08:00:00Z',
-    read: false,
-  },
-  {
-    id: '2',
-    type: 'event',
-    category: 'Sự kiện',
-    title: 'Hội thao thể thao học sinh 2026',
-    content: 'Nhà trường tổ chức hội thao thể thao vào ngày 20/01/2026 tại sân trường. Đăng ký tham gia tại văn phòng Đoàn trường.',
-    date: '2026-01-10T14:30:00Z',
-    read: false,
-  },
-  {
-    id: '3',
-    type: 'general',
-    category: 'Học tập',
-    title: 'Lịch thi giữa kỳ 2',
-    content: 'Lịch thi giữa kỳ 2 sẽ diễn ra từ ngày 15/02/2026 đến 20/02/2026. Học sinh cần xem lịch thi cụ thể tại bảng thông tin lớp.',
-    date: '2026-01-09T09:00:00Z',
-    read: true,
-  },
-  {
-    id: '4',
-    type: 'announcement',
-    category: 'Nhà trường',
-    title: 'Thông báo về họp phụ huynh',
-    content: 'Họp phụ huynh cuối học kỳ 1 sẽ được tổ chức vào ngày 25/01/2026 lúc 18:00 tại hội trường trường.',
-    date: '2026-01-08T10:00:00Z',
-    read: true,
-  },
+  { id: '1', category: 'Nhà trường', title: 'Thông báo nghỉ Tết Nguyên Đán 2026', content: 'Trường sẽ nghỉ từ 20/01 đến 02/02/2026...', date: '20/01/2026', views: 256, featured: true },
+  { id: '2', category: 'Lớp học', title: 'Lịch họp phụ huynh cuối kỳ I', content: 'Thời gian: 15/01/2026 lúc 18:00...', date: '15/01/2026', views: 189 },
+  { id: '3', category: 'Hoạt động', title: 'Hội thao thể thao học sinh 2026', content: 'Đăng ký tham gia các môn...', date: '20/01/2026', views: 412 },
+  { id: '4', category: 'Nhà trường', title: 'Kết thúc kỳ thi giữa kỳ I', content: 'Kết quả sẽ được công bố...', date: '15/01/2026', views: 523 },
 ];
 
-const CATEGORY_COLORS: Record<string, string> = {
-  'Nhà trường': '#DBEAFE',
-  'Sự kiện': '#FEF3C7',
-  'Học tập': '#E0E7FF',
-  'Cộng đồng': '#FCE7F3',
-};
-
-const CATEGORY_TEXT_COLORS: Record<string, string> = {
-  'Nhà trường': colors.primary,
-  'Sự kiện': '#D97706',
-  'Học tập': '#6366F1',
-  'Cộng đồng': '#DB2777',
+const CATEGORY_COLORS = {
+  'Nhà trường': { bg: '#DBEAFE', text: '#0284C7' },
+  'Lớp học': { bg: '#F3E8FF', text: '#9333EA' },
+  'Hoạt động': { bg: '#D1FAE5', text: '#059669' },
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  scrollContent: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingBottom: 100,
-  },
-  newsItem: {
-    marginBottom: 16,
-    borderRadius: 16,
-    backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  newsItemUnread: {
-    borderWidth: 2,
-    borderColor: '#0284C7',
-  },
-  newsContent: {
-    padding: 16,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  categoryBadge: {
-    height: 26,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  categoryText: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-  },
-  dateText: {
-    fontSize: 11,
-    color: '#9ca3af',
-    fontWeight: '500',
-  },
-  newsTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 8,
-    lineHeight: 22,
-  },
-  newsContentText: {
-    fontSize: 14,
-    color: '#4b5563',
-    lineHeight: 20,
-    marginBottom: 8,
-  },
-  unreadIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  unreadDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#0284C7',
-    marginRight: 8,
-  },
-  unreadText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#0284C7',
-  },
+  container: { flex: 1, backgroundColor: '#F8FAFC' },
+  headerBg: { position: 'absolute', top: 0, left: 0, right: 0, height: 140, backgroundColor: '#0284C7', borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
+  scrollContent: { flex: 1, paddingHorizontal: 24, paddingTop: 6, paddingBottom: 128 },
+  categoryTabs: { flexDirection: 'row', gap: 8, marginBottom: 20 },
+  categoryTab: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, backgroundColor: '#DBEAFE' },
+  categoryTabActive: { backgroundColor: '#0284C7' },
+  categoryTabText: { fontSize: 12, fontWeight: '800', color: '#9CA3AF' },
+  categoryTabTextActive: { color: 'white' },
+  featuredCard: { backgroundColor: '#0284C7', borderRadius: 24, padding: 20, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 5 },
+  featuredBadge: { backgroundColor: 'rgba(255, 255, 255, 0.2)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
+  featuredBadgeText: { fontSize: 8, fontWeight: '800', color: 'white', textTransform: 'uppercase' },
+  featuredDate: { fontSize: 9, color: '#E0F2FE', fontWeight: '500' },
+  featuredTitle: { fontSize: 16, fontWeight: '800', color: 'white', marginBottom: 8 },
+  featuredContent: { fontSize: 12, color: '#E0F2FE', lineHeight: 18, marginBottom: 12 },
+  listTitle: { fontSize: 14, fontWeight: '800', color: '#1F2937', marginBottom: 12 },
+  newsCard: { backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#F3F4F6' },
+  newsCardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  categoryBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
+  categoryBadgeText: { fontSize: 8, fontWeight: '800', textTransform: 'uppercase' },
+  newsDate: { fontSize: 9, color: '#9CA3AF' },
+  newsTitle: { fontSize: 14, fontWeight: '700', color: '#1F2937', marginBottom: 8 },
+  newsContent: { fontSize: 12, color: '#6B7280', marginBottom: 8 },
+  newsFooter: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  newsViews: { fontSize: 9, color: '#9CA3AF' },
 });
 
-export const NewsScreen: React.FC<NewsScreenProps> = ({ navigation }) => {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
-    if (diffHours < 24) return `${diffHours} giờ trước`;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays < 7) return `${diffDays} ngày trước`;
-    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  };
+const BackIcon = () => <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.5}><Path d="M19 12H5" /><Path d="M12 19l-7-7 7-7" /></Svg>;
+const CalendarIcon = () => <Svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.5}><Path d="M16 2v6" /><Path d="M8 2v6" /><Path d="M3 10h21" /><Rect x="3" y="4" width="18" height="18" rx="2" /></Svg>;
+const EyeIcon = ({ color }: { color: string }) => <Svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5}><Path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /></Svg>;
+
+export const NewsScreen: React.FC<{ navigation?: ParentHomeStackNavigationProp }> = ({ navigation }) => {
+  const [selectedCategory, setSelectedCategory] = useState('Tất cả');
+  const categories = ['Tất cả', 'Nhà trường', 'Lớp học', 'Hoạt động'];
 
   return (
     <View style={styles.container}>
-      <ScreenHeader
-        title="Tin tức & Sự kiện"
-        onBack={() => navigation?.goBack()}
-      />
-      <ScrollView
-        style={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {MOCK_NEWS.map((item) => (
-          <Pressable
-            key={item.id}
-            style={[
-              styles.newsItem,
-              !item.read && styles.newsItemUnread
-            ]}
-          >
-            <View style={styles.newsContent}>
-              <View style={styles.headerRow}>
-                <View
-                  style={[
-                    styles.categoryBadge,
-                    { backgroundColor: CATEGORY_COLORS[item.category] }
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.categoryText,
-                      { color: CATEGORY_TEXT_COLORS[item.category] }
-                    ]}
-                  >
-                    {item.category}
-                  </Text>
-                </View>
-                <Text style={styles.dateText}>{formatDate(item.date)}</Text>
-              </View>
-              <Text style={styles.newsTitle} numberOfLines={2}>
-                {item.title}
-              </Text>
-              <Text style={styles.newsContentText} numberOfLines={3}>
-                {item.content}
-              </Text>
-              {!item.read && (
-                <View style={styles.unreadIndicator}>
-                  <View style={styles.unreadDot} />
-                  <Text style={styles.unreadText}>Chưa đọc</Text>
-                </View>
-              )}
-            </View>
+      <View style={styles.headerBg} />
+      <View style={{ paddingHorizontal: 24, paddingTop: 64, paddingBottom: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+          <Pressable onPress={() => navigation?.goBack()} style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 20, alignItems: 'center' }}>
+            <BackIcon />
+          </Pressable>
+          <View>
+            <Text style={{ fontSize: 20, fontWeight: '800', color: 'white' }}>Tin tức & sự kiện</Text>
+            <Text style={{ fontSize: 12, color: '#E0F2FE', marginTop: 2 }}>Cập nhật từ trường và lớp học</Text>
+          </View>
+        </View>
+      </View>
+      <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.categoryTabs}>
+          {categories.map((cat) => (
+            <Pressable key={cat} style={[styles.categoryTab, selectedCategory === cat && styles.categoryTabActive]} onPress={() => setSelectedCategory(cat)}>
+              <Text style={[styles.categoryTabText, selectedCategory === cat && styles.categoryTabTextActive]}>{cat}</Text>
+            </Pressable>
+          ))}
+        </View>
+        {MOCK_NEWS.filter(n => n.featured).map(item => (
+          <Pressable key={item.id} style={styles.featuredCard}>
+            <View style={styles.featuredBadge}><Text style={styles.featuredBadgeText}>Nổi bật</Text></View>
+            <Text style={styles.featuredDate}>Hôm nay</Text>
+            <Text style={styles.featuredTitle}>{item.title}</Text>
+            <Text style={styles.featuredContent}>{item.content}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><CalendarIcon /><Text style={styles.featuredDate}>{item.date}</Text></View>
           </Pressable>
         ))}
+        <Text style={styles.listTitle}>Tin mới nhất</Text>
+        {MOCK_NEWS.filter(n => !n.featured).map(item => {
+          const cc = CATEGORY_COLORS[item.category as keyof typeof CATEGORY_COLORS] || CATEGORY_COLORS['Nhà trường'];
+          return (
+            <Pressable key={item.id} style={styles.newsCard}>
+              <View style={styles.newsCardHeader}>
+                <View style={[styles.categoryBadge, { backgroundColor: cc.bg }]}><Text style={[styles.categoryBadgeText, { color: cc.text }]}>{item.category}</Text></View>
+                <Text style={styles.newsDate}>Hôm qua</Text>
+              </View>
+              <Text style={styles.newsTitle}>{item.title}</Text>
+              <Text style={styles.newsContent}>{item.content}</Text>
+              <View style={styles.newsFooter}><EyeIcon color="#9CA3AF" /><Text style={styles.newsViews}>{item.views} lượt xem</Text></View>
+            </Pressable>
+          );
+        })}
       </ScrollView>
     </View>
   );

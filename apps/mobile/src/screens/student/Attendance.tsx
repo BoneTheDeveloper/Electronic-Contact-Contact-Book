@@ -1,108 +1,187 @@
 /**
  * Attendance Screen
- * Student attendance history
+ * Attendance history with month selector and weekly calendar grid
  */
 
-import React from 'react';
-import { View, FlatList, Text, StyleSheet } from 'react-native';
-import { ScreenHeader } from '../../components/ui';
-import type { StudentHomeStackNavigationProp } from '../../navigation/types';
+import React, { useState } from 'react';
+import { View, ScrollView, Text, TouchableOpacity } from 'react-native';
+import { useStudentStore } from '../../stores';
+import { getAttendanceByStudentId } from '../../mock-data';
 
-interface AttendanceScreenProps {
-  navigation?: StudentHomeStackNavigationProp;
+interface WeekAttendanceData {
+  weekNumber: number;
+  dateRange: string;
+  days: Array<{
+    dayName: string;
+    date: string;
+    status: 'present' | 'absent' | 'weekend' | null;
+  }>;
+  presentCount: number;
+  totalCount: number;
 }
 
-interface AttendanceRecord {
-  date: string;
-  status: 'present' | 'absent' | 'late' | 'excused';
-  reason?: string;
-}
+export const StudentAttendanceScreen: React.FC = () => {
+  const { studentData } = useStudentStore();
+    // Using mock data
 
-const MOCK_ATTENDANCE: AttendanceRecord[] = [
-  { date: '2026-01-13', status: 'present' },
-  { date: '2026-01-12', status: 'present' },
-  { date: '2026-01-11', status: 'late', reason: 'Đi muộn 5 phút' },
-  { date: '2026-01-10', status: 'present' },
-  { date: '2026-01-09', status: 'absent', reason: 'Nghỉ ốm' },
-  { date: '2026-01-08', status: 'present' },
-  { date: '2026-01-07', status: 'excused', reason: 'Có phép' },
-];
+  const [selectedMonth, setSelectedMonth] = useState<'10' | '11' | '12' | '1'>('11');
 
-const styles = StyleSheet.create({
-  flex1: { flex: 1 },
-  bgSlate50: { backgroundColor: '#f8fafc' },
-  bgWhite: { backgroundColor: '#ffffff' },
-  shadowSm: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
-  textGray900: { color: '#111827' },
-  textGray600: { color: '#4b5563' },
-  textGray500: { color: '#6b7280' },
-  textSky600: { color: '#0284c7' },
-  textSm: { fontSize: 14 },
-  textXs: { fontSize: 12 },
-  text11px: { fontSize: 11 },
-  fontSemibold: { fontWeight: '600' },
-  fontBold: { fontWeight: '700' },
-  flexRow: { flexDirection: 'row' },
-  justifyBetween: { justifyContent: 'space-between' },
-  justifyCenter: { justifyContent: 'center' },
-  itemsCenter: { alignItems: 'center' },
-  mb3: { marginBottom: 12 },
-  mt05: { marginTop: 2 },
-  px2: { paddingLeft: 8, paddingRight: 8 },
-  px4: { paddingLeft: 16, paddingRight: 16 },
-  py3: { paddingTop: 12, paddingBottom: 12 },
-  h7: { height: 28 },
-  roundedXl: { borderRadius: 8 },
-  roundedFull: { borderRadius: 9999 },
-  bgGreen100: { backgroundColor: '#d1fae5' },
-  bgRed100: { backgroundColor: '#fee2e2' },
-  bgAmber100: { backgroundColor: '#fef3c7' },
-  bgSky100: { backgroundColor: '#e0f2fe' },
-  contentContainerP4Pb24: { padding: 16, paddingBottom: 96 },
-});
+  // Calculate stats
+  const presentCount = attendance.filter(a => a.status === 'present').length;
+  const absentCount = attendance.filter(a => a.status === 'absent').length;
+  const excusedCount = attendance.filter(a => a.status === 'excused').length;
 
-const getStatusConfig = (status: AttendanceRecord['status']) => {
-  switch (status) {
-    case 'present': return { label: 'Có mặt', bgClass: styles.bgGreen100, textClass: styles.textGray600 };
-    case 'absent': return { label: 'Vắng mặt', bgClass: styles.bgRed100, textClass: styles.textGray600 };
-    case 'late': return { label: 'Đi muộn', bgClass: styles.bgAmber100, textClass: styles.textGray600 };
-    case 'excused': return { label: 'Có phép', bgClass: styles.bgSky100, textClass: styles.textSky600 };
-    default: return { label: status, bgClass: styles.bgGreen100, textClass: styles.textGray600 };
-  }
-};
+  // Mock weekly data
+  const weeklyData: WeekAttendanceData[] = [
+    {
+      weekNumber: 2,
+      dateRange: '06/01 - 12/01',
+      days: [
+        { dayName: 'T2', date: '06/01', status: 'present' },
+        { dayName: 'T3', date: '07/01', status: 'present' },
+        { dayName: 'T4', date: '08/01', status: 'present' },
+        { dayName: 'T5', date: '09/01', status: 'present' },
+        { dayName: 'T6', date: '10/01', status: 'present' },
+        { dayName: 'T7', date: '11/01', status: 'present' },
+        { dayName: 'CN', date: '12/01', status: 'weekend' },
+      ],
+      presentCount: 6,
+      totalCount: 6,
+    },
+    {
+      weekNumber: 1,
+      dateRange: '30/12 - 05/01',
+      days: [
+        { dayName: 'T2', date: '30/12', status: 'present' },
+        { dayName: 'T3', date: '31/12', status: 'absent' },
+        { dayName: 'T4', date: '01/01', status: 'present' },
+        { dayName: 'T5', date: '02/01', status: 'present' },
+        { dayName: 'T6', date: '03/01', status: 'present' },
+        { dayName: 'T7', date: '04/01', status: 'present' },
+        { dayName: 'CN', date: '05/01', status: 'weekend' },
+      ],
+      presentCount: 5,
+      totalCount: 6,
+    },
+  ];
 
-export const StudentAttendanceScreen: React.FC<AttendanceScreenProps> = ({ navigation }) => {
-  const renderAttendanceItem = ({ item }: { item: AttendanceRecord }) => {
-    const config = getStatusConfig(item.status);
+  const DayCell: React.FC<{ dayName: string; status: 'present' | 'absent' | 'weekend' | null }> = ({ dayName, status }) => {
+    if (status === 'weekend') {
+      return (
+        <View className="flex-col items-center py-2">
+          <Text className="text-[8px] font-black text-gray-400 uppercase mb-1">{dayName}</Text>
+          <View className="w-7 h-7 bg-gray-100 rounded-lg" />
+        </View>
+      );
+    }
 
-    return (
-      <View style={[styles.mb3, styles.roundedXl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py3]}>
-        <View style={[styles.flexRow, styles.justifyBetween, styles.itemsCenter]}>
-          <View>
-            <Text style={[styles.textSm, styles.fontSemibold, styles.textGray900]}>{item.date}</Text>
-            {item.reason && <Text style={[styles.textXs, styles.textGray500, styles.mt05]}>{item.reason}</Text>}
-          </View>
-          <View style={[styles.h7, styles.px2, styles.roundedFull, styles.itemsCenter, styles.justifyCenter, config.bgClass]}>
-            <Text style={[styles.text11px, styles.fontBold, { textTransform: 'uppercase' }, config.textClass]}>{config.label}</Text>
+    if (status === 'present') {
+      return (
+        <View className="flex-col items-center py-2">
+          <Text className="text-[8px] font-black text-gray-400 uppercase mb-1">{dayName}</Text>
+          <View className="w-7 h-7 bg-emerald-100 rounded-lg items-center justify-center">
+            <Text className="text-emerald-600 text-sm">✓</Text>
           </View>
         </View>
-      </View>
-    );
+      );
+    }
+
+    if (status === 'absent') {
+      return (
+        <View className="flex-col items-center py-2">
+          <Text className="text-[8px] font-black text-gray-400 uppercase mb-1">{dayName}</Text>
+          <View className="w-7 h-7 bg-rose-100 rounded-lg items-center justify-center">
+            <Text className="text-rose-600 text-sm font-bold">✕</Text>
+          </View>
+        </View>
+      );
+    }
+
+    return null;
   };
 
   return (
-    <View style={[styles.flex1, styles.bgSlate50]}>
-      <ScreenHeader
-        title="Lịch sử điểm danh"
-        onBack={() => navigation?.goBack()}
-      />
-      <FlatList
-        data={MOCK_ATTENDANCE}
-        renderItem={renderAttendanceItem}
-        keyExtractor={(item: AttendanceRecord) => item.date}
-        contentContainerStyle={[styles.contentContainerP4Pb24]}
-        showsVerticalScrollIndicator={false}
-      />
+    <View className="flex-1 bg-slate-50">
+      {/* Header */}
+      <View className="bg-gradient-to-br from-[#0284C7] to-[#0369A1] pt-[60px] px-6 pb-6 rounded-b-[30px]">
+        <Text className="text-[20px] font-extrabold text-white">Lịch sử điểm danh</Text>
+        <Text className="text-[12px] text-blue-100 font-medium mt-0.5">Theo dõi attendance học sinh</Text>
+      </View>
+
+      <ScrollView className="px-6 pt-6 pb-[140px]" showsVerticalScrollIndicator={false}>
+        {/* Summary Stats */}
+        <View className="flex-row gap-3 mb-6">
+          <View className="flex-1 bg-emerald-50 p-3 rounded-2xl border border-emerald-100">
+            <Text className="text-emerald-600 text-[9px] font-black uppercase tracking-wider mb-1">Có mặt</Text>
+            <Text className="text-emerald-700 text-2xl font-extrabold">{presentCount}</Text>
+            <Text className="text-emerald-500 text-[9px] font-medium">ngày</Text>
+          </View>
+          <View className="flex-1 bg-rose-50 p-3 rounded-2xl border border-rose-100">
+            <Text className="text-rose-600 text-[9px] font-black uppercase tracking-wider mb-1">Vắng mặt</Text>
+            <Text className="text-rose-700 text-2xl font-extrabold">{absentCount}</Text>
+            <Text className="text-rose-500 text-[9px] font-medium">ngày</Text>
+          </View>
+          <View className="flex-1 bg-amber-50 p-3 rounded-2xl border border-amber-100">
+            <Text className="text-amber-600 text-[9px] font-black uppercase tracking-wider mb-1">Có phép</Text>
+            <Text className="text-amber-700 text-2xl font-extrabold">{excusedCount}</Text>
+            <Text className="text-amber-500 text-[9px] font-medium">ngày</Text>
+          </View>
+        </View>
+
+        {/* Month Selector */}
+        <View className="flex-row space-x-2 mb-5 overflow-x-scroll">
+          {(['10', '11', '12', '1'] as const).map((month) => (
+            <TouchableOpacity
+              key={month}
+              onPress={() => setSelectedMonth(month)}
+              className={`px-4 py-2 rounded-xl ${selectedMonth === month ? 'bg-[#0284C7]' : 'bg-white border border-gray-200'}`}
+            >
+              <Text className={`text-xs font-black ${selectedMonth === month ? 'text-white' : 'text-gray-400'}`}>
+                Tháng {month}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Attendance Calendar */}
+        <Text className="text-gray-800 font-extrabold text-sm mb-3">Chi tiết điểm danh</Text>
+
+        <View className="space-y-3">
+          {weeklyData.map((week) => (
+            <View key={week.weekNumber} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-gray-800 font-bold text-sm">Tuần 0{week.weekNumber} ({week.dateRange})</Text>
+                <View className={`px-2 py-1 rounded-full ${week.presentCount === week.totalCount ? 'bg-emerald-100' : 'bg-rose-100'}`}>
+                  <Text className={`text-[9px] font-black uppercase ${week.presentCount === week.totalCount ? 'text-emerald-700' : 'text-rose-700'}`}>
+                    {week.presentCount}/{week.totalCount} ngày
+                  </Text>
+                </View>
+              </View>
+              <View className="flex-row justify-between gap-1">
+                {week.days.map((day, index) => (
+                  <DayCell key={index} dayName={day.dayName} status={day.status} />
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
+
+        {/* Legend */}
+        <View className="flex-row justify-center space-x-6 pt-4">
+          <View className="flex-row items-center space-x-2">
+            <View className="w-4 h-4 bg-emerald-100 rounded-lg items-center justify-center">
+              <Text className="text-emerald-600 text-xs">✓</Text>
+            </View>
+            <Text className="text-[10px] font-black text-gray-500 uppercase">Có mặt</Text>
+          </View>
+          <View className="flex-row items-center space-x-2">
+            <View className="w-4 h-4 bg-rose-100 rounded-lg items-center justify-center">
+              <Text className="text-rose-600 text-xs font-bold">✕</Text>
+            </View>
+            <Text className="text-[10px] font-black text-gray-500 uppercase">Vắng</Text>
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 };

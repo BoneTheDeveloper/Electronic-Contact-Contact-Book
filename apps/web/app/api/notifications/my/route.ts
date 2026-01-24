@@ -27,15 +27,17 @@ export async function GET(request: Request) {
       success: true,
       data: notifications,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[API] GET /api/notifications/my error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch notifications';
+    const errorStatus = (error as { status?: number }).status || 500;
 
     return NextResponse.json(
       {
         success: false,
-        message: error.message || 'Failed to fetch notifications',
+        message: errorMessage,
       },
-      { status: error.status || 500 }
+      { status: errorStatus }
     );
   }
 }
@@ -48,7 +50,7 @@ export async function PATCH(request: Request) {
     const user = await requireAuth();
 
     const body = await request.json();
-    const { notificationIds } = body;
+    const { notificationIds } = body as { notificationIds: string[] };
 
     if (!Array.isArray(notificationIds)) {
       return NextResponse.json(
@@ -76,15 +78,17 @@ export async function PATCH(request: Request) {
       success: true,
       message: 'Notifications marked as read',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[API] PATCH /api/notifications/my error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to mark notifications as read';
+    const errorStatus = (error as { status?: number }).status || 500;
 
     return NextResponse.json(
       {
         success: false,
-        message: error.message || 'Failed to mark notifications as read',
+        message: errorMessage,
       },
-      { status: error.status || 500 }
+      { status: errorStatus }
     );
   }
 }

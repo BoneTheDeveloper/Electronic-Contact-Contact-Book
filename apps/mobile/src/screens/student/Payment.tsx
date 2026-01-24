@@ -3,8 +3,11 @@
  * Student fee payment information
  */
 
-import React from 'react';
-import { View, FlatList, Text, StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { useStudentStore } from '../../stores';
+import { getFeesByStudentId } from '../../mock-data';
+import { colors } from '../../theme';
 import { ScreenHeader } from '../../components/ui';
 import type { StudentHomeStackNavigationProp } from '../../navigation/types';
 
@@ -12,104 +15,258 @@ interface PaymentScreenProps {
   navigation?: StudentHomeStackNavigationProp;
 }
 
-interface PaymentItem {
+interface Fee {
   id: string;
-  title: string;
+  type: string;
   amount: number;
   dueDate: string;
-  status: 'paid' | 'pending' | 'overdue';
+  status: 'pending' | 'paid' | 'overdue';
+  paidDate?: string;
 }
 
-const MOCK_PAYMENTS: PaymentItem[] = [
-  { id: '1', title: 'Học phí tháng 1', amount: 1500000, dueDate: '2026-01-05', status: 'paid' },
-  { id: '2', title: 'Học phí tháng 2', amount: 1500000, dueDate: '2026-02-05', status: 'pending' },
-];
-
-const styles = StyleSheet.create({
-  flex1: { flex: 1 },
-  bgSlate50: { backgroundColor: '#f8fafc' },
-  bgWhite: { backgroundColor: '#ffffff' },
-  shadowSm: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
-  textGray900: { color: '#111827' },
-  textGray600: { color: '#4b5563' },
-  textGray500: { color: '#6b7280' },
-  textSky600: { color: '#0284c7' },
-  textBase: { fontSize: 16 },
-  textSm: { fontSize: 14 },
-  textXs: { fontSize: 12 },
-  text10px: { fontSize: 10 },
-  textLg: { fontSize: 18 },
-  textExtrabold: { fontWeight: '800' },
-  fontSemibold: { fontWeight: '600' },
-  fontBold: { fontWeight: '700' },
-  flexRow: { flexDirection: 'row' },
-  justifyBetween: { justifyContent: 'space-between' },
-  justifyCenter: { justifyContent: 'center' },
-  itemsStart: { alignItems: 'flex-start' },
-  itemsCenter: { alignItems: 'center' },
-  mb1: { marginBottom: 4 },
-  mb2: { marginBottom: 8 },
-  mb3: { marginBottom: 12 },
-  mb4: { marginBottom: 16 },
-  mt2: { marginTop: 8 },
-  px2: { paddingLeft: 8, paddingRight: 8 },
-  px4: { paddingLeft: 16, paddingRight: 16 },
-  py3: { paddingTop: 12, paddingBottom: 12 },
-  py4: { paddingTop: 16, paddingBottom: 16 },
-  h7: { height: 28 },
-  rounded2xl: { borderRadius: 12 },
-  roundedFull: { borderRadius: 9999 },
-  bgGreen100: { backgroundColor: '#d1fae5' },
-  bgAmber100: { backgroundColor: '#fef3c7' },
-  bgRed100: { backgroundColor: '#fee2e2' },
-  contentContainerP4Pb24: { padding: 16, paddingBottom: 96 },
-});
-
-const getPaymentStatusConfig = (status: PaymentItem['status']) => {
-  switch (status) {
-    case 'paid': return { label: 'Đã thanh toán', bgClass: styles.bgGreen100, textClass: styles.textGray600 };
-    case 'pending': return { label: 'Chờ thanh toán', bgClass: styles.bgAmber100, textClass: styles.textGray600 };
-    case 'overdue': return { label: 'Quá hạn', bgClass: styles.bgRed100, textClass: styles.textGray600 };
-  }
+const FEE_TYPE_LABELS: Record<string, string> = {
+  tuition: 'Học phí',
+  transport: 'Phí đưa đón',
+  library: 'Phí thư viện',
+  lab: 'Phí phòng thí nghiệm',
+  other: 'Khác',
 };
 
+const STATUS_CONFIG = {
+  pending: { label: 'Chưa thanh toán', color: '#F59E0B', bgColor: '#FEF3C7' },
+  paid: { label: 'Đã thanh toán', color: '#10B981', bgColor: '#D1FAE5' },
+  overdue: { label: 'Quá hạn', color: '#EF4444', bgColor: '#FEE2E2' },
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  scrollViewContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  summaryCard: {
+    marginBottom: 24,
+    borderRadius: 16,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderColor: '#f3f4f6',
+    borderWidth: 1,
+    padding: 16,
+  },
+  summaryTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 16,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 12,
+    borderBottomColor: '#e5e7eb',
+    borderBottomWidth: 1,
+  },
+  summaryLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  summaryTotal: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    marginTop: 8,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statLabel: {
+    fontSize: 11,
+    color: '#6b7280',
+    marginBottom: 4,
+  },
+  statValue: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  statSuccess: {
+    color: colors.success,
+  },
+  statWarning: {
+    color: colors.warning,
+  },
+  statError: {
+    color: colors.error,
+  },
+  listTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  feeCard: {
+    marginBottom: 12,
+    borderRadius: 12,
+    backgroundColor: 'white',
+    borderColor: '#f3f4f6',
+    borderWidth: 1,
+    padding: 16,
+  },
+  feeCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  feeCardType: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  feeCardDate: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  feeCardStatus: {
+    height: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  feeCardStatusText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  feeCardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  feeCardAmount: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  feeCardDetail: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+});
+
 export const StudentPaymentScreen: React.FC<PaymentScreenProps> = ({ navigation }) => {
+  const { studentData } = useStudentStore();
+  const fees = studentData ? getFeesByStudentId(studentData.id) : [];
+
+  const stats = useMemo(() => {
+    const total = fees.reduce((sum, fee) => sum + fee.amount, 0);
+    const paid = fees.filter(f => f.status === 'paid').reduce((sum, fee) => sum + fee.amount, 0);
+    const pending = fees.filter(f => f.status === 'pending').reduce((sum, fee) => sum + fee.amount, 0);
+    const overdue = fees.filter(f => f.status === 'overdue').reduce((sum, fee) => sum + fee.amount, 0);
+    return { total, paid, pending, overdue };
+  }, [fees]);
+
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(amount);
   };
 
-  const renderPaymentItem = ({ item }: { item: PaymentItem }) => {
-    const config = getPaymentStatusConfig(item.status);
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
 
+  const renderFeeCard = (fee: Fee) => {
+    const config = STATUS_CONFIG[fee.status];
     return (
-      <View style={[styles.mb4, styles.rounded2xl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py4]}>
-        <View style={[styles.flexRow, styles.justifyBetween, styles.itemsStart, styles.mb2]}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.textBase, styles.fontSemibold, styles.textGray900, styles.mb1]}>{item.title}</Text>
-            <Text style={[styles.textXs, styles.textGray500]}>Hạn: {item.dueDate}</Text>
+      <TouchableOpacity
+        key={fee.id}
+        onPress={() => {}}
+        activeOpacity={0.7}
+        style={styles.feeCard}
+      >
+        <View style={styles.feeCardHeader}>
+          <View>
+            <Text style={[styles.feeCardType, { marginBottom: 4 }]}>{FEE_TYPE_LABELS[fee.type] || fee.type}</Text>
+            <Text style={styles.feeCardDate}>Hạn chót: {formatDate(fee.dueDate)}</Text>
           </View>
-          <View style={[styles.h7, styles.px2, styles.roundedFull, styles.itemsCenter, styles.justifyCenter, config.bgClass]}>
-            <Text style={[styles.text10px, styles.fontBold, { textTransform: 'uppercase' }, config.textClass]}>{config.label}</Text>
+          <View
+            style={[styles.feeCardStatus, { backgroundColor: config.bgColor }]}
+          >
+            <Text
+              style={[styles.feeCardStatusText, { color: config.color }]}
+            >
+              {config.label}
+            </Text>
           </View>
         </View>
-        <Text style={[styles.textLg, styles.textExtrabold, styles.textSky600, styles.mt2]}>{formatCurrency(item.amount)}</Text>
-      </View>
+        <View style={styles.feeCardFooter}>
+          <Text style={styles.feeCardAmount}>{formatCurrency(fee.amount)}</Text>
+          <Text style={styles.feeCardDetail}>Chi tiết →</Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
   return (
-    <View style={[styles.flex1, styles.bgSlate50]}>
+    <View style={styles.container}>
       <ScreenHeader
         title="Học phí"
         onBack={() => navigation?.goBack()}
       />
-      <FlatList
-        data={MOCK_PAYMENTS}
-        renderItem={renderPaymentItem}
-        keyExtractor={(item: PaymentItem) => item.id}
-        contentContainerStyle={[styles.contentContainerP4Pb24]}
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
         showsVerticalScrollIndicator={false}
-      />
+      >
+        {/* Summary Card */}
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryTitle}>Tổng quan học phí</Text>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Tổng cộng:</Text>
+            <Text style={styles.summaryTotal}>{formatCurrency(stats.total)}</Text>
+          </View>
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Đã thanh toán</Text>
+              <Text style={[styles.statValue, styles.statSuccess]}>
+                {formatCurrency(stats.paid)}
+              </Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Chưa thanh toán</Text>
+              <Text style={[styles.statValue, styles.statWarning]}>
+                {formatCurrency(stats.pending)}
+              </Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Quá hạn</Text>
+              <Text style={[styles.statValue, styles.statError]}>
+                {formatCurrency(stats.overdue)}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Fee List */}
+        <Text style={styles.listTitle}>Chi tiết các khoản</Text>
+        {fees.map(renderFeeCard)}
+      </ScrollView>
     </View>
   );
 };

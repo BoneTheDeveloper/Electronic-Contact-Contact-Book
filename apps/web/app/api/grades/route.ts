@@ -35,16 +35,16 @@ export async function GET(request: Request) {
   let filteredGrades = [...mockGrades]
 
   if (classId) {
-    filteredGrades = filteredGrades.filter((g: any) => g.classId === classId)
+    filteredGrades = filteredGrades.filter((g: GradeRecord) => g.classId === classId)
   }
   if (subject) {
-    filteredGrades = filteredGrades.filter((g: any) => g.subject === subject)
+    filteredGrades = filteredGrades.filter((g: GradeRecord) => g.subject === subject)
   }
   if (letterGrade) {
-    filteredGrades = filteredGrades.filter((g: any) => g.letterGrade === letterGrade)
+    filteredGrades = filteredGrades.filter((g: GradeRecord) => g.letterGrade === letterGrade)
   }
   if (search) {
-    filteredGrades = filteredGrades.filter((g: any) =>
+    filteredGrades = filteredGrades.filter((g: GradeRecord) =>
       g.studentName.toLowerCase().includes(search.toLowerCase())
     )
   }
@@ -52,12 +52,12 @@ export async function GET(request: Request) {
   // Calculate statistics
   const stats = {
     totalStudents: filteredGrades.length,
-    averageScore: filteredGrades.reduce((sum: number, g: any) => sum + g.average, 0) / filteredGrades.length || 0,
-    gradeA: filteredGrades.filter((g: any) => g.letterGrade === 'A').length,
-    gradeB: filteredGrades.filter((g: any) => g.letterGrade === 'B').length,
-    gradeC: filteredGrades.filter((g: any) => g.letterGrade === 'C').length,
-    gradeD: filteredGrades.filter((g: any) => g.letterGrade === 'D').length,
-    gradeF: filteredGrades.filter((g: any) => g.letterGrade === 'F').length,
+    averageScore: filteredGrades.reduce((sum: number, g: GradeRecord) => sum + g.average, 0) / filteredGrades.length || 0,
+    gradeA: filteredGrades.filter((g: GradeRecord) => g.letterGrade === 'A').length,
+    gradeB: filteredGrades.filter((g: GradeRecord) => g.letterGrade === 'B').length,
+    gradeC: filteredGrades.filter((g: GradeRecord) => g.letterGrade === 'C').length,
+    gradeD: filteredGrades.filter((g: GradeRecord) => g.letterGrade === 'D').length,
+    gradeF: filteredGrades.filter((g: GradeRecord) => g.letterGrade === 'F').length,
   }
 
   return NextResponse.json({
@@ -108,8 +108,17 @@ export async function POST(request: Request) {
   }, { status: 201 })
 }
 
+interface GradeUpdate {
+  id: string
+  midterm?: number
+  final?: number
+  studentName?: string
+  classId?: string
+  subject?: string
+}
+
 export async function PATCH(request: Request) {
-  const body = await request.json()
+  const body = await request.json() as GradeUpdate
   const { id, midterm, final, ...updates } = body
 
   const index = mockGrades.findIndex(g => g.id === id)

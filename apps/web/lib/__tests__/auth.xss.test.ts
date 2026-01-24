@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { login } from '../auth'
 
+interface MockCookies {
+  set: ReturnType<typeof vi.fn>
+}
+
 const mockCookies = vi.hoisted(() => ({ set: vi.fn() }))
 vi.mock('next/headers', () => ({ cookies: () => mockCookies }))
 vi.mock('next/navigation', () => ({
@@ -37,7 +41,7 @@ describe('login - XSS Prevention', () => {
     formData.set('password', 'any')
 
     // Sanitization removes script tags, leaving empty string
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     expect(result).toHaveProperty('error')
   })
 
@@ -47,7 +51,7 @@ describe('login - XSS Prevention', () => {
     formData.set('password', 'any')
 
     // Sanitization removes HTML tags
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     expect(result).toHaveProperty('error')
   })
 
@@ -57,7 +61,7 @@ describe('login - XSS Prevention', () => {
     formData.set('password', 'any')
 
     // Sanitization removes javascript: protocol
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     expect(result).toHaveProperty('error')
   })
 })

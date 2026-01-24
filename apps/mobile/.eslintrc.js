@@ -30,7 +30,7 @@ module.exports = {
     // General TypeScript rules
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-explicit-any': 'error',
 
     // TypeScript handles undef checking
     'no-undef': 'off',

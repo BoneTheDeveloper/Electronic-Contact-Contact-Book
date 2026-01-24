@@ -13,13 +13,13 @@ import {
   Alert,
 } from 'react-native';
 import { useAuthStore } from '@/stores/auth';
-import { supabase } from '@/lib/supabase/client';
+import { mockNotifications } from '../../mock-data';
 import { colors } from '../../theme';
+import type { ParentCommStackNavigationProp } from '../../navigation/types';
 import type {
   NotificationCategory,
   NotificationPriority,
   UserNotification,
-  RealtimeChannel,
 } from '@school-management/shared-types';
 
 // Type for database notification
@@ -58,7 +58,7 @@ const PRIORITY_COLORS: Record<NotificationPriority, string> = {
 };
 
 interface NotificationsScreenProps {
-  navigation?: any;
+  navigation?: ParentCommStackNavigationProp;
 }
 
 export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ navigation }) => {
@@ -85,7 +85,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ naviga
 
       if (error) throw error;
 
-      const notificationsData = (data as DatabaseNotification[]) || [];
+      const notificationsData = (mockData as DatabaseNotification[]) || []
       setNotifications(notificationsData);
       setUnreadCount(notificationsData.filter((n) => !n.is_read).length);
     } catch (error) {

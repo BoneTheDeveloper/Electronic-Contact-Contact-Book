@@ -64,27 +64,27 @@ export async function GET(request: Request) {
   let filteredInvoices = [...mockInvoices]
 
   if (status) {
-    filteredInvoices = filteredInvoices.filter((i: any) => i.status === status)
+    filteredInvoices = filteredInvoices.filter((i: Invoice) => i.status === status)
   }
   if (search) {
-    filteredInvoices = filteredInvoices.filter((i: any) =>
+    filteredInvoices = filteredInvoices.filter((i: Invoice) =>
       i.studentName.toLowerCase().includes(search.toLowerCase()) ||
       i.id.toLowerCase().includes(search.toLowerCase())
     )
   }
 
   // Calculate statistics
-  const totalAmount = filteredInvoices.reduce((sum: number, i: any) => sum + i.amount, 0)
+  const totalAmount = filteredInvoices.reduce((sum: number, i: Invoice) => sum + i.amount, 0)
   const collectedAmount = filteredInvoices
-    .filter((i: any) => i.status === 'paid')
-    .reduce((sum: number, i: any) => sum + i.amount, 0)
+    .filter((i: Invoice) => i.status === 'paid')
+    .reduce((sum: number, i: Invoice) => sum + i.amount, 0)
   const collectionRate = totalAmount > 0 ? Math.round((collectedAmount / totalAmount) * 100) : 0
 
   const stats = {
     totalAmount,
     collectedAmount,
-    pendingCount: filteredInvoices.filter((i: any) => i.status === 'pending').length,
-    overdueCount: filteredInvoices.filter((i: any) => i.status === 'overdue').length,
+    pendingCount: filteredInvoices.filter((i: Invoice) => i.status === 'pending').length,
+    overdueCount: filteredInvoices.filter((i: Invoice) => i.status === 'overdue').length,
     collectionRate,
   }
 
@@ -112,8 +112,18 @@ export async function POST(request: Request) {
   }, { status: 201 })
 }
 
+interface InvoiceUpdate {
+  id: string
+  studentId?: string
+  studentName?: string
+  amount?: number
+  status?: 'paid' | 'pending' | 'overdue'
+  dueDate?: string
+  paidDate?: string
+}
+
 export async function PATCH(request: Request) {
-  const body = await request.json()
+  const body = await request.json() as InvoiceUpdate
   const { id, ...updates } = body
 
   const index = mockInvoices.findIndex(i => i.id === id)

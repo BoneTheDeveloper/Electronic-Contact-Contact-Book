@@ -90,8 +90,8 @@ export function AttendanceManagement() {
 
   // Get unique classes - memoized
   const classOptions = useMemo(() => {
-    const classes = new Set(attendance.map((a: any) => a.classId))
-    return Array.from(classes).map((c: any) => ({ value: c, label: `Lớp ${c}` }))
+    const classes = new Set(attendance.map((a: AttendanceRecord) => a.classId))
+    return Array.from(classes).map((c: string) => ({ value: c, label: `Lớp ${c}` }))
   }, [attendance])
 
   // Clear filters - memoized
@@ -100,7 +100,7 @@ export function AttendanceManagement() {
   }, [])
 
   // Handle filter change - memoized
-  const handleFilterChange = useCallback((key: string, value: any) => {
+  const handleFilterChange = useCallback((key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }))
   }, [])
 
@@ -144,7 +144,7 @@ export function AttendanceManagement() {
       render: (_value, row) => (
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#0284C7] to-[#0369a1] text-xs font-bold text-white">
-            {row.studentName.split(' ').slice(0, 2).map((n: any) => n[0]).join('')}
+            {row.studentName.split(' ').slice(0, 2).map((n: string) => n[0]).join('')}
           </div>
           <div>
             <p className="text-sm font-bold text-slate-800">{row.studentName}</p>

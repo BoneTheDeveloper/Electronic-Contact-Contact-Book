@@ -62,16 +62,16 @@ export const getParentChildren = async (
   }
 
   // Group by student (in case multiple enrollments exist, get the active one)
-  const uniqueChildren = new Map<string, any>();
+  const uniqueChildren = new Map<string, StudentGuardianData>();
 
-  for (const item of data as any[]) {
+  for (const item of data) {
     const studentId = item.students.id;
     if (!uniqueChildren.has(studentId)) {
       uniqueChildren.set(studentId, item);
     }
   }
 
-  return Array.from(uniqueChildren.values()).map((item: any) => ({
+  return Array.from(uniqueChildren.values()).map((item) => ({
     id: item.students.id,
     name: item.students.full_name,
     rollNumber: item.students.student_code,
@@ -82,6 +82,22 @@ export const getParentChildren = async (
     isPrimary: item.is_primary,
     avatarUrl: item.students.avatar_url,
   }));
+}
+
+type StudentGuardianData = {
+  students: {
+    id: string;
+    student_code: string;
+    full_name: string;
+    avatar_url: string | null;
+    enrollments?: Array<{
+      class_id: string;
+      classes?: {
+        grade_id: string;
+      };
+    }>;
+  };
+  is_primary: boolean;
 };
 
 /**

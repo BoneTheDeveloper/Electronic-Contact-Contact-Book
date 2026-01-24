@@ -78,15 +78,15 @@ export const measurePerformance = async (
  */
 export const measureNavigation = async (
   operation: string,
-  navigation: NavigationProp<any>,
+  navigation: NavigationProp<Record<string, object>>,
   route: string,
-  params?: any
+  params?: Record<string, unknown>
 ): Promise<PerformanceMetrics> => {
   return measurePerformance(
     `Navigate to ${route}`,
     async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (navigation.navigate as any)(route, params);
+      (navigation.navigate as (route: string, params?: Record<string, unknown>) => void)(route, params);
       // Wait for transition to complete
       await new Promise<void>((resolve) => setTimeout(resolve, 100));
     },
@@ -158,7 +158,7 @@ export const measureMemoryUsage = (): PerformanceMetrics | null => {
  * Run complete performance test suite
  */
 export const runPerformanceTests = async (
-  navigation?: NavigationProp<any>
+  navigation?: NavigationProp<Record<string, object>>
 ): Promise<PerformanceReport> => {
   if (__DEV__) {
     console.log('\n╔════════════════════════════════════════════════╗');
@@ -263,7 +263,7 @@ export const runPerformanceTests = async (
  */
 export const measureAppStartup = (): PerformanceMetrics => {
   // This should be called from App.tsx componentDidMount/useEffect
-  const startTime = (globalThis as any).__APP_START_TIME__ || getTimestamp();
+  const startTime = (globalThis as Record<string, unknown>).__APP_START_TIME__ as number || getTimestamp();
   const endTime = getTimestamp();
   const duration = endTime - startTime;
 
@@ -282,7 +282,7 @@ export const measureAppStartup = (): PerformanceMetrics => {
  */
 export const initStartupMeasurement = () => {
   if (__DEV__) {
-    (globalThis as any).__APP_START_TIME__ = getTimestamp();
+    (globalThis as Record<string, unknown>).__APP_START_TIME__ = getTimestamp();
   }
 };
 

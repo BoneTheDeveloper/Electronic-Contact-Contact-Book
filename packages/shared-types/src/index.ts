@@ -107,6 +107,17 @@ export interface Fee {
   remarks?: string;
 }
 
+// Invoice Types
+export interface Invoice {
+  id: string;
+  studentId: string;
+  studentName: string;
+  amount: number;
+  status: 'paid' | 'pending' | 'overdue';
+  dueDate?: string;
+  paidDate?: string;
+}
+
 // API Response Types
 export interface ApiResponse<T> {
   success: boolean;

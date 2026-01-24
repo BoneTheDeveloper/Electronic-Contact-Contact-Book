@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getFeeAssignments, getFeeItems } from '@/lib/supabase/queries'
 import { createClient } from '@/lib/supabase/server'
 import type { FeeAssignment } from '@/lib/types'
+import type { Database } from '@/types/supabase'
 
 // GET /api/fee-assignments - List all fee assignments
 export async function GET(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
     const feeItems = await getFeeItems()
 
     // Enrich assignments with fee item details
-    const enrichedAssignments = assignments.map((assignment: any) => ({
+    const enrichedAssignments = assignments.map((assignment: FeeAssignment) => ({
       ...assignment,
       feeItemDetails: assignment.feeItems.map((feeId: string) => {
         const fee = feeItems.find((f: { id: string }) => f.id === feeId)
@@ -112,6 +113,9 @@ export async function POST(request: NextRequest) {
 
     // Insert into Supabase
     const supabase = await createClient()
+
+    type FeeAssignmentInsert = Database['public']['Tables']['fee_assignments']['Insert']
+
     const { data, error } = await supabase
       .from('fee_assignments')
       .insert({
@@ -125,8 +129,9 @@ export async function POST(request: NextRequest) {
         reminder_frequency: reminderFrequency || 'weekly',
         total_students: totalStudents,
         total_amount: totalAmount,
+        collected_amount: 0,
         status: 'draft'
-      } as any) // Type cast to bypass Supabase type inference issue
+      } as FeeAssignmentInsert)
       .select()
       .single()
 

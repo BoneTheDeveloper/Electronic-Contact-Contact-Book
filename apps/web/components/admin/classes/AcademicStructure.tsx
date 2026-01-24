@@ -53,7 +53,15 @@ const yearsData = [
 ]
 
 // Mock subjects data
-const subjectsData = [
+interface SubjectData {
+  id: string
+  name: string
+  category: string
+  coefficient: number
+  classes: number
+}
+
+const subjectsData: SubjectData[] = [
   { id: '1', name: 'Toán', category: 'Khoa học tự nhiên', coefficient: 3, classes: 24 },
   { id: '2', name: 'Văn học', category: 'Khoa học xã hội', coefficient: 2, classes: 24 },
   { id: '3', name: 'Tiếng Anh', category: 'Ngoại ngữ', coefficient: 2, classes: 24 },
@@ -303,7 +311,7 @@ export function AcademicStructure() {
             {/* Subjects by Category */}
             <div className="space-y-4">
               {['Khoa học tự nhiên', 'Khoa học xã hội', 'Ngoại ngữ', 'Kỹ thuật'].map((category) => {
-                const categorySubjects = subjectsData.filter((s: any) => s.category === category)
+                const categorySubjects = subjectsData.filter((s: SubjectData) => s.category === category)
                 return (
                   <div key={category} className="rounded-xl border border-slate-200 bg-white p-4">
                     <h3 className="mb-3 text-sm font-black text-slate-800">{category}</h3>

@@ -4,7 +4,6 @@
  */
 
 import React from 'react';
-import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuthStore } from '../stores';
@@ -36,14 +35,14 @@ const RootNavigator: React.FC = () => {
     >
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated ? (
-          <Stack.Screen name="Auth" component={AuthNavigator as any} />
+          <Stack.Screen name="Auth" component={AuthNavigator} />
         ) : user?.role === 'parent' ? (
-          <Stack.Screen name="Parent" component={ParentTabs as any} />
+          <Stack.Screen name="Parent" component={ParentTabs} />
         ) : user?.role === 'student' ? (
-          <Stack.Screen name="Student" component={StudentTabs as any} />
+          <Stack.Screen name="Student" component={StudentTabs} />
         ) : (
           // Fallback to auth if role is not parent or student
-          <Stack.Screen name="Auth" component={AuthNavigator as any} />
+          <Stack.Screen name="Auth" component={AuthNavigator} />
         )}
       </Stack.Navigator>
     </NavigationContainer>

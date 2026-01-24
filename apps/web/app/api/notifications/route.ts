@@ -33,15 +33,17 @@ export async function GET(request: Request) {
       page,
       limit,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[API] GET /api/notifications error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch notifications';
+    const errorStatus = (error as { status?: number }).status || 500;
 
     return NextResponse.json(
       {
         success: false,
-        message: error.message || 'Failed to fetch notifications',
+        message: errorMessage,
       },
-      { status: error.status || 500 }
+      { status: errorStatus }
     );
   }
 }
@@ -96,15 +98,17 @@ export async function POST(request: Request) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[API] POST /api/notifications error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create notification';
+    const errorStatus = (error as { status?: number }).status || 500;
 
     return NextResponse.json(
       {
         success: false,
-        message: error.message || 'Failed to create notification',
+        message: errorMessage,
       },
-      { status: error.status || 500 }
+      { status: errorStatus }
     );
   }
 }
@@ -135,7 +139,7 @@ export async function DELETE(request: Request) {
     const { error } = await supabase
       .from('notifications')
       .delete()
-      .eq('id', id);
+      .eq('id' as const, id);
 
     if (error) {
       throw new Error(`Failed to delete notification: ${error.message}`);
@@ -145,15 +149,17 @@ export async function DELETE(request: Request) {
       success: true,
       message: 'Notification deleted successfully',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[API] DELETE /api/notifications error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to delete notification';
+    const errorStatus = (error as { status?: number }).status || 500;
 
     return NextResponse.json(
       {
         success: false,
-        message: error.message || 'Failed to delete notification',
+        message: errorMessage,
       },
-      { status: error.status || 500 }
+      { status: errorStatus }
     );
   }
 }

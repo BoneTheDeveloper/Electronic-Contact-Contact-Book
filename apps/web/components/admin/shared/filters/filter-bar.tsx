@@ -15,13 +15,13 @@ export interface Filter {
   label: string
   type: 'select' | 'multiselect' | 'search'
   options?: FilterOption[]
-  value?: any
+  value?: string | string[] | number
 }
 
 export interface FilterBarProps {
   filters: Filter[]
-  values: Record<string, any>
-  onChange: (key: string, value: any) => void
+  values: Record<string, string | string[] | number>
+  onChange: (key: string, value: string | string[] | number) => void
   onClear: () => void
   searchKey?: string
   searchPlaceholder?: string

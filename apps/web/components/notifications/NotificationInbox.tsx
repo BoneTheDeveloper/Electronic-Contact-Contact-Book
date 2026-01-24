@@ -28,8 +28,8 @@ export function NotificationInbox({ userId }: NotificationInboxProps) {
           title: notification.title,
           content: notification.content,
           type: 'general',
-          category: notification.category as any,
-          priority: notification.priority as any,
+          category: notification.category as NotificationCategory,
+          priority: notification.priority as 'low' | 'normal' | 'high' | 'emergency',
           isRead: false,
           createdAt: notification.created_at,
         }

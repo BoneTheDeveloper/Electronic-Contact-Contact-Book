@@ -1,116 +1,218 @@
 /**
  * Summary Screen
- * Overall academic performance summary
+ * Academic summary and overall performance
  */
 
-import React from 'react';
-import { View, ScrollView, Text, StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, ScrollView, Text } from 'react-native';
 import { useStudentStore } from '../../stores';
-import { ScreenHeader } from '../../components/ui';
-import type { StudentHomeStackNavigationProp } from '../../navigation/types';
+import {
+  getGradesByStudentId,
+  getAttendanceByStudentId,
+  calculateAttendancePercentage,
+  getGradeLetter,
+} from '../../mock-data';
+import { colors } from '../../theme';
 
-interface SummaryScreenProps {
-  navigation?: StudentHomeStackNavigationProp;
+interface SubjectSummary {
+  subject: string;
+  average: number;
+  grade: string;
+  trend: 'up' | 'down' | 'stable';
 }
 
-interface SummaryItem {
-  label: string;
-  value: string | number;
-  icon: string;
-  color: string;
-}
+export const StudentSummaryScreen: React.FC = () => {
+  const { studentData } = useStudentStore();
+  
+  // Using mock data
+  // Using mock data
 
-const styles = StyleSheet.create({
-  flex1: { flex: 1 },
-  bgSlate50: { backgroundColor: '#f8fafc' },
-  bgWhite: { backgroundColor: '#ffffff' },
-  shadowSm: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
-  textGray900: { color: '#111827' },
-  textGray500: { color: '#6b7280' },
-  textEmerald600: { color: '#059669' },
-  textAmber500: { color: '#f59e0b' },
-  text2xl: { fontSize: 24 },
-  textBase: { fontSize: 16 },
-  textSm: { fontSize: 14 },
-  textXs: { fontSize: 12 },
-  textExtrabold: { fontWeight: '800' },
-  fontBold: { fontWeight: '700' },
-  fontSemibold: { fontWeight: '600' },
-  flexWrap: { flexWrap: 'wrap' },
-  justifyBetween: { justifyContent: 'space-between' },
-  itemsCenter: { alignItems: 'center' },
-  mb1: { marginBottom: 4 },
-  mb2: { marginBottom: 8 },
-  mb3: { marginBottom: 12 },
-  mb4: { marginBottom: 16 },
-  px4: { paddingLeft: 16, paddingRight: 16 },
-  py4: { paddingTop: 16, paddingBottom: 16 },
-  w47Percent: { width: '47%' },
-  h14: { height: 56 },
-  rounded2xl: { borderRadius: 12 },
-  roundedFull: { borderRadius: 9999 },
-  textCenter: { textAlign: 'center' },
-  bgSky60020: { backgroundColor: 'rgba(2, 132, 199, 0.2)' },
-  bgEmerald60020: { backgroundColor: 'rgba(5, 150, 105, 0.2)' },
-  bgAmber50020: { backgroundColor: 'rgba(245, 158, 11, 0.2)' },
-  bgViolet50020: { backgroundColor: 'rgba(139, 92, 246, 0.2)' },
-  contentContainerP4Pb24: { padding: 16, paddingBottom: 96 },
-});
+  const academicSummary = useMemo(() => {
+    // Calculate overall average
+    const overallAverage = grades.length > 0
+      ? grades.reduce((sum, g) => sum + (g.score / g.maxScore) * 100, 0) / grades.length
+      : 0;
 
-export const StudentSummaryScreen: React.FC<SummaryScreenProps> = ({ navigation }) => {
-  const { attendancePercentage } = useStudentStore();
+    // Group by subject
+    const subjectsMap = new Map<string, number[]>();
+    grades.forEach(grade => {
+      if (!subjectsMap.has(grade.subject)) {
+        subjectsMap.set(grade.subject, []);
+      }
+      subjectsMap.get(grade.subject)!.push((grade.score / grade.maxScore) * 100);
+    });
 
-  const summaryData: SummaryItem[] = [
-    { label: 'Điểm trung bình', value: '8.2', icon: '📚', color: '#0284C7' },
-    { label: 'Điểm danh', value: `${attendancePercentage}%`, icon: '✓', color: '#059669' },
-    { label: 'Số ngày nghỉ', value: '2', icon: '📅', color: '#F59E0B' },
-    { label: 'Xếp loại', value: 'Giỏi', icon: '⭐', color: '#8B5CF6' },
-  ];
+    const subjectSummaries: SubjectSummary[] = Array.from(subjectsMap.entries()).map(([subject, scores]) => {
+      const average = scores.reduce((a, b) => a + b, 0) / scores.length;
+      return {
+        subject,
+        average,
+        grade: getGradeLetter(average, 100),
+        trend: 'stable' as const,
+      };
+    }).sort((a, b) => b.average - a.average);
 
-  const getColorClass = (color: string) => {
-    switch (color) {
-      case '#0284C7': return styles.bgSky60020;
-      case '#059669': return styles.bgEmerald60020;
-      case '#F59E0B': return styles.bgAmber50020;
-      case '#8B5CF6': return styles.bgViolet50020;
-      default: return { backgroundColor: '#e5e7eb' };
-    }
+    // Attendance stats
+    const attendanceStats = {
+      present: attendance.filter(a => a.status === 'present').length,
+      absent: attendance.filter(a => a.status === 'absent').length,
+      late: attendance.filter(a => a.status === 'late').length,
+      percentage: calculateAttendancePercentage(attendance),
+    };
+
+    return {
+      overallAverage,
+      subjectSummaries,
+      attendanceStats,
+      totalGrades: grades.length,
+    };
+  }, [grades, attendance]);
+
+  const getPerformanceColor = (average: number): string => {
+    if (average >= 90) return colors.gradeA;
+    if (average >= 80) return colors.gradeB;
+    if (average >= 70) return colors.gradeC;
+    if (average >= 60) return colors.gradeD;
+    return colors.gradeF;
+  };
+
+  const getPerformanceLabel = (average: number): string => {
+    if (average >= 90) return 'Xuất sắc';
+    if (average >= 80) return 'Khá giỏi';
+    if (average >= 70) return 'Khá';
+    if (average >= 60) return 'Trung bình - Khá';
+    if (average >= 50) return 'Trung bình';
+    return 'Cần cố gắng';
   };
 
   return (
-    <View style={[styles.flex1, styles.bgSlate50]}>
-      <ScreenHeader
-        title="Kết quả tổng hợp"
-        onBack={() => navigation?.goBack()}
-      />
-      <ScrollView contentContainerStyle={[styles.contentContainerP4Pb24]} showsVerticalScrollIndicator={false}>
-        <View style={[styles.mb4, styles.rounded2xl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py4]}>
-          <View style={[styles.flexWrap, styles.justifyBetween]}>
-            {summaryData.map((item, index) => (
-              <View key={index} style={[styles.w47Percent, { alignItems: 'center', flex: 1 }, styles.mb4]}>
-                <View style={[styles.h14, styles.roundedFull, { justifyContent: 'center', alignItems: 'center' }, styles.mb2, getColorClass(item.color)]}>
-                  <Text style={styles.text2xl}>{item.icon}</Text>
-                </View>
-                <Text style={[styles.textExtrabold, styles.textGray900, styles.mb1]}>{item.value}</Text>
-                <Text style={[styles.textXs, styles.textGray500, styles.textCenter]}>{item.label}</Text>
-              </View>
-            ))}
+    <View className="flex-1 bg-slate-50">
+      <View className="bg-sky-600 pt-[60px] px-6 pb-6 rounded-b-[20px]">
+        <Text className="text-[24px] font-bold text-white">Kết quả tổng hợp</Text>
+        {selectedChild && (
+          <Text className="text-[14px] text-white/80 mt-1">
+            {selectedChild.name} • Lớp {selectedChild.grade}{selectedChild.section}
+          </Text>
+        )}
+      </View>
+      <ScrollView
+        className="px-4 pb-[100px]"
+        showsVerticalScrollIndicator={false}
+        contentContainerClassName="gap-4"
+      >
+        {/* Overall Performance Card */}
+        <View className="bg-white rounded-2xl shadow-sm p-6">
+          <View className="flex-row justify-between items-center">
+            <View>
+              <Text className="text-[14px] text-gray-500 font-semibold">Điểm trung bình</Text>
+              <Text
+                className="text-[48px] font-extrabold mt-2"
+                style={{ color: getPerformanceColor(academicSummary.overallAverage) }}
+              >
+                {academicSummary.overallAverage.toFixed(1)}
+              </Text>
+              <Text className="text-[16px] text-gray-800 font-semibold mt-1">
+                {getPerformanceLabel(academicSummary.overallAverage)}
+              </Text>
+            </View>
+            <View className="w-20 h-20 rounded-full bg-gray-100 justify-center items-center">
+              <Text
+                className="text-[36px] font-extrabold"
+                style={{ color: getPerformanceColor(academicSummary.overallAverage) }}
+              >
+                {getGradeLetter(academicSummary.overallAverage, 100)}
+              </Text>
+            </View>
           </View>
         </View>
 
-        <View style={[styles.rounded2xl, styles.bgWhite, styles.shadowSm, styles.px4, styles.py4]}>
-          <Text style={[styles.textBase, styles.fontBold, styles.textGray900, styles.mb4]}>Chi tiết học tập</Text>
-          <View style={[{ flexDirection: 'row' }, styles.justifyBetween, styles.itemsCenter, styles.mb3]}>
-            <Text style={[styles.textSm, styles.textGray500]}>Tổng số bài kiểm tra:</Text>
-            <Text style={[styles.textSm, styles.fontSemibold, styles.textGray900]}>24</Text>
+        {/* Subject Performance */}
+        <View className="bg-white rounded-xl p-4">
+          <Text className="text-[18px] font-bold text-gray-800 mb-4">Điểm môn học</Text>
+          {academicSummary.subjectSummaries.map((subject) => (
+            <View key={subject.subject} className="mb-5">
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-[15px] font-semibold text-gray-800">{subject.subject}</Text>
+                <View
+                  className="px-2.5 py-1 rounded-lg"
+                  style={{ backgroundColor: `${getPerformanceColor(subject.average)}20` }}
+                >
+                  <Text
+                    className="text-[14px] font-bold"
+                    style={{ color: getPerformanceColor(subject.average) }}
+                  >
+                    {subject.grade}
+                  </Text>
+                </View>
+              </View>
+              <View className="gap-2">
+                <View className="flex-row justify-between items-center">
+                  <Text className="text-[12px] text-gray-500">Trung bình</Text>
+                  <Text className="text-[14px] font-bold text-gray-800">{subject.average.toFixed(1)}</Text>
+                </View>
+                <View className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                  <View
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${subject.average}%`,
+                      backgroundColor: getPerformanceColor(subject.average),
+                    }}
+                  />
+                </View>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        {/* Attendance Summary */}
+        <View className="bg-white rounded-xl p-4">
+          <Text className="text-[18px] font-bold text-gray-800 mb-4">Điểm danh</Text>
+          <View className="flex-row items-center gap-5">
+            <View className="items-center min-w-[80px]">
+              <Text className="text-[36px] font-extrabold text-sky-600">
+                {academicSummary.attendanceStats.percentage}%
+              </Text>
+              <Text className="text-[12px] text-gray-500 mt-1">Đi học</Text>
+            </View>
+            <View className="flex-1 gap-3">
+              <View className="flex-row items-center gap-2">
+                <View className="w-2 h-2 rounded-full bg-green-500" />
+                <Text className="text-[13px] text-gray-700">
+                  Có mặt: {academicSummary.attendanceStats.present}
+                </Text>
+              </View>
+              <View className="flex-row items-center gap-2">
+                <View className="w-2 h-2 rounded-full bg-orange-500" />
+                <Text className="text-[13px] text-gray-700">
+                  Muộn: {academicSummary.attendanceStats.late}
+                </Text>
+              </View>
+              <View className="flex-row items-center gap-2">
+                <View className="w-2 h-2 rounded-full bg-red-500" />
+                <Text className="text-[13px] text-gray-700">
+                  Vắng: {academicSummary.attendanceStats.absent}
+                </Text>
+              </View>
+            </View>
           </View>
-          <View style={[{ flexDirection: 'row' }, styles.justifyBetween, styles.itemsCenter, styles.mb3]}>
-            <Text style={[styles.textSm, styles.textGray500]}>Số bài đạt:</Text>
-            <Text style={[styles.textSm, styles.fontSemibold, styles.textEmerald600]}>22</Text>
-          </View>
-          <View style={[{ flexDirection: 'row' }, styles.justifyBetween, styles.itemsCenter, styles.mb3]}>
-            <Text style={[styles.textSm, styles.textGray500]}>Số bài cần cải thiện:</Text>
-            <Text style={[styles.textSm, styles.fontSemibold, styles.textAmber500]}>2</Text>
+        </View>
+
+        {/* Additional Stats */}
+        <View className="bg-white rounded-xl p-4">
+          <Text className="text-[18px] font-bold text-gray-800 mb-4">Thống kê</Text>
+          <View className="flex-row justify-around pt-2">
+            <View className="items-center">
+              <Text className="text-[28px] font-extrabold text-sky-600">{academicSummary.totalGrades}</Text>
+              <Text className="text-[12px] text-gray-500 mt-1">Bài kiểm tra</Text>
+            </View>
+            <View className="items-center">
+              <Text className="text-[28px] font-extrabold text-sky-600">{academicSummary.subjectSummaries.length}</Text>
+              <Text className="text-[12px] text-gray-500 mt-1">Môn học</Text>
+            </View>
+            <View className="items-center">
+              <Text className="text-[28px] font-extrabold text-sky-600">{attendance.length}</Text>
+              <Text className="text-[12px] text-gray-500 mt-1">Ngày điểm danh</Text>
+            </View>
           </View>
         </View>
       </ScrollView>

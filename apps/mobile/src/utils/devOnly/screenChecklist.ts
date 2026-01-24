@@ -9,7 +9,7 @@ export interface ScreenChecklistItem {
   category: 'auth' | 'dashboard' | 'students' | 'teachers' | 'attendance' | 'grades' | 'messages' | 'profile' | 'payments' | 'settings';
   critical: boolean;
   description?: string;
-  navigationParams?: Record<string, any>;
+  navigationParams?: Record<string, unknown>;
 }
 
 export interface ScreenTestResult {

@@ -286,7 +286,7 @@ export function InvoiceDetailModal({ isOpen, onClose, invoiceId }: InvoiceDetail
                         <span>Xác nhận bởi: <span className="font-bold text-slate-700">{payment.confirmedBy}</span></span>
                       </div>
                       {payment.notes && (
-                        <p className="text-xs text-slate-600 mt-2 italic">"{payment.notes}"</p>
+                        <p className="text-xs text-slate-600 mt-2 italic">&ldquo;{payment.notes}&rdquo;</p>
                       )}
                     </div>
                   </div>

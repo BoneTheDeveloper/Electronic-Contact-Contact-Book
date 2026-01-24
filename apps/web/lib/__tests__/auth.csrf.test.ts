@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { login } from '../auth'
 
+interface MockCookies {
+  set: ReturnType<typeof vi.fn>
+}
+
 const mockCookies = vi.hoisted(() => ({ set: vi.fn() }))
 vi.mock('next/headers', () => ({ cookies: () => mockCookies }))
 vi.mock('next/navigation', () => ({
@@ -40,7 +44,7 @@ describe('login - CSRF Protection', () => {
     formData.set('password', 'any')
 
     try {
-      await login(null, formData as any)
+      await login(null, formData as unknown as FormData)
     } catch {
       const cookieOptions = mockCookies.set.mock.calls[0]?.[2]
       expect(cookieOptions?.httpOnly).toBe(true)
@@ -53,7 +57,7 @@ describe('login - CSRF Protection', () => {
     formData.set('password', 'any')
 
     try {
-      await login(null, formData as any)
+      await login(null, formData as unknown as FormData)
     } catch {
       const cookieOptions = mockCookies.set.mock.calls[0]?.[2]
       expect(cookieOptions?.sameSite).toBe('lax')
@@ -68,7 +72,7 @@ describe('login - CSRF Protection', () => {
     formData.set('password', 'any')
 
     try {
-      await login(null, formData as any)
+      await login(null, formData as unknown as FormData)
     } catch {
       const cookieOptions = mockCookies.set.mock.calls[0]?.[2]
       expect(cookieOptions?.secure).toBe(true)

@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { login, getUser, logout } from '../auth'
 
+interface MockCookies {
+  get: ReturnType<typeof vi.fn>
+  set: ReturnType<typeof vi.fn>
+  delete: ReturnType<typeof vi.fn>
+}
+
 const mockCookies = vi.hoisted(() => ({
   get: vi.fn(),
   set: vi.fn(),
@@ -47,16 +53,16 @@ describe('login - Error Handling', () => {
     const formData = new FormData()
     formData.set('password', 'test123')
 
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     expect(result).toHaveProperty('error')
   })
 
   it('should handle null FormData values', async () => {
     const formData = new FormData()
-    formData.set('identifier', null as any)
-    formData.set('password', null as any)
+    formData.set('identifier', null as unknown as string)
+    formData.set('password', null as unknown as string)
 
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     expect(result).toHaveProperty('error')
   })
 
@@ -67,7 +73,7 @@ describe('login - Error Handling', () => {
 
     // Whitespace gets trimmed to empty by sanitizeInput
     // Empty string fails format validation (needs 1-20 alphanumeric chars)
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     expect(result).toHaveProperty('error')
   })
 
@@ -77,7 +83,7 @@ describe('login - Error Handling', () => {
     formData.set('password', 'test')
 
     // Should fail format validation (special chars like quotes)
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     expect(result).toHaveProperty('error')
   })
 })

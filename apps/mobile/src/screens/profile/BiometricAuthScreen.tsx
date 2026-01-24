@@ -19,9 +19,12 @@ import { colors } from '../../theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { StudentProfileStackParamList, ParentProfileStackParamList } from '../../navigation/types';
+
+type ProfileNavigationProp = NativeStackNavigationProp<StudentProfileStackParamList & ParentProfileStackParamList>;
 
 interface BiometricAuthScreenProps {
-  navigation?: NativeStackNavigationProp<any>;
+  navigation?: ProfileNavigationProp;
 }
 
 const BackIcon = () => (

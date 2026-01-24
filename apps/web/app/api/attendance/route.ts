@@ -31,13 +31,13 @@ export async function GET(request: Request) {
   let filteredAttendance = [...mockAttendance]
 
   if (classId) {
-    filteredAttendance = filteredAttendance.filter((a: any) => a.classId === classId)
+    filteredAttendance = filteredAttendance.filter((a: AttendanceRecord) => a.classId === classId)
   }
   if (status) {
-    filteredAttendance = filteredAttendance.filter((a: any) => a.status === status)
+    filteredAttendance = filteredAttendance.filter((a: AttendanceRecord) => a.status === status)
   }
   if (search) {
-    filteredAttendance = filteredAttendance.filter((a: any) =>
+    filteredAttendance = filteredAttendance.filter((a: AttendanceRecord) =>
       a.studentName.toLowerCase().includes(search.toLowerCase())
     )
   }
@@ -45,12 +45,12 @@ export async function GET(request: Request) {
   // Calculate statistics
   const stats = {
     total: filteredAttendance.length,
-    present: filteredAttendance.filter((a: any) => a.status === 'present').length,
-    absent: filteredAttendance.filter((a: any) => a.status === 'absent').length,
-    late: filteredAttendance.filter((a: any) => a.status === 'late').length,
-    excused: filteredAttendance.filter((a: any) => a.status === 'excused').length,
+    present: filteredAttendance.filter((a: AttendanceRecord) => a.status === 'present').length,
+    absent: filteredAttendance.filter((a: AttendanceRecord) => a.status === 'absent').length,
+    late: filteredAttendance.filter((a: AttendanceRecord) => a.status === 'late').length,
+    excused: filteredAttendance.filter((a: AttendanceRecord) => a.status === 'excused').length,
     rate: filteredAttendance.length > 0
-      ? Math.round((filteredAttendance.filter((a: any) => a.status === 'present').length / filteredAttendance.length) * 100)
+      ? Math.round((filteredAttendance.filter((a: AttendanceRecord) => a.status === 'present').length / filteredAttendance.length) * 100)
       : 0,
   }
 
@@ -77,8 +77,17 @@ export async function POST(request: Request) {
   }, { status: 201 })
 }
 
+interface AttendanceUpdate {
+  id: string
+  studentName?: string
+  classId?: string
+  date?: string
+  status?: 'present' | 'absent' | 'late' | 'excused'
+  notes?: string
+}
+
 export async function PATCH(request: Request) {
-  const body = await request.json()
+  const body = await request.json() as AttendanceUpdate
   const { id, ...updates } = body
 
   const index = mockAttendance.findIndex(a => a.id === id)

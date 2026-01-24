@@ -28,7 +28,7 @@ describe('Type Safety - Critical Paths', () => {
   it('should handle optional chaining safely', () => {
     // Pattern: Null/undefined handling
     const data: { name?: string } | null = null
-    const name = data?.name ?? 'Default'
+    const name = (data?.name ?? 'Default') as string
     expect(name).toBe('Default')
   })
 })

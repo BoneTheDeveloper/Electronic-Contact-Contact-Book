@@ -20,9 +20,12 @@ import { colors } from '../../theme';
 import { supabase } from '../../lib/supabase/client';
 import Svg, { Path } from 'react-native-svg';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { StudentProfileStackParamList, ParentProfileStackParamList } from '../../navigation/types';
+
+type ProfileNavigationProp = NativeStackNavigationProp<StudentProfileStackParamList & ParentProfileStackParamList>;
 
 interface UpdateProfileScreenProps {
-  navigation?: NativeStackNavigationProp<any>;
+  navigation?: ProfileNavigationProp;
 }
 
 const BackIcon = () => (

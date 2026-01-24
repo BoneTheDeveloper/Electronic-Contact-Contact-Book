@@ -1,4 +1,3 @@
-// @ts-nocheck
 // ==================== SUPABASE DATA LAYER ====================
 // Real Supabase queries replacing all mock data functions
 // Uses server client for server components (async)
@@ -106,7 +105,7 @@ export const getUsers = cache(async (): Promise<User[]> => {
 
   if (error) handleQueryError(error, 'getUsers')
 
-  return (data || []).map((p: any) => ({
+  return (data || []).map((p) => ({
     id: p.id,
     name: p.full_name || p.email.split('@')[0],
     email: p.email,
@@ -368,7 +367,7 @@ export const getTeacherStats = cache(async (teacherId: string): Promise<TeacherS
     .eq('teacher_id', teacherId)
     .eq('day_of_week', dayOfWeek)
 
-  const todaySchedule: ScheduleItem[] = (scheduleData || []).map((s: any) => ({
+  const todaySchedule: ScheduleItem[] = (scheduleData || []).map((s) => ({
     id: s.id,
     period: s.periods?.name || `${s.period_id}`,
     time: `${s.periods?.start_time} - ${s.periods?.end_time}`,
@@ -436,7 +435,7 @@ export async function getStudents(): Promise<Student[]> {
   if (error) handleQueryError(error, 'getStudents')
 
   // Get attendance percentage for each student
-  const studentIds = (data || []).map((s: any) => s.id)
+  const studentIds = (data || []).map((s) => s.id)
   const attendanceMap = new Map<string, number>()
 
   if (studentIds.length > 0) {
@@ -466,7 +465,7 @@ export async function getStudents(): Promise<Student[]> {
     }
   })
 
-  return (data || []).map((s: any) => {
+  return (data || []).map((s) => {
     const enrollment = s.enrollments[0]
     return {
       id: s.id,
@@ -502,7 +501,7 @@ export const getClasses = cache(async (): Promise<Class[]> => {
 
   if (error) handleQueryError(error, 'getClasses')
 
-  return (data || []).map((c: any) => ({
+  return (data || []).map((c) => ({
     id: c.id,
     name: c.name,
     grade: c.grades.name,
@@ -572,7 +571,7 @@ export async function getStudentsByClass(classId: string): Promise<Student[]> {
 
   if (error) handleQueryError(error, 'getStudentsByClass')
 
-  return (data || []).map((e: any) => ({
+  return (data || []).map((e) => ({
     id: e.students.id,
     name: e.students.profiles.full_name || 'Unknown',
     grade: e.classes.name,
@@ -757,7 +756,7 @@ export async function getAttendanceStats(
 
   // Calculate date range
   const now = new Date()
-  let startDate = new Date()
+  const startDate = new Date()
 
   switch (period) {
     case 'week':
@@ -843,7 +842,7 @@ export async function getClassStudents(classId: string): Promise<AttendanceRecor
 
   if (error) handleQueryError(error, 'getClassStudents')
 
-  return (data || []).map((e: any) => ({
+  return (data || []).map((e) => ({
     studentId: e.student_id,
     studentName: e.students.profiles.full_name || 'Unknown',
     status: 'present' as const
@@ -897,7 +896,7 @@ export const getAssessments = cache(async (teacherId: string): Promise<Assessmen
     })
   }
 
-  return (data || []).map((a: any) => {
+  return (data || []).map((a) => {
     const submissions = submissionMap.get(a.id) || { submitted: 0, total: 0 }
     return {
       id: a.id,
@@ -940,7 +939,7 @@ export async function getGradeEntrySheet(
 
   return {
     subject,
-    students: (data || []).map((e: any) => ({
+    students: (data || []).map((e) => ({
       studentId: e.student_id,
       studentName: e.students.profiles.full_name || 'Unknown',
       oral: [],
@@ -980,7 +979,7 @@ export const getTeacherClasses = cache(async (teacherId?: string): Promise<Teach
   // Group by class and get unique classes
   const classMap = new Map<string, TeacherClass>()
 
-  data?.forEach((s: any) => {
+  data?.forEach((s) => {
     if (!classMap.has(s.class_id)) {
       classMap.set(s.class_id, {
         id: s.class_id,
@@ -1029,7 +1028,7 @@ export const getTeacherSchedule = cache(async (
 
   if (error) handleQueryError(error, 'getTeacherSchedule')
 
-  return (data || []).map((s: any) => ({
+  return (data || []).map((s) => ({
     period: s.period_id,
     time: `${s.periods.start_time} - ${s.periods.end_time}`,
     className: s.classes.name,
@@ -1075,7 +1074,7 @@ export const getLeaveRequests = cache(async (
 
   if (error) handleQueryError(error, 'getLeaveRequests')
 
-  return (data || []).map((lr: any) => ({
+  return (data || []).map((lr) => ({
     id: lr.id,
     studentId: lr.students.id,
     studentName: lr.students.profiles.full_name || 'Unknown',
@@ -1273,7 +1272,7 @@ export const getRegularAssessments = cache(async (teacherId?: string): Promise<R
     .in('class_id', classIds)
     .eq('status', 'active')
 
-  const students = studentData?.map((s: any) => ({
+  const students = studentData?.map((s) => ({
     studentId: s.student_id,
     studentName: s.classes?.name || 'Unknown',
     classId: s.class_id,
@@ -1309,7 +1308,7 @@ export async function getConductRatings(classId?: string): Promise<ConductRating
 
   const { data } = await query
 
-  return (data || []).map((s: any) => ({
+  return (data || []).map((s) => ({
     studentId: s.id,
     studentName: s.profiles?.full_name || 'Unknown',
     mssv: s.student_code,

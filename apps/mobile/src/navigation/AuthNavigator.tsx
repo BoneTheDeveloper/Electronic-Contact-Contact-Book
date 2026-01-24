@@ -5,7 +5,6 @@
 
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useAuthStore } from '../stores';
 
 import CustomLoginScreen from '../screens/auth/CustomLoginScreen';
 import DebugLogsScreen from '../screens/debug/DebugLogsScreen';
@@ -25,10 +24,10 @@ const AuthNavigator: React.FC = () => {
         contentStyle: { backgroundColor: '#F8FAFC' },
       }}
     >
-      <Stack.Screen name="Login" component={CustomLoginScreen as any} />
+      <Stack.Screen name="Login" component={CustomLoginScreen} />
       <Stack.Screen
         name="DebugLogs"
-        component={DebugLogsScreen as any}
+        component={DebugLogsScreen}
         options={{
           headerShown: true,
           title: 'Debug Logs',

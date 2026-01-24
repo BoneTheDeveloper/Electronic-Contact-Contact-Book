@@ -199,7 +199,7 @@ export const PaymentOverviewScreen: React.FC<PaymentOverviewProps> = ({ navigati
     return (
       <TouchableOpacity
         key={fee.id}
-        onPress={() => (navigation as any).navigate('PaymentDetail', { paymentId: fee.id })}
+        onPress={() => navigation?.navigate('PaymentDetail' as keyof ParentHomeStackParamList, { paymentId: fee.id })}
         activeOpacity={0.7}
         style={styles.feeCard}
       >

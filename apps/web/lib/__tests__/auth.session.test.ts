@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { login, getUser, requireAuth, requireRole } from '../auth'
+import type { UserRole } from '@school-management/shared-types'
+
+interface MockCookies {
+  get: ReturnType<typeof vi.fn>
+  set: ReturnType<typeof vi.fn>
+  delete: ReturnType<typeof vi.fn>
+}
 
 const mockCookies = vi.hoisted(() => ({
   get: vi.fn(),
@@ -49,7 +56,7 @@ describe('Session Management', () => {
     formData.set('password', 'any')
 
     try {
-      await login(null, formData as any)
+      await login(null, formData as unknown as FormData)
     } catch {
       const cookieOptions = mockCookies.set.mock.calls[0]?.[2]
       expect(cookieOptions?.maxAge).toBe(60 * 60 * 24 * 7) // 1 week
@@ -63,7 +70,7 @@ describe('Session Management', () => {
     formData.set('password', 'any')
 
     try {
-      await login(null, formData as any)
+      await login(null, formData as unknown as FormData)
     } catch {
       const cookieOptions = mockCookies.set.mock.calls[0]?.[2]
       expect(cookieOptions?.path).toBe('/')
@@ -87,7 +94,7 @@ describe('Session Management', () => {
       value: JSON.stringify({ id: '1', role: 'teacher', email: 'test@school.edu', name: 'Test Teacher', createdAt: new Date(), updatedAt: new Date() })
     })
 
-    await expect(requireRole('admin' as any)).rejects.toThrow('Redirect: /login')
+    await expect(requireRole('admin' as UserRole)).rejects.toThrow('Redirect: /login')
   })
 
   it('requireRole should accept matching role', async () => {
@@ -95,7 +102,7 @@ describe('Session Management', () => {
       value: JSON.stringify({ id: '1', role: 'admin', email: 'test@school.edu', name: 'Test Admin', createdAt: new Date(), updatedAt: new Date() })
     })
 
-    const user = await requireRole('admin' as any)
+    const user = await requireRole('admin' as UserRole)
     expect(user?.role).toBe('admin')
   })
 })

@@ -10,8 +10,16 @@ describe('Shared Types - Shape Validation', () => {
     const student: Student = {
       id: '1',
       name: 'Test Student',
+      email: 'test@example.com',
+      role: 'student',
+      avatar: undefined,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      rollNumber: 'ST001',
       classId: 'class-1',
-      parentId: 'parent-1'
+      section: 'A',
+      dateOfBirth: new Date(),
+      parentIds: ['parent-1']
     }
     expect(student.id).toBeDefined()
     expect(student.name).toBeDefined()
@@ -21,10 +29,11 @@ describe('Shared Types - Shape Validation', () => {
     const invoice: Invoice = {
       id: 'inv-1',
       studentId: 'student-1',
+      studentName: 'Test Student',
       amount: 1000,
-      status: 'pending',
-      dueDate: null // Test optional/null handling
+      status: 'pending'
+      // dueDate is optional - test undefined handling
     }
-    expect(invoice.dueDate).toBeNull()
+    expect(invoice.dueDate).toBeUndefined()
   })
 })

@@ -54,7 +54,7 @@ export default function LeaveApprovalPage() {
       const json = await res.json()
       if (json.success) {
         // Remove from list
-        setRequests(requests.filter((r: any) => r.id !== requestId))
+        setRequests(requests.filter((r: LeaveRequestApproval) => r.id !== requestId))
       }
     } catch (error) {
       console.error('Failed to approve request:', error)
@@ -71,7 +71,7 @@ export default function LeaveApprovalPage() {
       const json = await res.json()
       if (json.success) {
         // Remove from list
-        setRequests(requests.filter((r: any) => r.id !== requestId))
+        setRequests(requests.filter((r: LeaveRequestApproval) => r.id !== requestId))
       }
     } catch (error) {
       console.error('Failed to reject request:', error)

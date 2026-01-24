@@ -6,13 +6,8 @@
  * - Tiered delivery (emergency/announcement/reminder)
  * - Multiple channels (WebSocket, email, in-app, push)
  * - Delivery tracking and retry logic
- *
- * NOTE: @ts-nocheck is used due to TypeScript type inference issues with
- * Supabase client for notification tables. The types are correctly defined
- * in types/supabase.ts and the database schema matches. Runtime behavior is correct.
  */
 
-// @ts-nocheck
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -270,7 +265,7 @@ export async function getMyNotifications(
   if (error) throw new Error(`Failed to fetch notifications: ${error.message}`);
 
   return (
-    data?.map((item: any) => ({
+    data?.map((item) => ({
       id: item.notifications.id,
       title: item.notifications.title,
       content: item.notifications.content,
@@ -418,7 +413,7 @@ function getChannelsForPriority(
  */
 async function deliverViaChannel(
   channel: 'websocket' | 'email' | 'in_app',
-  notification: any,
+  notification: Database['public']['Tables']['notifications']['Row'],
   recipientId: string
 ): Promise<void> {
   const supabase = await createClient();
@@ -473,14 +468,14 @@ async function deliverViaChannel(
     console.log(
       `[Notification] Delivered via ${channel} to ${recipientId}: ${notification.id}`
     );
-  } catch (error: any) {
+  } catch (error) {
     // Update log as failed
     await supabase
       .from('notification_logs')
       .update({
         status: 'failed',
         failed_at: new Date().toISOString(),
-        error_message: error.message?.substring(0, 500) || 'Unknown error',
+        error_message: error instanceof Error ? error.message.substring(0, 500) : 'Unknown error',
         retry_count: 1,
       })
       .eq('id', log.id);
@@ -492,7 +487,7 @@ async function deliverViaChannel(
 /**
  * Broadcast via Supabase Realtime
  */
-async function broadcastWebSocket(notification: any, recipientId: string): Promise<string> {
+async function broadcastWebSocket(notification: Database['public']['Tables']['notifications']['Row'], recipientId: string): Promise<string> {
   // Note: This requires Supabase Realtime to be properly configured
   // For now, we return a channel ID - actual broadcast will be handled
   // by the client subscribing to postgres_changes on the notifications table
@@ -508,7 +503,7 @@ async function broadcastWebSocket(notification: any, recipientId: string): Promi
 /**
  * Send email (placeholder - requires email service setup)
  */
-async function sendEmail(notification: any, recipientId: string): Promise<string> {
+async function sendEmail(notification: Database['public']['Tables']['notifications']['Row'], recipientId: string): Promise<string> {
   // Get recipient email
   const supabase = await createClient();
   const { data: profile } = await supabase

@@ -10,11 +10,16 @@ export async function GET(request: Request) {
   // Filter assessments based on query params (done client-side for now)
   let assessments = await getRegularAssessments(teacherId)
 
+  interface Assessment {
+    classId: string
+    status: string
+  }
+
   if (classId) {
-    assessments = assessments.filter((a: any) => a.classId === classId)
+    assessments = assessments.filter((a: Assessment) => a.classId === classId)
   }
   if (status) {
-    assessments = assessments.filter((a: any) => a.status === status)
+    assessments = assessments.filter((a: Assessment) => a.status === status)
   }
 
   return NextResponse.json({

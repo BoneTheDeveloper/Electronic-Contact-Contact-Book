@@ -10,14 +10,14 @@ export interface LogEntry {
   level: LogLevel;
   tag: string;
   message: string;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 class Logger {
   private logs: LogEntry[] = [];
   private maxLogs = 500;
 
-  log(level: LogLevel, tag: string, message: string, data?: any) {
+  log(level: LogLevel, tag: string, message: string, data?: Record<string, unknown>) {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       level,
@@ -38,19 +38,19 @@ class Logger {
     consoleMethod(`[${level.toUpperCase()}][${tag}]`, message, data || '');
   }
 
-  info(tag: string, message: string, data?: any) {
+  info(tag: string, message: string, data?: Record<string, unknown>) {
     this.log('info', tag, message, data);
   }
 
-  warn(tag: string, message: string, data?: any) {
+  warn(tag: string, message: string, data?: Record<string, unknown>) {
     this.log('warn', tag, message, data);
   }
 
-  error(tag: string, message: string, data?: any) {
+  error(tag: string, message: string, data?: Record<string, unknown>) {
     this.log('error', tag, message, data);
   }
 
-  debug(tag: string, message: string, data?: any) {
+  debug(tag: string, message: string, data?: Record<string, unknown>) {
     this.log('debug', tag, message, data);
   }
 
@@ -72,7 +72,7 @@ class Logger {
 export const logger = new Logger();
 
 // Convenience functions
-export const logInfo = (tag: string, message: string, data?: any) => logger.info(tag, message, data);
-export const logWarn = (tag: string, message: string, data?: any) => logger.warn(tag, message, data);
-export const logError = (tag: string, message: string, data?: any) => logger.error(tag, message, data);
-export const logDebug = (tag: string, message: string, data?: any) => logger.debug(tag, message, data);
+export const logInfo = (tag: string, message: string, data?: Record<string, unknown>) => logger.info(tag, message, data);
+export const logWarn = (tag: string, message: string, data?: Record<string, unknown>) => logger.warn(tag, message, data);
+export const logError = (tag: string, message: string, data?: Record<string, unknown>) => logger.error(tag, message, data);
+export const logDebug = (tag: string, message: string, data?: Record<string, unknown>) => logger.debug(tag, message, data);

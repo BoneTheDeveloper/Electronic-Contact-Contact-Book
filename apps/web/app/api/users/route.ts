@@ -29,16 +29,23 @@ export async function GET(request: Request) {
 
     let users = await getUsers()
 
+    interface UserFilter {
+      role: string
+      status: string
+      name: string
+      email: string
+    }
+
     // Client-side filtering since Supabase queries don't support these filters yet
     if (role) {
-      users = users.filter((u: any) => u.role === role)
+      users = users.filter((u: UserFilter) => u.role === role)
     }
     if (status) {
-      users = users.filter((u: any) => u.status === status)
+      users = users.filter((u: UserFilter) => u.status === status)
     }
     if (search) {
       const sanitized = sanitizeSearch(search)
-      users = users.filter((u: any) =>
+      users = users.filter((u: UserFilter) =>
         u.name.toLowerCase().includes(sanitized.toLowerCase()) ||
         u.email.toLowerCase().includes(sanitized.toLowerCase())
       )

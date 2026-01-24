@@ -47,11 +47,13 @@ export async function GET() {
       success: true,
       data: sessions as Session[]
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Authentication required'
+    const errorStatus = (error as { status?: number }).status || 401
     return NextResponse.json({
       success: false,
-      message: error.message || 'Authentication required'
-    }, { status: error.status || 401 })
+      message: errorMessage
+    }, { status: errorStatus })
   }
 }
 
@@ -116,10 +118,12 @@ export async function DELETE(request: Request) {
       success: true,
       message: 'Session terminated'
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Authentication required'
+    const errorStatus = (error as { status?: number }).status || 401
     return NextResponse.json({
       success: false,
-      message: error.message || 'Authentication required'
-    }, { status: error.status || 401 })
+      message: errorMessage
+    }, { status: errorStatus })
   }
 }

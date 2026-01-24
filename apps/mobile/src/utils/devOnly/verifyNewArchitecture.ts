@@ -18,17 +18,17 @@ export interface NewArchitectureInfo {
  * Call this from app root in DEV mode to confirm New Architecture is active
  */
 export const verifyNewArchitecture = (): NewArchitectureInfo => {
-  const constants = NativeModules.PlatformConstants as any;
+  const constants = NativeModules.PlatformConstants as Record<string, unknown> | undefined;
 
   // Check for Hermes
-  const hermesEnabled = !!(globalThis as any).HermesInternal;
+  const hermesEnabled = !!(globalThis as Record<string, unknown>).HermesInternal;
 
   // Check for TurboModules (isTurboModuleEnabled indicates New Architecture)
-  const turboModulesEnabled = constants?.isTurboModuleEnabled ?? false;
+  const turboModulesEnabled = constants?.isTurboModuleEnabled === true;
 
   // Check for Fabric features (available in New Architecture)
   // UIManager.getViewManagerConfig is available when Fabric is enabled
-  const fabricEnabled = !!(UIManager as any).getViewManagerConfig;
+  const fabricEnabled = !!(UIManager as Record<string, unknown>).getViewManagerConfig;
 
   const info: NewArchitectureInfo = {
     platform: Platform.OS,
@@ -59,7 +59,8 @@ export const getTurboModules = (): string[] => {
 
   const turboModules = modules.filter((module) => {
     try {
-      return (NativeModules as any)[module]?.__turboModuleProxy;
+      return (NativeModules as Record<string, unknown>)[module as keyof typeof NativeModules] !== undefined &&
+        typeof (NativeModules as Record<string, Record<string, unknown>>)[module]?.__turboModuleProxy === 'object';
     } catch {
       return false;
     }
@@ -77,7 +78,7 @@ export const getTurboModules = (): string[] => {
  */
 export const verifyReactNativeVersion = (): boolean => {
   // React Native 0.81+ has stable New Architecture support
-  const nativeVersion = (UIManager as any).ReactNativeVersion;
+  const nativeVersion = (UIManager as Record<string, Record<string, number>>).ReactNativeVersion;
   const majorVersion = nativeVersion?.major ?? 0;
   const minorVersion = nativeVersion?.minor ?? 0;
 

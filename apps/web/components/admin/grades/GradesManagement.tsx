@@ -95,13 +95,13 @@ export function GradesManagement() {
 
   // Get unique values - memoized
   const classOptions = useMemo(() => {
-    const classes = new Set(grades.map((g: any) => g.classId))
-    return Array.from(classes).map((c: any) => ({ value: c, label: `Lớp ${c}` }))
+    const classes = new Set(grades.map((g: GradeRecord) => g.classId))
+    return Array.from(classes).map((c: string) => ({ value: c, label: `Lớp ${c}` }))
   }, [grades])
 
   const subjectOptions = useMemo(() => {
-    const subjects = new Set(grades.map((g: any) => g.subject))
-    return Array.from(subjects).map((s: any) => ({ value: s, label: s }))
+    const subjects = new Set(grades.map((g: GradeRecord) => g.subject))
+    return Array.from(subjects).map((s: string) => ({ value: s, label: s }))
   }, [grades])
 
   // Clear filters - memoized
@@ -110,7 +110,7 @@ export function GradesManagement() {
   }, [])
 
   // Handle filter change - memoized
-  const handleFilterChange = useCallback((key: string, value: any) => {
+  const handleFilterChange = useCallback((key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }))
   }, [])
 

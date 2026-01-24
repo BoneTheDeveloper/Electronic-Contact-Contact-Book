@@ -7,11 +7,12 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import type { User } from '@school-management/shared-types'
+import type { Database } from '@/types/supabase'
 
 interface SessionValidationResult {
   valid: boolean
   reason?: 'no_session' | 'session_not_found' | 'invalid_cookie'
-  session?: any
+  session?: Database['public']['Tables']['user_sessions']['Row']
   user?: User
 }
 

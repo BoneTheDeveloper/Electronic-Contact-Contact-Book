@@ -20,10 +20,9 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
-  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path, Circle, Rect, Line, Polyline } from 'react-native-svg';
+import Svg, { Path, Circle, Line, Polyline } from 'react-native-svg';
 import { useAuthStore } from '../../stores';
 import { colors } from '../../theme';
 import type { AuthStackNavigationProp } from '../../navigation/types';
@@ -70,9 +69,9 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       } else {
         // Navigation handled by RootNavigator
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('[LOGIN] Error:', err);
-      const errorMsg = err.message || 'Đăng nhập thất bại';
+      const errorMsg = err instanceof Error ? err.message : 'Đăng nhập thất bại';
       setError(errorMsg);
 
       // Show detailed alert
@@ -255,7 +254,7 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       {/* Footer */}
       <View style={styles.footer}>
         <TouchableOpacity
-          onPress={() => navigation.navigate('DebugLogs' as never)}
+          onPress={() => navigation.navigate('DebugLogs')}
           style={styles.debugButton}
         >
           <Text style={styles.debugButtonText}>🐛 Debug Logs</Text>

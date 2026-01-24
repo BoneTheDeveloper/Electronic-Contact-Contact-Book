@@ -117,11 +117,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
       <TouchableOpacity
         key={item.id}
         style={[styles.iconContainer, { width: containerWidth, marginBottom: VERTICAL_GAP }]}
-        onPress={() => navigation?.navigate(item.route as any)}
+        onPress={() => navigation?.navigate(item.route)}
         activeOpacity={0.7}
       >
         <View style={styles.iconBox}>
-          <Icon name={item.icon as any} size={32} color={item.color} />
+          <Icon name={item.icon as 'calendar' | 'check-circle' | 'account-check' | 'file-document' | 'message-reply' | 'newspaper' | 'chart-pie' | 'account-group' | 'cash'} size={32} color={item.color} />
         </View>
         <Text style={styles.iconLabel}>{item.label}</Text>
       </TouchableOpacity>
@@ -151,7 +151,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
         {selectedChild && (
           <TouchableOpacity
             style={styles.childCard}
-            onPress={() => navigation?.navigate('ChildSelection' as any)}
+            onPress={() => navigation?.navigate('ChildSelection')}
             activeOpacity={0.7}
           >
             <View style={[styles.avatar, { backgroundColor: '#E0F2FE' }]}>
@@ -187,7 +187,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
         <View style={styles.newsSection}>
           <View style={styles.newsHeader}>
             <Text style={styles.newsTitle}>Thông báo mới</Text>
-            <TouchableOpacity onPress={() => navigation?.navigate('News')}>
+            <TouchableOpacity onPress={() => navigation?.navigate('News' as keyof ParentHomeStackParamList)}>
               <Text style={styles.seeAll}>Xem tất cả</Text>
             </TouchableOpacity>
           </View>

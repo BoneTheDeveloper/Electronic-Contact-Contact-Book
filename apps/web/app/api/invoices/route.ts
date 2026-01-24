@@ -21,9 +21,13 @@ export async function GET(request: NextRequest) {
     // Filter by class (student grade field)
     if (classId) {
       const students = await (await import('@/lib/supabase/queries')).getStudents()
+      interface Student {
+        id: string
+        grade: string
+      }
       const classStudentIds = students
-        .filter((s: any) => s.grade === classId)
-        .map((s: any) => s.id)
+        .filter((s: Student) => s.grade === classId)
+        .map((s: Student) => s.id)
       invoices = invoices.filter((inv: Invoice) => classStudentIds.includes(inv.studentId))
     }
 

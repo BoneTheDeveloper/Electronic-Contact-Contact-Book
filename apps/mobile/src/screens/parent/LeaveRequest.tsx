@@ -1,329 +1,306 @@
 /**
  * Leave Request Screen
- * Submit absence request form
+ * Submit absence request form with tabs for new request and history
  */
 
 import React, { useState } from 'react';
-import { View, ScrollView, Alert, TouchableOpacity, TextInput as RNTextInput, Text, StyleSheet } from 'react-native';
+import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput } from 'react-native';
 import { useParentStore } from '../../stores';
-import { ScreenHeader } from '../../components/ui';
-import type { ParentHomeStackNavigationProp } from '../../navigation/types';
 
-interface LeaveRequestScreenProps {
-  navigation?: ParentHomeStackNavigationProp;
-}
-
-interface LeaveRequestForm {
-  childId: string;
+interface LeaveRequestItem {
+  id: string;
   reason: string;
-  startDate: string;
-  endDate: string;
-  notes: string;
+  dateRange: string;
+  date: string;
+  duration: string;
+  status: 'approved' | 'pending' | 'rejected';
 }
 
 const LEAVE_REASONS = [
-  { id: 'sick', label: 'Đau ốm', icon: 'medical-services' },
-  { id: 'family', label: 'Việc gia đình', icon: 'home' },
-  { id: 'personal', label: 'Cá nhân', icon: 'account' },
-  { id: 'other', label: 'Khác', icon: 'dots-horizontal' },
+  'Đi gia đình',
+  'Ốm đau',
+  'Lễ tết',
+  'Việc cá nhân',
+  'Khác',
 ];
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  scrollContent: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingBottom: 100,
-  },
-  card: {
-    marginBottom: 20,
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  cardLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  cardText: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 2,
-  },
-  reasonTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 12,
-    marginTop: 8,
-  },
-  reasonButtonsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  reasonButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  reasonButtonActive: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
-  },
-  reasonButtonInactive: {
-    backgroundColor: 'transparent',
-    borderColor: '#e5e7eb',
-  },
-  reasonButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  reasonButtonTextActive: {
-    color: 'white',
-  },
-  reasonButtonTextInactive: {
-    color: '#4b5563',
-  },
-  dateTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 12,
-    marginTop: 8,
-  },
-  dateLabel: {
-    fontSize: 14,
-    color: '#374151',
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  dateInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'white',
-  },
-  dateInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#111827',
-  },
-  dateIcon: {
-    fontSize: 24,
-    color: '#3b82f6',
-  },
-  notesTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 12,
-    marginTop: 8,
-  },
-  notesLabel: {
-    fontSize: 14,
-    color: '#374151',
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  notesContainer: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'white',
-    minHeight: 100,
-  },
-  notesInput: {
-    fontSize: 16,
-    color: '#111827',
-    textAlignVertical: 'top',
-  },
-  submitButton: {
-    backgroundColor: '#3b82f6',
-    marginTop: 8,
-    paddingVertical: 12,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  submitButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-  },
-  footerText: {
-    fontSize: 12,
-    color: '#9ca3af',
-    textAlign: 'center',
-    marginTop: 16,
-    fontStyle: 'italic',
-  },
-});
-
-export const LeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ navigation }) => {
+export const LeaveRequestScreen: React.FC = () => {
   const { children, selectedChildId } = useParentStore();
   const selectedChild = children.find(c => c.id === selectedChildId) || children[0];
 
-  const [selectedReason, setSelectedReason] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [notes, setNotes] = useState('');
+  const [activeTab, setActiveTab] = useState<'new' | 'history'>('new');
+  const [selectedReason, setSelectedReason] = useState('Đi gia đình');
+  const [detailReason, setDetailReason] = useState('Có việc gia đình cần về quê');
+  const [startDate, setStartDate] = useState('2026-01-10');
+  const [endDate, setEndDate] = useState('2026-01-10');
+
+  // Appeal modal state
+  const [appealModalVisible, setAppealModalVisible] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<LeaveRequestItem | null>(null);
+  const [appealType, setAppealType] = useState('Muốn xin thêm ngày nghỉ');
+  const [appealDetail, setAppealDetail] = useState('');
+
+  // Mock recent requests
+  const recentRequests: LeaveRequestItem[] = [
+    {
+      id: '1',
+      reason: 'Đi gia đình',
+      dateRange: '20/12/2025 - 20/12/2025',
+      date: '20/12/2025',
+      duration: '1 ngày',
+      status: 'approved',
+    },
+    {
+      id: '2',
+      reason: 'Ốm đau',
+      dateRange: '10/01/2026 - 11/01/2026',
+      date: 'Hôm nay',
+      duration: '2 ngày',
+      status: 'pending',
+    },
+  ];
 
   const handleSubmit = () => {
-    // Validate form
-    if (!selectedReason || !startDate || !endDate) {
-      Alert.alert('Thông báo', 'Vui lòng điền đầy đủ thông tin');
-      return;
-    }
+    // Submit logic here
+    console.log('Submit leave request:', { selectedReason, detailReason, startDate, endDate });
+  };
 
-    // Create leave request (mock)
-    const leaveRequest: LeaveRequestForm = {
-      childId: selectedChild?.id || '',
-      reason: selectedReason,
-      startDate,
-      endDate,
-      notes,
-    };
+  const openAppealModal = (request: LeaveRequestItem) => {
+    setSelectedRequest(request);
+    setAppealModalVisible(true);
+  };
 
-    console.log('Leave request submitted:', leaveRequest);
-    Alert.alert('Thành công', 'Đơn xin nghỉ phép đã được gửi thành công!');
+  const closeAppealModal = () => {
+    setAppealModalVisible(false);
+    setAppealDetail('');
+    setSelectedRequest(null);
+  };
+
+  const submitAppeal = () => {
+    // Submit appeal logic here
+    console.log('Submit appeal:', { selectedRequest, appealType, appealDetail });
+    setAppealModalVisible(false);
+    setAppealDetail('');
+    setSelectedRequest(null);
   };
 
   return (
-    <View style={styles.container}>
-      <ScreenHeader
-        title="Đơn xin nghỉ phép"
-        onBack={() => navigation?.goBack()}
-      />
+    <View className="flex-1 bg-slate-50">
+      {/* Header */}
+      <View className="bg-gradient-to-br from-[#0284C7] to-[#0369A1] pt-[60px] px-6 pb-6 rounded-b-[30px]">
+        <Text className="text-[20px] font-extrabold text-white">Đơn xin nghỉ phép</Text>
+        <Text className="text-[12px] text-blue-100 font-medium mt-0.5">Quản lý đơn xin nghỉ học</Text>
+      </View>
 
-      <ScrollView
-        style={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Student Info Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardLabel}>Học sinh</Text>
-          <Text style={styles.cardTitle}>{selectedChild?.name}</Text>
-          <Text style={styles.cardText}>
-            Lớp {selectedChild?.grade}{selectedChild?.section}
-          </Text>
+      <ScrollView className="px-6 pt-6 pb-[140px]" showsVerticalScrollIndicator={false}>
+        {/* Tabs */}
+        <View className="flex-row space-x-2 mb-6">
+          <TouchableOpacity
+            onPress={() => setActiveTab('new')}
+            className={`flex-1 py-2.5 rounded-xl ${activeTab === 'new' ? 'bg-[#0284C7]' : 'bg-white border border-gray-200'}`}
+          >
+            <Text className={`text-sm font-black text-center ${activeTab === 'new' ? 'text-white' : 'text-gray-400'}`}>
+              Tạo đơn mới
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setActiveTab('history')}
+            className={`flex-1 py-2.5 rounded-xl ${activeTab === 'history' ? 'bg-[#0284C7]' : 'bg-white border border-gray-200'}`}
+          >
+            <Text className={`text-sm font-black text-center ${activeTab === 'history' ? 'text-white' : 'text-gray-400'}`}>
+              Lịch sử đơn
+            </Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Reason Selection */}
-        <Text style={styles.reasonTitle}>Lý do nghỉ</Text>
-        <View style={styles.card}>
-          <View style={styles.reasonButtonsContainer}>
-            {LEAVE_REASONS.map((reason) => (
+        {activeTab === 'new' ? (
+          <>
+            {/* New Request Form */}
+            <View className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+              {/* Leave Type */}
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Lý do nghỉ</Text>
+                <View className="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                  <Text className="text-gray-800 text-sm font-medium">{selectedReason}</Text>
+                </View>
+              </View>
+
+              {/* Reason Details */}
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Chi tiết lý do</Text>
+                <TextInput
+                  value={detailReason}
+                  onChangeText={setDetailReason}
+                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-gray-800 text-sm font-medium"
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                />
+              </View>
+
+              {/* Date Range */}
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Từ ngày</Text>
+                <View className="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                  <Text className="text-gray-800 text-sm font-medium">{startDate}</Text>
+                </View>
+              </View>
+
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Đến ngày</Text>
+                <View className="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                  <Text className="text-gray-800 text-sm font-medium">{endDate}</Text>
+                </View>
+              </View>
+
+              {/* Submit Button */}
               <TouchableOpacity
-                key={reason.id}
-                onPress={() => setSelectedReason(reason.id)}
-                style={[
-                  styles.reasonButton,
-                  selectedReason === reason.id ? styles.reasonButtonActive : styles.reasonButtonInactive
-                ]}
+                onPress={handleSubmit}
+                className="bg-gradient-to-r from-[#0284C7] to-[#0369A1] py-3.5 rounded-xl shadow-lg items-center"
               >
-                <Text
-                  style={[
-                    styles.reasonButtonText,
-                    selectedReason === reason.id ? styles.reasonButtonTextActive : styles.reasonButtonTextInactive
-                  ]}
-                >
-                  {reason.label}
-                </Text>
+                <Text className="text-white font-extrabold text-sm text-center">Gửi đơn xin nghỉ</Text>
               </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Date Range */}
-        <Text style={styles.dateTitle}>Thời gian nghỉ</Text>
-        <View style={styles.card}>
-          <View style={{ marginBottom: 12 }}>
-            <Text style={styles.dateLabel}>Từ ngày *</Text>
-            <View style={styles.dateInputContainer}>
-              <RNTextInput
-                value={startDate}
-                onChangeText={setStartDate}
-                placeholder="DD/MM/YYYY"
-                placeholderTextColor="#9CA3AF"
-                keyboardType="numeric"
-                style={styles.dateInput}
-              />
-              <Text style={styles.dateIcon}>📅</Text>
             </View>
-          </View>
-          <View>
-            <Text style={styles.dateLabel}>Đến ngày *</Text>
-            <View style={styles.dateInputContainer}>
-              <RNTextInput
-                value={endDate}
-                onChangeText={setEndDate}
-                placeholder="DD/MM/YYYY"
-                placeholderTextColor="#9CA3AF"
-                keyboardType="numeric"
-                style={styles.dateInput}
-              />
-              <Text style={styles.dateIcon}>📅</Text>
+
+            {/* Recent Requests Preview */}
+            <View className="mt-6">
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-gray-800 font-extrabold text-sm">Đơn gần đây</Text>
+                <TouchableOpacity onPress={() => setActiveTab('history')}>
+                  <Text className="text-[#0284C7] text-[10px] font-bold uppercase tracking-wider">Xem tất cả</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View className="space-y-3">
+                {recentRequests.slice(0, 2).map((request) => (
+                  <View key={request.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                    <View className="flex-row justify-between items-start mb-2">
+                      <View className="flex-row items-center space-x-2">
+                        <View className={`px-2 py-0.5 rounded-full ${request.status === 'approved' ? 'bg-emerald-100' : 'bg-amber-100'}`}>
+                          <Text className={`text-[8px] font-black uppercase ${request.status === 'approved' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                            {request.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}
+                          </Text>
+                        </View>
+                        <Text className="text-gray-400 text-[9px] font-medium">{request.date}</Text>
+                      </View>
+                      <Text className="text-gray-500 text-[9px] font-medium">{request.duration}</Text>
+                    </View>
+                    <Text className="text-gray-800 font-bold text-sm mb-1">{request.reason}</Text>
+                    <Text className="text-gray-400 text-[9px] font-medium mb-2">{request.dateRange}</Text>
+                    {request.status === 'approved' && (
+                      <TouchableOpacity
+                        onPress={() => openAppealModal(request)}
+                        className="bg-amber-50 border border-amber-200 py-2 rounded-xl items-center"
+                      >
+                        <Text className="text-amber-700 font-bold text-xs text-center">Phúc khảo</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ))}
+              </View>
             </View>
-          </View>
-        </View>
-
-        {/* Notes */}
-        <Text style={styles.notesTitle}>Ghi chú thêm</Text>
-        <View style={styles.card}>
-          <Text style={styles.notesLabel}>Chi tiết lý do (không bắt buộc)</Text>
-          <View style={styles.notesContainer}>
-            <RNTextInput
-              value={notes}
-              onChangeText={setNotes}
-              placeholder="Nhập chi tiết lý do nghỉ..."
-              placeholderTextColor="#9CA3AF"
-              multiline
-              numberOfLines={4}
-              style={styles.notesInput}
-              textAlignVertical="top"
-            />
-          </View>
-        </View>
-
-        {/* Submit Button */}
-        <TouchableOpacity
-          onPress={handleSubmit}
-          style={styles.submitButton}
-        >
-          <Text style={styles.submitButtonText}>Gửi đơn xin nghỉ</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.footerText}>
-          * Đơn xin nghỉ cần được gửi trước ít nhất 1 ngày
-        </Text>
+          </>
+        ) : (
+          <>
+            {/* History List */}
+            <View className="space-y-3">
+              {recentRequests.map((request) => (
+                <View key={request.id} className={`p-4 rounded-2xl border shadow-sm ${request.status === 'pending' ? 'bg-white border-amber-200' : 'bg-white border-gray-100'}`}>
+                  <View className="flex-row justify-between items-start mb-2">
+                    <View className="flex-row items-center space-x-2">
+                      <View className={`px-2 py-0.5 rounded-full ${request.status === 'approved' ? 'bg-emerald-100' : request.status === 'pending' ? 'bg-amber-100' : 'bg-rose-100'}`}>
+                        <Text className={`text-[8px] font-black uppercase ${request.status === 'approved' ? 'text-emerald-700' : request.status === 'pending' ? 'text-amber-700' : 'text-rose-700'}`}>
+                          {request.status === 'approved' ? 'Đã duyệt' : request.status === 'pending' ? 'Chờ duyệt' : 'Từ chối'}
+                        </Text>
+                      </View>
+                      <Text className="text-gray-400 text-[9px] font-medium">{request.date}</Text>
+                    </View>
+                    <Text className="text-gray-500 text-[9px] font-medium">{request.duration}</Text>
+                  </View>
+                  <Text className="text-gray-800 font-bold text-sm mb-1">{request.reason}</Text>
+                  <Text className="text-gray-400 text-[9px] font-medium mb-2">{request.dateRange}</Text>
+                  {request.status === 'approved' && (
+                    <TouchableOpacity
+                      onPress={() => openAppealModal(request)}
+                      className="bg-amber-50 border border-amber-200 py-2 rounded-xl items-center"
+                    >
+                      <Text className="text-amber-700 font-bold text-xs text-center">Phúc khảo</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ))}
+            </View>
+          </>
+        )}
       </ScrollView>
+
+      {/* Appeal Modal */}
+      <Modal
+        visible={appealModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeAppealModal}
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center px-5">
+          <View className="bg-white rounded-3xl p-6 w-full max-h-[80%]">
+            {/* Header */}
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-gray-800 font-extrabold text-lg">Phúc khảo đơn</Text>
+              <TouchableOpacity onPress={closeAppealModal} className="w-8 h-8 bg-gray-100 rounded-full items-center justify-center">
+                <Text className="text-gray-500">✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Request Info */}
+            {selectedRequest && (
+              <View className="bg-blue-50 p-3 rounded-xl mb-4">
+                <Text className="text-gray-500 text-[10px] font-medium mb-1">Đơn xin nghỉ:</Text>
+                <Text className="text-gray-800 font-bold text-sm mb-2">{selectedRequest.reason}</Text>
+                <Text className="text-gray-500 text-[10px] font-medium mb-1">Thời gian:</Text>
+                <Text className="text-gray-800 font-bold text-xs">{selectedRequest.dateRange}</Text>
+              </View>
+            )}
+
+            {/* Appeal Form */}
+            <View className="space-y-3">
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Lý do phúc khảo</Text>
+                <View className="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                  <Text className="text-gray-800 text-sm font-medium">{appealType}</Text>
+                </View>
+              </View>
+
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">Giải trình chi tiết</Text>
+                <TextInput
+                  value={appealDetail}
+                  onChangeText={setAppealDetail}
+                  placeholder="Nhập chi tiết lý do phúc khảo..."
+                  placeholderTextColor="#9CA3AF"
+                  multiline
+                  numberOfLines={3}
+                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-gray-800 text-sm font-medium"
+                  textAlignVertical="top"
+                />
+              </View>
+
+              <View>
+                <Text className="text-gray-700 text-[10px] font-black uppercase tracking-wider mb-2">File đính kèm (nếu có)</Text>
+                <View className="border-2 border-dashed border-gray-300 rounded-xl p-4 items-center">
+                  <Text className="text-gray-400 text-xs font-medium text-center">Tap để tải file lên</Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                onPress={submitAppeal}
+                className="bg-gradient-to-r from-[#0284C7] to-[#0369A1] py-3.5 rounded-xl shadow-lg items-center"
+              >
+                <Text className="text-white font-extrabold text-sm text-center">Gửi yêu cầu phúc khảo</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

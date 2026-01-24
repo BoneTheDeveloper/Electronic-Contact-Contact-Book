@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'
+import type { Assessment } from '@/lib/types'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -14,7 +15,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
   const { id } = await params
   // TODO: Get real teacher ID from auth
   const assessments = await getAssessments('current-teacher-id')
-  const assessment = assessments.find((a: any) => a.id === id)
+  const assessment = assessments.find((a: Assessment) => a.id === id)
 
   if (!assessment) {
     notFound()

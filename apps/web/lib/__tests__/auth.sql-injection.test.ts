@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { login } from '../auth'
 
+interface MockCookies {
+  set: ReturnType<typeof vi.fn>
+}
+
 const mockCookies = vi.hoisted(() => ({ set: vi.fn() }))
 vi.mock('next/headers', () => ({ cookies: () => mockCookies }))
 vi.mock('next/navigation', () => ({
@@ -37,7 +41,7 @@ describe('login - SQL Injection Prevention', () => {
     formData.set('password', 'any')
 
     // New auth validates code format (alphanumeric only)
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     expect(result).toHaveProperty('error')
   })
 
@@ -48,7 +52,7 @@ describe('login - SQL Injection Prevention', () => {
 
     // Valid code format, but Supabase auth will handle SQLi in password
     // Format validation passes, then Supabase query runs
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     // Should NOT be format error
     if (result && typeof result === 'object' && 'error' in result) {
       expect(result.error).not.toContain('Invalid identifier format')
@@ -61,7 +65,7 @@ describe('login - SQL Injection Prevention', () => {
     formData.set('password', 'any')
 
     // Code format validation rejects
-    const result = await login(formData as any)
+    const result = await login(formData as unknown as FormData)
     expect(result).toHaveProperty('error')
   })
 })
