@@ -17,7 +17,7 @@ type CookieOptions = {
 export const createClient = async () => {
   const cookieStore = await cookies()
 
-  return createServerClient<Database>(
+  return createServerClient<Database, { PostgrestVersion: '14.1' }>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {

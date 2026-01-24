@@ -41,10 +41,10 @@ export async function GET(request: Request) {
     if (type === 'parents') {
       // Search parents by name, phone, or email
       const { data, error } = await supabase
-        .from('profiles' as const)
+        .from('profiles')
         .select('id, full_name, email, phone, role')
-        .eq('role' as const, 'parent' as const)
-        .eq('status' as const, 'active' as const)
+        .eq('role', 'parent' as any)
+        .eq('status', 'active' as any)
         .or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`)
         .limit(10)
 
@@ -60,7 +60,7 @@ export async function GET(request: Request) {
         phone: string | null
       }
 
-      const results: ParentResult[] = (data || []).map((p: ProfileResult) => ({
+      const results: ParentResult[] = (data || []).map((p: any) => ({
         id: p.id,
         name: p.full_name || '',
         code: p.id.slice(0, 10),
@@ -75,7 +75,7 @@ export async function GET(request: Request) {
     } else {
       // Search students by name, student_code, or class
       const { data, error } = await supabase
-        .from('students' as const)
+        .from('students')
         .select(`
           id,
           student_code,
@@ -87,7 +87,7 @@ export async function GET(request: Request) {
             status
           )
         `)
-        .eq('profiles.status' as const, 'active' as const)
+        .eq('profiles.status', 'active' as any)
         .or(`student_code.ilike.%${search}%,profiles.full_name.ilike.%${search}%,class_id.ilike.%${search}%`)
         .limit(10)
 
@@ -107,9 +107,9 @@ export async function GET(request: Request) {
         }
       }
 
-      const results: StudentResult[] = (data || []).map((s: StudentQueryResult) => ({
+      const results: StudentResult[] = (data || []).map((s: any) => ({
         id: s.id,
-        name: s.profiles.full_name,
+        name: s.profiles?.full_name || '',
         code: s.student_code,
         classId: s.class_id,
         grade: s.grade,
@@ -150,10 +150,10 @@ export async function POST(request: Request) {
 
     // Check if link already exists
     const { data: existing } = await supabase
-      .from('student_guardians' as const)
+      .from('student_guardians')
       .select('*')
-      .eq('student_id' as const, studentId as string)
-      .eq('guardian_id' as const, parentId as string)
+      .eq('student_id', studentId)
+      .eq('guardian_id', parentId)
       .maybeSingle()
 
     if (existing) {
@@ -166,9 +166,9 @@ export async function POST(request: Request) {
     // If this is being set as primary, unmark other primary relationships for this student
     if (isPrimary) {
       await supabase
-        .from('student_guardians' as const)
-        .update({ is_primary: false } as GuardiansInsert)
-        .eq('student_id' as const, studentId as string)
+        .from('student_guardians')
+        .update({ is_primary: false } as any)
+        .eq('student_id', studentId)
     }
 
     // Create the link
@@ -179,8 +179,8 @@ export async function POST(request: Request) {
     }
 
     const { data, error } = await supabase
-      .from('student_guardians' as const)
-      .insert(insertData)
+      .from('student_guardians')
+      .insert(insertData as any)
       .select()
       .single()
 
@@ -218,10 +218,10 @@ export async function DELETE(request: Request) {
     }
 
     const { error } = await supabase
-      .from('student_guardians' as const)
+      .from('student_guardians')
       .delete()
-      .eq('student_id' as const, studentId as string)
-      .eq('guardian_id' as const, guardianId as string)
+      .eq('student_id', studentId as any)
+      .eq('guardian_id', guardianId as any)
 
     if (error) {
       console.error('[API] Error deleting link:', error)

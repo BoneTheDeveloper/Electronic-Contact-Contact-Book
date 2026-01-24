@@ -4,6 +4,10 @@ import { createClient } from '@/lib/supabase/server'
 import type { FeeAssignment } from '@/lib/types'
 import type { Database } from '@/types/supabase'
 
+// Type alias for fee_assignments insert to avoid TypeScript tuple interpretation
+type FeeAssignmentsInsert = Database['public']['Tables']['fee_assignments']['Insert']
+type FeeAssignmentsRow = Database['public']['Tables']['fee_assignments']['Row']
+
 // GET /api/fee-assignments - List all fee assignments
 export async function GET(request: NextRequest) {
   try {
@@ -125,38 +129,20 @@ export async function POST(request: NextRequest) {
 
     const startDateValue: string = startDate || new Date().toISOString().split('T')[0]
 
-    // Build insert object with explicit types
-    const insertData: {
-      name: string
-      target_grades: string[] | null
-      target_classes: string[]
-      fee_items: string[]
-      start_date: string
-      due_date: string
-      reminder_days: number | null
-      reminder_frequency: string | null
-      total_students: number | null
-      total_amount: number | null
-      collected_amount: number
-      status: string
-    } = {
+    // Build insert object matching Supabase Insert type
+    const insertData: FeeAssignmentsInsert = {
+      id: crypto.randomUUID(),
       name: name.trim(),
       target_grades: (targetGrades?.length ? targetGrades : null),
       target_classes: targetClasses,
       fee_items: validFeeItems,
       start_date: startDateValue,
       due_date: finalDueDate,
-      reminder_days: reminderDays ?? null,
-      reminder_frequency: reminderFrequency ?? null,
-      total_students: totalStudents ?? null,
-      total_amount: totalAmount ?? null,
-      collected_amount: 0,
-      status: 'draft'
     }
 
     const { data, error } = await supabase
       .from('fee_assignments' as const)
-      .insert(insertData)
+      .insert(insertData as any)
       .select()
       .single()
 

@@ -33,10 +33,10 @@ export async function GET() {
     const supabase = await createClient()
 
     const { data: sessions, error } = await supabase
-      .from('user_sessions' as const)
+      .from('user_sessions')
       .select('*')
-      .eq('user_id' as const, user.id as string)
-      .order('last_active' as const, { ascending: false })
+      .eq('user_id', user.id as any)
+      .order('last_active', { ascending: false })
       .limit(10)
 
     if (error) {
@@ -78,10 +78,10 @@ export async function DELETE(request: Request) {
 
     // Verify session belongs to user
     const { data: session } = await supabase
-      .from('user_sessions' as const)
+      .from('user_sessions')
       .select('*')
-      .eq('id' as const, sessionId as string)
-      .eq('user_id' as const, user.id as string)
+      .eq('id', sessionId as any)
+      .eq('user_id', user.id as any)
       .single()
 
     if (!session) {
@@ -99,9 +99,9 @@ export async function DELETE(request: Request) {
     }
 
     const { error: updateError } = await supabase
-      .from('user_sessions' as const)
-      .update(updateData)
-      .eq('id' as const, sessionId as string)
+      .from('user_sessions')
+      .update(updateData as any)
+      .eq('id', sessionId as any)
 
     if (updateError) {
       return NextResponse.json({
