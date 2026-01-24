@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Validate due_date is provided (NOT NULL column)
-    const finalDueDate = dueDate || startDate || new Date().toISOString().split('T')[0]
+    const finalDueDate: string = dueDate || startDate || new Date().toISOString().split('T')[0]
     if (!finalDueDate) {
       return NextResponse.json(
         { success: false, error: 'Due date is required' },
@@ -123,24 +123,40 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    type FeeAssignmentInsert = Database['public']['Tables']['fee_assignments']['Insert']
+    const startDateValue: string = startDate || new Date().toISOString().split('T')[0]
+
+    // Build insert object with explicit types
+    const insertData: {
+      name: string
+      target_grades: string[] | null
+      target_classes: string[]
+      fee_items: string[]
+      start_date: string
+      due_date: string
+      reminder_days: number | null
+      reminder_frequency: string | null
+      total_students: number | null
+      total_amount: number | null
+      collected_amount: number
+      status: string
+    } = {
+      name: name.trim(),
+      target_grades: (targetGrades?.length ? targetGrades : null),
+      target_classes: targetClasses,
+      fee_items: validFeeItems,
+      start_date: startDateValue,
+      due_date: finalDueDate,
+      reminder_days: reminderDays ?? null,
+      reminder_frequency: reminderFrequency ?? null,
+      total_students: totalStudents ?? null,
+      total_amount: totalAmount ?? null,
+      collected_amount: 0,
+      status: 'draft'
+    }
 
     const { data, error } = await supabase
-      .from('fee_assignments')
-      .insert({
-        name: name.trim(),
-        target_grades: (targetGrades?.length ? targetGrades : null),
-        target_classes: targetClasses,
-        fee_items: validFeeItems,
-        start_date: startDate || new Date().toISOString().split('T')[0],
-        due_date: finalDueDate,
-        reminder_days: reminderDays ?? null,
-        reminder_frequency: reminderFrequency ?? null,
-        total_students: totalStudents ?? null,
-        total_amount: totalAmount ?? null,
-        collected_amount: 0,
-        status: 'draft'
-      })
+      .from('fee_assignments' as const)
+      .insert(insertData)
       .select()
       .single()
 

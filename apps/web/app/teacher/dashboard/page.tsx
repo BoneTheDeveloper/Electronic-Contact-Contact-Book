@@ -83,7 +83,7 @@ async function fetchDashboardData(): Promise<DashboardData> {
 
   // Get classes first to find homeroom class
   const teacherClasses = await getTeacherClasses(teacherId).catch(() => [])
-  const homeroomClass = teacherClasses.find((c) => c.isHomeroom)
+  const homeroomClass = teacherClasses.find((c: { isHomeroom: boolean }) => c.isHomeroom)
   const homeroomClassId = homeroomClass?.id || '6A1'
 
   const defaultStats: TeacherStats = {
@@ -106,10 +106,10 @@ async function fetchDashboardData(): Promise<DashboardData> {
   ])
 
   // Calculate assessment stats
-  const evaluated = regularAssessments.filter((a) => a.status === 'evaluated').length
-  const pending = regularAssessments.filter((a) => a.status === 'pending').length
+  const evaluated = regularAssessments.filter((a: { status: string }) => a.status === 'evaluated').length
+  const pending = regularAssessments.filter((a: { status: string }) => a.status === 'pending').length
   const positive = regularAssessments.filter((a: WithRating) => a.rating && a.rating >= 4).length
-  const needsAttention = regularAssessments.filter((a) => a.status === 'needs-attention').length
+  const needsAttention = regularAssessments.filter((a: { status: string }) => a.status === 'needs-attention').length
 
   return {
     stats: {

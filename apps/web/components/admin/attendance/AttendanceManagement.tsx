@@ -5,7 +5,7 @@ import { CheckCircle, XCircle, Clock, Users } from 'lucide-react'
 import { StatCard, DataTable, StatusBadge, FilterBar } from '@/components/admin/shared'
 import type { Column } from '@/components/admin/shared'
 
-interface AttendanceRecord {
+interface AttendanceRecord extends Record<string, unknown> {
   id: string
   studentName: string
   classId: string
@@ -100,8 +100,8 @@ export function AttendanceManagement() {
   }, [])
 
   // Handle filter change - memoized
-  const handleFilterChange = useCallback((key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }))
+  const handleFilterChange = useCallback((key: string, value: string | number | string[]) => {
+    setFilters(prev => ({ ...prev, [key]: String(value) }))
   }, [])
 
   // Status configuration - memoized

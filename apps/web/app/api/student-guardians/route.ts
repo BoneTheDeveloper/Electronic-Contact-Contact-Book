@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import type { Database } from '@/types/supabase'
 
 type ParentResult = {
   id: string
@@ -40,10 +41,10 @@ export async function GET(request: Request) {
     if (type === 'parents') {
       // Search parents by name, phone, or email
       const { data, error } = await supabase
-        .from('profiles')
+        .from('profiles' as const)
         .select('id, full_name, email, phone, role')
-        .eq('role', 'parent')
-        .eq('status', 'active')
+        .eq('role' as const, 'parent' as const)
+        .eq('status' as const, 'active' as const)
         .or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`)
         .limit(10)
 
@@ -74,7 +75,7 @@ export async function GET(request: Request) {
     } else {
       // Search students by name, student_code, or class
       const { data, error } = await supabase
-        .from('students')
+        .from('students' as const)
         .select(`
           id,
           student_code,
@@ -86,7 +87,7 @@ export async function GET(request: Request) {
             status
           )
         `)
-        .eq('profiles.status', 'active')
+        .eq('profiles.status' as const, 'active' as const)
         .or(`student_code.ilike.%${search}%,profiles.full_name.ilike.%${search}%,class_id.ilike.%${search}%`)
         .limit(10)
 
@@ -144,12 +145,15 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
 
+    type GuardiansInsert = Database['public']['Tables']['student_guardians']['Insert']
+    type GuardiansRow = Database['public']['Tables']['student_guardians']['Row']
+
     // Check if link already exists
     const { data: existing } = await supabase
-      .from('student_guardians')
+      .from('student_guardians' as const)
       .select('*')
-      .eq('student_id', studentId)
-      .eq('guardian_id', parentId)
+      .eq('student_id' as const, studentId as string)
+      .eq('guardian_id' as const, parentId as string)
       .maybeSingle()
 
     if (existing) {
@@ -162,19 +166,21 @@ export async function POST(request: Request) {
     // If this is being set as primary, unmark other primary relationships for this student
     if (isPrimary) {
       await supabase
-        .from('student_guardians')
-        .update({ is_primary: false })
-        .eq('student_id', studentId)
+        .from('student_guardians' as const)
+        .update({ is_primary: false } as GuardiansInsert)
+        .eq('student_id' as const, studentId as string)
     }
 
     // Create the link
+    const insertData: GuardiansInsert = {
+      student_id: studentId,
+      guardian_id: parentId,
+      is_primary: isPrimary || false,
+    }
+
     const { data, error } = await supabase
-      .from('student_guardians')
-      .insert({
-        student_id: studentId,
-        guardian_id: parentId,
-        is_primary: isPrimary || false,
-      })
+      .from('student_guardians' as const)
+      .insert(insertData)
       .select()
       .single()
 
@@ -212,10 +218,10 @@ export async function DELETE(request: Request) {
     }
 
     const { error } = await supabase
-      .from('student_guardians')
+      .from('student_guardians' as const)
       .delete()
-      .eq('student_id', studentId)
-      .eq('guardian_id', guardianId)
+      .eq('student_id' as const, studentId as string)
+      .eq('guardian_id' as const, guardianId as string)
 
     if (error) {
       console.error('[API] Error deleting link:', error)

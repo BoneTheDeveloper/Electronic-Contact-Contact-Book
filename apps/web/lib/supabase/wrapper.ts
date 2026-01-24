@@ -1,5 +1,6 @@
 import { createClient } from './server'
 import type { PostgrestError } from '@supabase/supabase-js'
+import type { Database } from '@/types/supabase'
 
 export type QueryResult<T> = {
   data: T | null
@@ -24,7 +25,7 @@ export async function safeQuery<T>(
 }
 
 export async function safeSelect<T = Record<string, unknown>>(
-  table: string,
+  table: keyof Database['public']['Tables'],
   fallback: T[] = []
 ): Promise<QueryResult<T[]>> {
   const supabase = await createClient()
@@ -38,14 +39,14 @@ export async function safeSelect<T = Record<string, unknown>>(
 }
 
 export async function safeSelectById<T = Record<string, unknown>>(
-  table: string,
+  table: keyof Database['public']['Tables'],
   id: string,
   fallback: T | null = null
 ): Promise<QueryResult<T>> {
   const supabase = await createClient()
   return safeQuery(
     async () => {
-      const result = await supabase.from(table).select('*').eq('id', id).single()
+      const result = await supabase.from(table).select('*').eq('id' as const, id).single()
       return { data: result.data as T | null, error: result.error }
     },
     fallback

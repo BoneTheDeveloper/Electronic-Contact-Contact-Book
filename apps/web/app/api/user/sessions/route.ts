@@ -7,6 +7,7 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import type { Database } from '@/types/supabase'
 
 interface Session {
   id: string
@@ -23,6 +24,8 @@ interface Session {
   termination_reason?: 'new_login' | 'timeout' | 'manual' | 'admin'
 }
 
+type UserSessionUpdate = Database['public']['Tables']['user_sessions']['Update']
+
 // GET /api/user/sessions - Get user's active sessions
 export async function GET() {
   try {
@@ -30,10 +33,10 @@ export async function GET() {
     const supabase = await createClient()
 
     const { data: sessions, error } = await supabase
-      .from('user_sessions')
+      .from('user_sessions' as const)
       .select('*')
-      .eq('user_id', user.id)
-      .order('last_active', { ascending: false })
+      .eq('user_id' as const, user.id as string)
+      .order('last_active' as const, { ascending: false })
       .limit(10)
 
     if (error) {
@@ -45,7 +48,7 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      data: sessions as Session[]
+      data: sessions as unknown as Session[]
     })
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Authentication required'
@@ -75,10 +78,10 @@ export async function DELETE(request: Request) {
 
     // Verify session belongs to user
     const { data: session } = await supabase
-      .from('user_sessions')
+      .from('user_sessions' as const)
       .select('*')
-      .eq('id', sessionId)
-      .eq('user_id', user.id)
+      .eq('id' as const, sessionId as string)
+      .eq('user_id' as const, user.id as string)
       .single()
 
     if (!session) {
@@ -89,15 +92,16 @@ export async function DELETE(request: Request) {
     }
 
     // Terminate session
+    const updateData: UserSessionUpdate = {
+      is_active: false,
+      terminated_at: new Date().toISOString(),
+      termination_reason: 'manual'
+    }
+
     const { error: updateError } = await supabase
-      .from('user_sessions')
-      // @ts-expect-error - user_sessions table exists in DB but not in generated types
-      .update({
-        is_active: false,
-        terminated_at: new Date().toISOString(),
-        termination_reason: 'manual'
-      })
-      .eq('id', sessionId);
+      .from('user_sessions' as const)
+      .update(updateData)
+      .eq('id' as const, sessionId as string)
 
     if (updateError) {
       return NextResponse.json({

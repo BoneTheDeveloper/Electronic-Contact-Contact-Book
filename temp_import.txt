@@ -1,0 +1,1 @@
+import { mockNotifications } from '../../mock-data';

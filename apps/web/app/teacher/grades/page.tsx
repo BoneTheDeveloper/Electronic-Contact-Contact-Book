@@ -17,7 +17,7 @@ export default async function GradesListPage() {
 
       {/* Classes Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {classes.map((cls) => (
+        {classes.map((cls: { id: string; name: string; subject: string; isHomeroom: boolean; studentCount: number }) => (
           <Link key={cls.id} href={`/teacher/grades/${cls.id}`}>
             <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-l-green-500">
               <CardHeader>

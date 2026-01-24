@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import type { Database } from '@/types/supabase'
+
+type Profiles = Database['public']['Tables']['profiles']['Row']
 
 export async function GET() {
   try {
@@ -7,7 +10,10 @@ export async function GET() {
 
     // Simple health check - try to query a known table
     const client = await supabase
-    const { error } = await client.from('users').select('id').limit(1)
+    const { error } = await client
+      .from('profiles' as const)
+      .select('id')
+      .limit(1)
 
     if (error) {
       return NextResponse.json(
