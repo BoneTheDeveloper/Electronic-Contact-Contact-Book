@@ -8,7 +8,7 @@ import { View, ScrollView, TouchableOpacity, Dimensions, Text, StyleSheet } from
 import { useAuthStore } from '../../stores';
 import { useStudentStore } from '../../stores';
 import { colors } from '../../theme';
-import { Icon } from '../../components/ui';
+import { Icon, type IconName } from '../../components/ui';
 import type { StudentHomeStackNavigationProp } from '../../navigation/types';
 
 const { width } = Dimensions.get('window');
@@ -20,7 +20,7 @@ const CONTAINER_PADDING = 24;
 interface ServiceIcon {
   id: string;
   label: string;
-  icon: string;
+  icon: IconName;
   color: string;
   route: string;
 }
@@ -68,7 +68,7 @@ export const StudentDashboardScreen: React.FC<DashboardScreenProps> = ({ navigat
         activeOpacity={0.92}
       >
         <View style={styles.iconBox}>
-          <Icon name={item.icon as any} size={32} color={item.color} />
+          <Icon name={item.icon} size={32} color={item.color} />
         </View>
         <Text style={styles.iconLabel}>{item.label}</Text>
       </TouchableOpacity>
