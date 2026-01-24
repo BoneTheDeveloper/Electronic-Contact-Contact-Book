@@ -3,6 +3,7 @@ export type UserRole = 'admin' | 'teacher' | 'parent' | 'student';
 
 export interface User {
   id: string;
+  code?: string; // Mã người dùng - unique user code (e.g., USER001834, AD001, TC001, PH12345678, ST2024001)
   email: string;
   name: string;
   role: UserRole;
