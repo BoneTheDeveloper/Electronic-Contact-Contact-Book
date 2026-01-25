@@ -481,24 +481,23 @@ export const getDashboardStats = cache(async (): Promise<DashboardStats> => {
 export const getTeacherStats = cache(async (teacherId: string): Promise<TeacherStats> => {
   const supabase = await getSupabase()
 
-  // Get homeroom class count
+  // Get homeroom class count (only count where teacher is primary/homeroom)
   const { count: homeroomCount } = await supabase
-    .from('enrollments')
-    .select('id', { count: 'exact', head: true })
-
-  // Get teaching classes count
-  const { count: teachingCount } = await supabase
-    .from('schedules')
+    .from('class_teachers')
     .select('id', { count: 'exact', head: true })
     .eq('teacher_id' as const, teacherId as any)
+    .eq('is_primary' as const, true as any)
 
-  // Get student count (unique students in all classes)
+  // Get unique class IDs for teaching count and student count
   const { data: classData } = await supabase
     .from('schedules')
     .select('class_id')
     .eq('teacher_id' as const, teacherId as any)
 
   const classIds = [...new Set((classData as any)?.map((c: any) => c.class_id) || [])]
+  const teachingCount = classIds.length
+
+  // Get student count (unique students in all classes)
   let studentCount = 0
 
   if (classIds.length > 0) {
@@ -557,13 +556,29 @@ export const getTeacherStats = cache(async (teacherId: string): Promise<TeacherS
     .select('id', { count: 'exact', head: true })
     .eq('status' as const, 'pending' as any)
 
-  const { count: leaveRequests } = await supabase
-    .from('leave_requests')
-    .select('id', { count: 'exact', head: true })
-    .eq('status' as const, 'pending' as any)
+  // Get homeroom class ID for leave requests
+  const { data: homeroomClass } = await supabase
+    .from('class_teachers')
+    .select('class_id')
+    .eq('teacher_id' as const, teacherId as any)
+    .eq('is_primary' as const, true as any)
+    .single()
+
+  const homeroomClassId = (homeroomClass as any)?.class_id
+
+  // Count leave requests only for homeroom class
+  let leaveRequests = 0
+  if (homeroomClassId) {
+    const { count } = await supabase
+      .from('leave_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('class_id' as const, homeroomClassId as any)
+      .eq('status' as const, 'pending' as any)
+    leaveRequests = count || 0
+  }
 
   return {
-    homeroom: 0, // Would need to query homeroom_assignments table
+    homeroom: homeroomCount || 0,
     teaching: teachingCount || 0,
     students: studentCount,
     pendingAttendance: pendingAttendance || 0,
@@ -1151,6 +1166,18 @@ export const getTeacherClasses = cache(async (teacherId?: string): Promise<Teach
 
   if (error) handleQueryError(error, 'getTeacherClasses')
 
+  // Get homeroom classes from class_teachers table
+  let homeroomClassIds: Set<string> = new Set()
+  if (teacherId) {
+    const { data: homeroomData } = await supabase
+      .from('class_teachers')
+      .select('class_id')
+      .eq('teacher_id' as const, teacherId as any)
+      .eq('is_primary' as const, true as any)
+
+    homeroomClassIds = new Set((homeroomData as any)?.map((ct: any) => ct.class_id) || [])
+  }
+
   // Group by class and get unique classes
   const classMap: Map<string, TeacherClass> = new Map()
 
@@ -1164,7 +1191,7 @@ export const getTeacherClasses = cache(async (teacherId?: string): Promise<Teach
         room: s.room || '',
         studentCount: s.classes.current_students,
         schedule: '',
-        isHomeroom: false
+        isHomeroom: homeroomClassIds.has(s.class_id)
       })
     }
   })
