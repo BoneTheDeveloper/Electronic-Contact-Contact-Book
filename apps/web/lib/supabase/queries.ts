@@ -481,12 +481,31 @@ export const getDashboardStats = cache(async (): Promise<DashboardStats> => {
 export const getTeacherStats = cache(async (teacherId: string): Promise<TeacherStats> => {
   const supabase = await getSupabase()
 
+  // Guard clause for empty teacherId
+  if (!teacherId) {
+    console.error('[getTeacherStats] Empty teacherId provided')
+    return {
+      homeroom: 0,
+      teaching: 0,
+      students: 0,
+      pendingAttendance: 0,
+      pendingGrades: 0,
+      gradeReviewRequests: 0,
+      leaveRequests: 0,
+      todaySchedule: []
+    }
+  }
+
   // Get homeroom class count (only count where teacher is primary/homeroom)
-  const { count: homeroomCount } = await supabase
+  const { count: homeroomCount, error: homeroomError } = await supabase
     .from('class_teachers')
     .select('id', { count: 'exact', head: true })
     .eq('teacher_id' as const, teacherId as any)
     .eq('is_primary' as const, true as any)
+
+  if (homeroomError) {
+    console.error('[getTeacherStats] homeroom query error:', homeroomError)
+  }
 
   // Get unique class IDs for teaching count and student count
   const { data: classData } = await supabase
@@ -501,11 +520,16 @@ export const getTeacherStats = cache(async (teacherId: string): Promise<TeacherS
   let studentCount = 0
 
   if (classIds.length > 0) {
-    const { count } = await supabase
+    const { count, error: enrollmentsError } = await supabase
       .from('enrollments')
       .select('id', { count: 'exact', head: true })
       .in('class_id' as const, classIds as any)
       .eq('status' as const, 'active' as any)
+
+    if (enrollmentsError) {
+      console.error('[getTeacherStats] enrollments query error:', enrollmentsError)
+    }
+    console.log('[getTeacherStats] classIds:', classIds, 'studentCount:', count)
     studentCount = count || 0
   }
 
