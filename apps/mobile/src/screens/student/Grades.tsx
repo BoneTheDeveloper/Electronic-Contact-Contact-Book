@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { useStudentStore } from '../../stores';
 import { useAuthStore } from '../../stores';
 import { GradePicker } from '../../components/ui/GradePicker';
@@ -107,16 +107,17 @@ export const StudentGradesScreen: React.FC<GradesScreenProps> = ({ navigation })
   const [appealDetail, setAppealDetail] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
-  // Load grades when student ID changes
+  // Load grades when student ID or semester changes
   const loadData = async () => {
     if (user?.id && user?.role === 'student') {
-      await loadGrades(user.id);
+      const semesterParam = selectedSemester === 'I' ? '1' : '2';
+      await loadGrades(user.id, semesterParam);
     }
   };
 
   useEffect(() => {
     loadData();
-  }, [user?.id]);
+  }, [user?.id, selectedSemester]);
 
   const handleReload = async () => {
     setRefreshing(true);
@@ -219,11 +220,28 @@ export const StudentGradesScreen: React.FC<GradesScreenProps> = ({ navigation })
     setSelectedSubject(null);
   };
 
-  const submitAppeal = () => {
-    setAppealModalVisible(false);
-    setSuccessModalVisible(true);
-    setAppealDetail('');
-    setSelectedSubject(null);
+  const submitAppeal = async () => {
+    if (!user?.id || !selectedSubject) {
+      Alert.alert('Lỗi', 'Không tìm thấy thông tin');
+      return;
+    }
+
+    try {
+      await createGradeAppeal({
+        gradeEntryId: selectedSubject.grades[0]?.id || '',
+        studentId: user.id,
+        reason: appealReason,
+        detail: appealDetail,
+      });
+
+      setAppealModalVisible(false);
+      setSuccessModalVisible(true);
+      setAppealDetail('');
+      setSelectedSubject(null);
+    } catch (error) {
+      console.error('Error submitting appeal:', error);
+      Alert.alert('Lỗi', 'Không thể gửi yêu cầu phúc khảo');
+    }
   };
 
   const closeSuccessModal = () => {

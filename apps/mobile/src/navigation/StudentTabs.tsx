@@ -32,7 +32,7 @@ import {
   FAQScreen,
   SupportScreen,
 } from '../screens/profile';
-import type { StudentTabParamList, StudentProfileStackParamList } from './types';
+import type { StudentTabParamList, StudentHomeStackParamList, StudentProfileStackParamList } from './types';
 
 // Home Stack (Dashboard, Schedule, Grades, Attendance, Study Materials, Leave Request, Teacher Feedback, News, Summary, Payment)
 const HomeStack = createNativeStackNavigator<StudentHomeStackParamList>();

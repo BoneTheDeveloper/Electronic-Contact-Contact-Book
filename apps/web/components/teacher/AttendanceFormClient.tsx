@@ -3,12 +3,13 @@
 /**
  * Attendance Form Client Component
  * Client-side component for interactive attendance marking with real API integration
+ * Matches wireframe design at docs/wireframe/Web_app/Teacher/attendance.html
  */
 
-import { useState, useEffect, useActionState } from 'react'
-import { Calendar, Clock } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Calendar, Clock, Save, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 
 interface SubjectTaught {
@@ -29,6 +30,8 @@ interface AttendanceFormClientProps {
 }
 
 type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused' | null
+type SessionType = 'morning' | 'afternoon'
+type AttendanceCompletionStatus = 'pending' | 'completed'
 
 interface Student {
   id: string
@@ -57,11 +60,12 @@ interface Period {
   end_time: string
 }
 
-const statusLabels: Record<string, { label: string; bgColor: string; textColor: string }> = {
-  present: { label: 'P', bgColor: 'bg-green-100', textColor: 'text-green-700' },
-  absent: { label: 'A', bgColor: 'bg-red-100', textColor: 'text-red-700' },
-  late: { label: 'L', bgColor: 'bg-yellow-100', textColor: 'text-yellow-700' },
-  excused: { label: 'E', bgColor: 'bg-blue-100', textColor: 'text-blue-700' }
+// Status labels matching wireframe design
+const statusLabels: Record<string, { label: string; bgColor: string; textColor: string; selectedBg: string; selectedText: string }> = {
+  present: { label: 'P', bgColor: 'bg-green-100', textColor: 'text-green-700', selectedBg: 'bg-green-600', selectedText: 'text-white' },
+  absent: { label: 'A', bgColor: 'bg-red-100', textColor: 'text-red-700', selectedBg: 'bg-red-600', selectedText: 'text-white' },
+  late: { label: 'L', bgColor: 'bg-yellow-100', textColor: 'text-yellow-700', selectedBg: 'bg-yellow-600', selectedText: 'text-white' },
+  excused: { label: 'E', bgColor: 'bg-blue-100', textColor: 'text-blue-700', selectedBg: 'bg-blue-600', selectedText: 'text-white' }
 }
 
 export function AttendanceFormClient({
@@ -72,10 +76,9 @@ export function AttendanceFormClient({
 }: AttendanceFormClientProps) {
   const [students, setStudents] = useState<Student[]>([])
   const [periods, setPeriods] = useState<Period[]>([])
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split('T')[0]
-  )
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [selectedPeriod, setSelectedPeriod] = useState<number | null>(null)
+  const [selectedSession, setSelectedSession] = useState<SessionType>('morning')
   const [stats, setStats] = useState<AttendanceStats>({
     total: 0,
     present: 0,
@@ -83,23 +86,37 @@ export function AttendanceFormClient({
     late: 0,
     excused: 0
   })
+  const [completionStatus, setCompletionStatus] = useState<AttendanceCompletionStatus>('pending')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [lastSaved, setLastSaved] = useState<string | null>(null)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  // Fetch data on mount and when date/period changes
+  // Initialize session based on current time
+  useEffect(() => {
+    const hour = new Date().getHours()
+    setSelectedSession(hour < 12 ? 'morning' : 'afternoon')
+  }, [])
+
+  // Fetch data on mount and when date/period/session changes
   useEffect(() => {
     fetchData()
-  }, [selectedDate, selectedPeriod])
+  }, [selectedDate, selectedPeriod, selectedSession])
 
   const fetchData = async () => {
     setIsLoading(true)
     try {
-      // Fetch students with attendance, periods, and stats in parallel
+      // For homeroom teachers, use session; for subject teachers, use period
+      const queryParams = new URLSearchParams({
+        classId,
+        date: selectedDate,
+        ...(isHomeroom ? { session: selectedSession } : selectedPeriod ? { periodId: selectedPeriod.toString() } : {})
+      })
+
       const [studentsRes, periodsRes, statsRes] = await Promise.all([
-        fetch(`/api/teacher/attendance/${classId}?date=${selectedDate}${selectedPeriod ? `&periodId=${selectedPeriod}` : ''}`),
+        fetch(`/api/teacher/attendance/${classId}?${queryParams.toString()}`),
         fetch('/api/periods'),
-        fetch(`/api/teacher/attendance?classId=${classId}&date=${selectedDate}${selectedPeriod ? `&periodId=${selectedPeriod}` : ''}`)
+        fetch(`/api/teacher/attendance?${queryParams.toString()}`)
       ])
 
       const [studentsData, periodsData, statsData] = await Promise.all([
@@ -118,6 +135,10 @@ export function AttendanceFormClient({
 
       if (statsData.success && statsData.stats) {
         setStats(statsData.stats)
+        // Check if attendance is completed
+        const isCompleted = statsData.stats.total > 0 &&
+          statsData.stats.present + statsData.stats.absent + statsData.stats.late + statsData.stats.excused > 0
+        setCompletionStatus(isCompleted ? 'completed' : 'pending')
       }
     } catch (error) {
       console.error('Error fetching attendance data:', error)
@@ -129,20 +150,44 @@ export function AttendanceFormClient({
 
   // Update status for a student
   const updateStudentStatus = (studentId: string, status: AttendanceStatus) => {
-    setStudents(prev => prev.map(s =>
-      s.id === studentId ? { ...s, status } : s
-    ))
+    setStudents(prev => prev.map(s => {
+      if (s.id === studentId) {
+        // If toggling off, clear the status
+        if (s.status === status) {
+          return { ...s, status: null }
+        }
+        return { ...s, status }
+      }
+      return s
+    }))
 
-    // Update stats
-    if (status) {
-      setStats(prev => ({
-        ...prev,
-        [status]: prev[status as keyof AttendanceStats] + 1
-      }))
+    // Recalculate stats
+    setStudents(prev => {
+      const newStats = calculateStats(prev.map(s =>
+        s.id === studentId ? { ...s, status: s.status === status ? null : status } : s
+      ))
+      setStats(newStats)
+      return prev
+    })
+  }
+
+  // Calculate stats from students array
+  const calculateStats = (studentList: Student[]): AttendanceStats => {
+    const stats: AttendanceStats = {
+      total: studentList.length,
+      present: 0,
+      absent: 0,
+      late: 0,
+      excused: 0
     }
 
-    // Clear confirm button disabled state
-    document.getElementById('confirmBtn')?.removeAttribute('disabled')
+    studentList.forEach(s => {
+      if (s.status) {
+        stats[s.status]++
+      }
+    })
+
+    return stats
   }
 
   // Update notes for a student
@@ -162,7 +207,8 @@ export function AttendanceFormClient({
       late: 0,
       excused: 0
     })
-    document.getElementById('confirmBtn')?.removeAttribute('disabled')
+    setCompletionStatus('pending')
+    showToast('Đã đánh dấu tất cả học sinh có mặt')
   }
 
   // Auto-fill approved leaves
@@ -177,20 +223,31 @@ export function AttendanceFormClient({
         return s
       })
 
-      // Update stats
-      setStats(prevStats => ({
-        ...prevStats,
-        excused: prevStats.excused + count
-      }))
-
-      document.getElementById('confirmBtn')?.removeAttribute('disabled')
+      const newStats = calculateStats(updated)
+      setStats(newStats)
       return updated
     })
 
     if (count > 0) {
-      setMessage({ type: 'success', text: `Đã tự động điền ${count} học sinh có đơn nghỉ phép` })
-      setTimeout(() => setMessage(null), 3000)
+      showToast(`Đã tự động điền ${count} học sinh có đơn nghỉ phép`)
+    } else {
+      showToast('Không có học sinh nào có đơn nghỉ phép')
     }
+  }
+
+  // Save draft
+  const saveDraft = async () => {
+    const hasChanges = students.some(s => s.status !== null || s.notes)
+    if (!hasChanges) {
+      showToast('Chưa có dữ liệu điểm danh để lưu')
+      return
+    }
+
+    // Mock save - update last saved time
+    const now = new Date()
+    const timeStr = now.toLocaleString('vi-VN')
+    setLastSaved(timeStr)
+    showToast('Đã lưu nháp thành công')
   }
 
   // Save attendance
@@ -220,7 +277,8 @@ export function AttendanceFormClient({
         body: JSON.stringify({
           classId,
           date: selectedDate,
-          periodId: selectedPeriod,
+          periodId: isHomeroom ? null : selectedPeriod,
+          session: isHomeroom ? selectedSession : null,
           records,
           sendNotifications: true
         })
@@ -229,8 +287,11 @@ export function AttendanceFormClient({
       const data = await response.json()
 
       if (data.success) {
-        setMessage({ type: 'success', text: data.message })
-        // Refresh data to get updated stats
+        setCompletionStatus('completed')
+        const absentCount = records.filter(r => r.status === 'absent' || r.status === 'late').length
+        showToast(absentCount > 0
+          ? `Đã xác nhận. Đã gửi thông báo đến ${absentCount} phụ huynh.`
+          : 'Đã xác nhận hoàn thành điểm danh')
         await fetchData()
       } else {
         setMessage({ type: 'error', text: data.message || 'Không thể lưu điểm danh' })
@@ -243,6 +304,12 @@ export function AttendanceFormClient({
     }
   }
 
+  // Show toast message
+  const showToast = (text: string) => {
+    setMessage({ type: 'success', text })
+    setTimeout(() => setMessage(null), 3000)
+  }
+
   // Get initials for avatar
   const getInitials = (name: string) => {
     return name
@@ -253,33 +320,59 @@ export function AttendanceFormClient({
       .substring(0, 2)
   }
 
+  // Check if any student has status
+  const hasAttendanceData = students.some(s => s.status !== null)
+
   return (
     <div className="space-y-6">
-      {/* Filters */}
-      <Card>
+      {/* Filters Card - Matching wireframe rounded-[32px] design */}
+      <Card className="rounded-3xl border-slate-100 shadow-sm">
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Class Selection - Display only (already selected) */}
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Lớp học</label>
+              <Input
+                value={className}
+                disabled
+                className="bg-slate-50 border-slate-200 font-bold text-slate-900"
+              />
+            </div>
+
             {/* Date Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Ngày điểm danh</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Ngày điểm danh</label>
               <Input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
+                className="bg-slate-50 border-slate-200 font-bold"
               />
             </div>
 
-            {/* Period Selection (for subject teachers) */}
-            {!isHomeroom && subjects.length > 0 && (
+            {/* Session Selection (for homeroom) or Period Selection (for subject teachers) */}
+            {isHomeroom ? (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tiết học</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Buổi</label>
+                <select
+                  value={selectedSession}
+                  onChange={(e) => setSelectedSession(e.target.value as SessionType)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-sky-100 outline-none"
+                >
+                  <option value="morning">Buổi Sáng</option>
+                  <option value="afternoon">Buổi Chiều</option>
+                </select>
+              </div>
+            ) : subjects.length > 0 ? (
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Tiết học</label>
                 <select
                   value={selectedPeriod || ''}
                   onChange={(e) => setSelectedPeriod(e.target.value ? Number(e.target.value) : null)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-sky-100 outline-none"
                 >
-                  <option value="">Cả ngày</option>
+                  <option value="">Tất cả</option>
                   {periods.map(p => (
                     <option key={p.id} value={p.id}>
                       Tiết {p.id} ({p.start_time} - {p.end_time})
@@ -287,144 +380,193 @@ export function AttendanceFormClient({
                   ))}
                 </select>
               </div>
-            )}
-
-            {/* Stats Display */}
-            <div className="flex items-end gap-4 text-sm">
-              <div>
-                <p className="text-gray-500">Tổng số</p>
-                <p className="font-semibold">{stats.total} học sinh</p>
-              </div>
-              <div>
-                <p className="text-gray-500">Có mặt</p>
-                <p className="font-semibold text-green-600">{stats.present}</p>
-              </div>
-              <div>
-                <p className="text-gray-500">Vắng</p>
-                <p className="font-semibold text-red-600">{stats.absent}</p>
-              </div>
-              <div>
-                <p className="text-gray-500">Muộn</p>
-                <p className="font-semibold text-yellow-600">{stats.late}</p>
-              </div>
-            </div>
+            ) : null}
           </div>
         </CardContent>
       </Card>
 
-      {/* Action Buttons */}
-      <div className="flex gap-3">
-        <Button onClick={markAllPresent} variant="outline" size="sm">
-          Đánh dấu tất cả có mặt
-        </Button>
-        <Button onClick={autoFillApprovedLeaves} variant="outline" size="sm">
-          Tự động điền đơn nghỉ phép
-        </Button>
-      </div>
+      {/* Attendance Table - Matching wireframe rounded-[32px] design */}
+      <Card className="rounded-3xl border-slate-100 shadow-sm overflow-hidden">
+        {/* Table Header */}
+        <CardHeader className="border-b border-slate-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg font-black text-slate-800 tracking-tight">Danh sách học sinh</CardTitle>
+              <p className="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">
+                <span>{stats.total}</span> học sinh • <span className="text-green-600">{stats.present}</span> có mặt • <span className="text-red-600">{stats.absent}</span> vắng
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                onClick={markAllPresent}
+                variant="outline"
+                size="sm"
+                className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 font-bold text-xs"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Đánh dấu tất cả có mặt
+              </Button>
+              <Button
+                onClick={autoFillApprovedLeaves}
+                variant="outline"
+                size="sm"
+                className="bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100 font-bold text-xs"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Tự động điền đơn nghỉ phép
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
 
-      {/* Message */}
+        {/* Status Legend */}
+        <div className="px-6 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-6 text-xs">
+          <span className="font-black text-slate-400 uppercase tracking-wider">Chú thích:</span>
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-lg bg-green-100 text-green-700 flex items-center justify-center font-bold text-xs">P</span>
+            <span className="text-slate-600">Có mặt</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-lg bg-red-100 text-red-700 flex items-center justify-center font-bold text-xs">A</span>
+            <span className="text-slate-600">Vắng không phép</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-lg bg-yellow-100 text-yellow-700 flex items-center justify-center font-bold text-xs">L</span>
+            <span className="text-slate-600">Muộn</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">E</span>
+            <span className="text-slate-600">Vắng có phép</span>
+          </div>
+        </div>
+
+        {/* Table or Loading/Empty State */}
+        {isLoading ? (
+          <CardContent className="py-12 text-center text-slate-500 font-bold">
+            Đang tải dữ liệu...
+          </CardContent>
+        ) : students.length === 0 ? (
+          <CardContent className="py-12 text-center text-slate-500">
+            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-8 h-8 text-slate-400" />
+            </div>
+            <p className="font-bold">Không có học sinh nào trong lớp</p>
+          </CardContent>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-20">STT</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Họ và tên</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-64">Trạng thái</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Ghi chú</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {students.map((student, index) => (
+                  <tr key={student.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center justify-center w-8 h-8 bg-slate-100 rounded-lg font-bold text-slate-600 text-sm">
+                        {index + 1}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-sky-50 text-sky-600 rounded-full flex items-center justify-center font-bold text-sm">
+                          {getInitials(student.full_name)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">{student.full_name}</p>
+                          <p className="text-xs text-slate-400">{student.student_code}</p>
+                          {student.has_approved_leave && (
+                            <span className="inline-block mt-1 px-2 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded">
+                              Đơn nghỉ phép
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2">
+                        {(Object.keys(statusLabels) as Array<keyof typeof statusLabels>).map((status) => {
+                          const isSelected = student.status === status
+                          const labelConfig = statusLabels[status]
+                          return (
+                            <button
+                              key={status}
+                              onClick={() => updateStudentStatus(student.id, status as AttendanceStatus)}
+                              className={`
+                                status-btn w-10 h-10 rounded-lg font-bold text-sm transition-all
+                                ${isSelected
+                                  ? `${labelConfig.selectedBg} ${labelConfig.selectedText} scale-110 shadow-lg`
+                                  : `${labelConfig.bgColor} ${labelConfig.textColor} hover:scale-105`
+                                }
+                              `}
+                            >
+                              {labelConfig.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Input
+                        value={student.notes || ''}
+                        onChange={(e) => updateStudentNotes(student.id, e.target.value)}
+                        placeholder="Ghi chú..."
+                        className="text-sm bg-slate-50 border-slate-200 focus:ring-2 focus:ring-sky-100"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      {/* Message Toast */}
       {message && (
-        <div className={`p-3 rounded-md ${
-          message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+        <div className={`fixed bottom-8 right-8 px-8 py-4 rounded-2xl shadow-2xl font-bold z-50 transition-all ${
+          message.type === 'success' ? 'bg-slate-900 text-white' : 'bg-red-600 text-white'
         }`}>
           {message.text}
         </div>
       )}
 
-      {/* Students List */}
-      {isLoading ? (
-        <Card>
-          <CardContent className="py-12 text-center text-gray-500">
-            Đang tải...
-          </CardContent>
-        </Card>
-      ) : students.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-gray-500">
-            Không có học sinh nào trong lớp
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">STT</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Học sinh</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Trạng thái</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Ghi chú</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {students.map((student, index) => (
-                    <tr key={student.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-gray-600">{index + 1}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center text-xs font-semibold">
-                            {getInitials(student.full_name)}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">{student.full_name}</p>
-                            <p className="text-xs text-gray-500">{student.student_code}</p>
-                            {student.has_approved_leave && (
-                              <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">
-                                Đơn nghỉ phép
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-2">
-                          {(Object.keys(statusLabels) as Array<keyof typeof statusLabels>).map((status) => (
-                            <button
-                              key={status}
-                              onClick={() => updateStudentStatus(student.id, student.status === status ? null : status as AttendanceStatus)}
-                              className={`w-10 h-10 rounded-lg font-bold text-sm transition-all ${
-                                student.status === status
-                                  ? 'ring-2 ring-sky-500 ring-offset-1'
-                                  : 'opacity-60 hover:opacity-100'
-                              } ${statusLabels[status].bgColor} ${statusLabels[status].textColor}`}
-                            >
-                              {statusLabels[status].label}
-                            </button>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <Input
-                          value={student.notes || ''}
-                          onChange={(e) => updateStudentNotes(student.id, e.target.value)}
-                          placeholder="Ghi chú..."
-                          className="text-sm"
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Save Button */}
+      {/* Action Buttons */}
       {students.length > 0 && (
-        <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-500">
-            {stats.present}/{stats.total} học sinh có mặt
+        <div className="flex items-center justify-between">
+          <div className="flex gap-3">
+            <Button
+              onClick={saveDraft}
+              variant="outline"
+              className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-sm"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Lưu nháp
+            </Button>
+            <Button
+              onClick={saveAttendance}
+              disabled={!hasAttendanceData || isSaving}
+              className="bg-sky-600 text-white hover:bg-sky-700 disabled:bg-slate-300 disabled:cursor-not-allowed font-bold text-sm px-6"
+            >
+              {isSaving ? (
+                <>Đang lưu...</>
+              ) : (
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Xác nhận hoàn thành
+                </>
+              )}
+            </Button>
           </div>
-          <Button
-            id="confirmBtn"
-            onClick={saveAttendance}
-            disabled={isSaving}
-            className="px-6"
-          >
-            {isSaving ? 'Đang lưu...' : 'Xác nhận hoàn thành'}
-          </Button>
+          {lastSaved && (
+            <div className="text-xs text-slate-400">
+              Lưu lần cuối: <span>{lastSaved}</span>
+            </div>
+          )}
         </div>
       )}
     </div>

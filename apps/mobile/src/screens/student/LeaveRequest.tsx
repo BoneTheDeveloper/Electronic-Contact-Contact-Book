@@ -2,11 +2,14 @@
  * Leave Request Screen
  * Submit absence request form with tabs for new request and history
  * Proper StyleSheet styling
+ * Uses real Supabase data via student store
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, ScrollView, Text, TouchableOpacity, Modal, TextInput, StyleSheet, type ViewStyle, Platform, Pressable, Alert } from 'react-native';
 import { Icon } from '../../components/ui';
+import { useStudentStore } from '../../stores';
+import { useAuthStore } from '../../stores';
 import type { StudentHomeStackNavigationProp } from '../../navigation/types';
 import * as DocumentPicker from 'expo-document-picker';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -25,26 +28,28 @@ interface LeaveRequestItem {
 }
 
 const LEAVE_REASONS = [
-  'Đi gia đình',
   'Ốm đau',
-  'Lễ tết',
   'Việc cá nhân',
   'Khác',
 ];
 
 export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState<'new' | 'history'>('new');
-  const [selectedReason, setSelectedReason] = useState('Đi gia đình');
-  const [detailReason, setDetailReason] = useState('Có việc gia đình cần về quê');
-  const [startDate, setStartDate] = useState<Date>(new Date(2026, 0, 10));
-  const [endDate, setEndDate] = useState<Date>(new Date(2026, 0, 10));
+  const [selectedReason, setSelectedReason] = useState<string | null>(null);
+  const [detailReason, setDetailReason] = useState('');
+  // Start from today (25/1/2026) - date range for leave
+  const today = new Date(2026, 0, 25);
+  const [startDate, setStartDate] = useState<Date>(today);
+  const [endDate, setEndDate] = useState<Date>(today);
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
 
   // Picker states
   const [showReasonPicker, setShowReasonPicker] = useState(false);
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [showOtherReasonInput, setShowOtherReasonInput] = useState(false);
   const [otherReasonText, setOtherReasonText] = useState('');
+  const [selectingStartDate, setSelectingStartDate] = useState(true);
 
   // File upload state
   const [attachedFile, setAttachedFile] = useState<{ name: string; uri: string; size?: number } | null>(null);
@@ -63,31 +68,131 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
   const [editEndDate, setEditEndDate] = useState('');
   const [editDetail, setEditDetail] = useState('');
 
-  // Mock recent requests
-  const recentRequests: LeaveRequestItem[] = [
-    {
-      id: '1',
-      reason: 'Đi gia đình',
-      dateRange: '20/12/2025 - 20/12/2025',
-      date: '20/12/2025',
-      duration: '1 ngày',
-      status: 'approved',
-    },
-    {
-      id: '2',
-      reason: 'Ốm đau',
-      dateRange: '10/01/2026 - 11/01/2026',
-      date: 'Hôm nay',
-      duration: '2 ngày',
-      status: 'pending',
-    },
-  ];
+  const { user } = useAuthStore();
+  const { studentData, leaveRequests, loadLeaveRequests, createLeaveRequest } = useStudentStore();
 
-  const handleSubmit = () => {
-    const startDateStr = startDate.toLocaleDateString('vi-VN');
-    const endDateStr = endDate.toLocaleDateString('vi-VN');
-    console.log('Submit leave request:', { selectedReason, detailReason, startDateStr, endDateStr, attachedFile });
-    Alert.alert('Thành công', 'Đơn xin nghỉ phép đã được gửi');
+  useEffect(() => {
+    if (user?.id && user?.role === 'student') {
+      loadLeaveRequests(user.id);
+    }
+  }, [user?.id]);
+
+  const handleSubmit = async () => {
+    if (!user?.id || !studentData) {
+      Alert.alert('Lỗi', 'Không tìm thấy thông tin học sinh');
+      return;
+    }
+
+    if (!selectedReason) {
+      Alert.alert('Lỗi', 'Vui lòng chọn lý do nghỉ');
+      return;
+    }
+
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = endDate.toISOString().split('T')[0];
+    const reason = showOtherReasonInput ? otherReasonText : `${selectedReason!}: ${detailReason}`;
+
+    try {
+      const result = await createLeaveRequest({
+        studentId: user.id,
+        classId: studentData.classId,
+        requestType: 'leave',
+        startDate: startDateStr,
+        endDate: endDateStr,
+        reason,
+      });
+
+      if (result) {
+        Alert.alert('Thành công', 'Đơn xin nghỉ phép đã được gửi');
+        // Reset form
+        setSelectedReason(null);
+        setDetailReason('');
+        setStartDate(today);
+        setEndDate(today);
+        setAttachedFile(null);
+      } else {
+        Alert.alert('Lỗi', 'Không thể gửi đơn xin nghỉ phép');
+      }
+    } catch (error) {
+      console.error('Error submitting leave request:', error);
+      Alert.alert('Lỗi', 'Có lỗi xảy ra khi gửi đơn');
+    }
+  };
+
+  // Calendar helpers
+  const getDaysInMonth = (month: number, year: number) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (month: number, year: number) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  const isToday = (day: number) => {
+    return day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
+  };
+
+  const isSelected = (day: number) => {
+    return isStartDate(day) || isEndDate(day);
+  };
+
+  const isStartDate = (day: number) => {
+    return day === startDate.getDate() && currentMonth === startDate.getMonth() && currentYear === startDate.getFullYear();
+  };
+
+  const isEndDate = (day: number) => {
+    return day === endDate.getDate() && currentMonth === endDate.getMonth() && currentYear === endDate.getFullYear();
+  };
+
+  const isBeforeToday = (day: number) => {
+    const date = new Date(currentYear, currentMonth, day);
+    return date < today;
+  };
+
+  const handleDatePress = (day: number) => {
+    const selectedDate = new Date(currentYear, currentMonth, day);
+
+    // Prevent selecting dates before today
+    if (selectedDate < today) {
+      return;
+    }
+
+    if (selectingStartDate) {
+      setStartDate(selectedDate);
+      setEndDate(selectedDate);
+      setSelectingStartDate(false);
+    } else {
+      if (selectedDate < startDate) {
+        setEndDate(startDate);
+        setStartDate(selectedDate);
+      } else {
+        setEndDate(selectedDate);
+      }
+    }
+  };
+
+  const handleResetRange = () => {
+    setSelectingStartDate(true);
+    setStartDate(today);
+    setEndDate(today);
+  };
+
+  const previousMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+
+  const nextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
   };
 
   const handleReasonChange = (reason: string) => {
@@ -98,20 +203,6 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
     } else {
       setShowOtherReasonInput(false);
       setOtherReasonText('');
-    }
-  };
-
-  const handleStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowStartDatePicker(false);
-    if (selectedDate) {
-      setStartDate(selectedDate);
-    }
-  };
-
-  const handleEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowEndDatePicker(false);
-    if (selectedDate) {
-      setEndDate(selectedDate);
     }
   };
 
@@ -141,7 +232,10 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
   };
 
   const formatDateDisplay = (date: Date) => {
-    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   const openAppealModal = (request: LeaveRequestItem) => {
@@ -279,13 +373,15 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
                   style={styles.valueBoxTouchable}
                   onPress={() => setShowReasonPicker(true)}
                 >
-                  <Text style={styles.valueText}>{selectedReason}</Text>
+                  <Text style={[styles.valueText, !selectedReason && styles.placeholderText]}>
+                    {selectedReason || 'Chọn lý do nghỉ'}
+                  </Text>
                   <Icon name="chevron-down" size={16} color="#9CA3AF" />
                 </TouchableOpacity>
               </View>
 
               {/* Other Reason Input (shown when "Khác" is selected) */}
-              {showOtherReasonInput && (
+              {showOtherReasonInput ? (
                 <View style={styles.formField}>
                   <Text style={styles.fieldLabel}>Nhập lý do khác</Text>
                   <TextInput
@@ -294,45 +390,41 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
                     placeholder="Nhập lý do nghỉ của bạn..."
                     placeholderTextColor="#9CA3AF"
                     style={styles.inputBox}
+                    multiline
+                    numberOfLines={3}
+                    textAlignVertical="top"
+                  />
+                </View>
+              ) : (
+                /* Reason Details - shown only when NOT "Khác" */
+                <View style={styles.formField}>
+                  <Text style={styles.fieldLabel}>Chi tiết lý do</Text>
+                  <TextInput
+                    value={detailReason}
+                    onChangeText={setDetailReason}
+                    style={styles.inputBox}
+                    multiline
+                    numberOfLines={3}
+                    textAlignVertical="top"
                   />
                 </View>
               )}
 
-              {/* Reason Details */}
+              {/* Date Range Selection */}
               <View style={styles.formField}>
-                <Text style={styles.fieldLabel}>Chi tiết lý do</Text>
-                <TextInput
-                  value={detailReason}
-                  onChangeText={setDetailReason}
-                  placeholder="Nhập chi tiết lý do nghỉ..."
-                  placeholderTextColor="#9CA3AF"
-                  style={styles.inputBox}
-                  multiline
-                  numberOfLines={3}
-                  textAlignVertical="top"
-                />
-              </View>
-
-              {/* Date Range - Start Date */}
-              <View style={styles.formField}>
-                <Text style={styles.fieldLabel}>Từ ngày</Text>
+                <Text style={styles.fieldLabel}>Khoảng nghỉ</Text>
                 <TouchableOpacity
                   style={styles.valueBoxTouchable}
-                  onPress={() => setShowStartDatePicker(true)}
+                  onPress={() => {
+                    setShowCalendarModal(true);
+                    setSelectingStartDate(true);
+                    setCurrentMonth(today.getMonth());
+                    setCurrentYear(today.getFullYear());
+                  }}
                 >
-                  <Text style={styles.valueText}>{formatDateDisplay(startDate)}</Text>
-                  <Icon name="calendar" size={16} color="#9CA3AF" />
-                </TouchableOpacity>
-              </View>
-
-              {/* Date Range - End Date */}
-              <View style={styles.formField}>
-                <Text style={styles.fieldLabel}>Đến ngày</Text>
-                <TouchableOpacity
-                  style={styles.valueBoxTouchable}
-                  onPress={() => setShowEndDatePicker(true)}
-                >
-                  <Text style={styles.valueText}>{formatDateDisplay(endDate)}</Text>
+                  <Text style={styles.valueText}>
+                    {formatDateDisplay(startDate)} - {formatDateDisplay(endDate)}
+                  </Text>
                   <Icon name="calendar" size={16} color="#9CA3AF" />
                 </TouchableOpacity>
               </View>
@@ -371,49 +463,12 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
               </TouchableOpacity>
             </View>
 
-            {/* Recent Requests Preview */}
-            <View style={styles.recentSection}>
-              <View style={styles.recentHeader}>
-                <Text style={styles.recentTitle}>Đơn gần đây</Text>
-                <TouchableOpacity onPress={() => setActiveTab('history')}>
-                  <Text style={styles.viewAllText}>Xem tất cả</Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.requestsList}>
-                {recentRequests.slice(0, 2).map((request) => {
-                  const statusConfig = getStatusConfig(request.status);
-                  return (
-                    <TouchableOpacity
-                      key={request.id}
-                      style={styles.requestCard}
-                      onPress={() => openDetailModal(request)}
-                      activeOpacity={0.95}
-                    >
-                      <View style={styles.requestHeader}>
-                        <View style={styles.requestBadges}>
-                          <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
-                            <Text style={[styles.statusBadgeText, { color: statusConfig.text }]}>
-                              {statusConfig.label}
-                            </Text>
-                          </View>
-                          <Text style={styles.requestDate}>{request.date}</Text>
-                        </View>
-                        <Text style={styles.requestDuration}>{request.duration}</Text>
-                      </View>
-                      <Text style={styles.requestReason}>{request.reason}</Text>
-                      <Text style={styles.requestDateRange}>{request.dateRange}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
           </>
         ) : (
           <>
             {/* History List */}
             <View style={styles.historyList}>
-              {recentRequests.map((request) => {
+              {leaveRequests.map((request) => {
                 const statusConfig = getStatusConfig(request.status);
                 return (
                   <TouchableOpacity
@@ -686,28 +741,106 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
         </View>
       </Modal>
 
-      {/* Date Pickers */}
-      {showStartDatePicker && (
-        <DateTimePicker
-          value={startDate}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleStartDateChange}
-          minimumDate={new Date(2020, 0, 1)}
-          maximumDate={new Date(2030, 11, 31)}
-        />
-      )}
+      {/* Calendar Modal - Date range selection */}
+      <Modal
+        visible={showCalendarModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowCalendarModal(false)}
+      >
+        <View style={styles.pickerModalContainer}>
+          <View style={styles.calendarContainer}>
+            {/* Header with month navigation */}
+            <View style={styles.calendarHeader}>
+              <TouchableOpacity onPress={previousMonth} style={styles.calendarNavButton}>
+                <Icon name="chevron-left" size={24} color="#374151" />
+              </TouchableOpacity>
+              <Text style={styles.calendarTitle}>
+                Tháng {currentMonth + 1}/{currentYear}
+              </Text>
+              <TouchableOpacity onPress={nextMonth} style={styles.calendarNavButton}>
+                <Icon name="chevron-right" size={24} color="#374151" />
+              </TouchableOpacity>
+            </View>
 
-      {showEndDatePicker && (
-        <DateTimePicker
-          value={endDate}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleEndDateChange}
-          minimumDate={startDate}
-          maximumDate={new Date(2030, 11, 31)}
-        />
-      )}
+            {/* Weekday headers */}
+            <View style={styles.weekdayRow}>
+              {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map((day, index) => (
+                <Text key={index} style={styles.weekdayText}>{day}</Text>
+              ))}
+            </View>
+
+            {/* Calendar grid */}
+            <View style={styles.calendarGrid}>
+              {Array.from({ length: getFirstDayOfMonth(currentMonth, currentYear) }, (_, i) => (
+                <View key={`empty-${i}`} style={styles.calendarDay} />
+              ))}
+              {Array.from({ length: getDaysInMonth(currentMonth, currentYear) }, (_, i) => {
+                const day = i + 1;
+                const isTodayDate = isToday(day);
+                const isSelectedDate = isSelected(day);
+                const isDisabledDate = isBeforeToday(day);
+
+                let dayStyle = styles.calendarDay;
+                let textStyle = styles.calendarDayText;
+
+                if (isTodayDate) {
+                  dayStyle = { ...dayStyle, ...styles.calendarDayToday };
+                }
+                if (isSelectedDate && !isDisabledDate) {
+                  dayStyle = { ...dayStyle, ...styles.calendarDaySelected };
+                  textStyle = { ...textStyle, ...styles.calendarDayTextSelected };
+                }
+                if (isDisabledDate) {
+                  dayStyle = { ...dayStyle, ...styles.calendarDayDisabled };
+                  textStyle = { ...textStyle, ...styles.calendarDayTextDisabled };
+                }
+
+                if (isDisabledDate) {
+                  return (
+                    <View key={day} style={dayStyle}>
+                      <Text style={textStyle}>{day}</Text>
+                    </View>
+                  );
+                }
+
+                return (
+                  <TouchableOpacity
+                    key={day}
+                    style={dayStyle}
+                    onPress={() => handleDatePress(day)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={textStyle}>{day}</Text>
+                    {isTodayDate && <View style={styles.todayPin} />}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* Range info and actions */}
+            <View style={styles.calendarFooter}>
+              <Text style={styles.calendarRangeText}>
+                {selectingStartDate ? 'Chọn ngày bắt đầu' : `Đã chọn: ${formatDateDisplay(startDate)} - ${formatDateDisplay(endDate)}`}
+              </Text>
+              <View style={styles.calendarActions}>
+                <TouchableOpacity
+                  onPress={handleResetRange}
+                  style={styles.calendarResetButton}
+                >
+                  <Text style={styles.calendarResetButtonText}>Đặt lại</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setShowCalendarModal(false)}
+                  style={styles.calendarConfirmButton}
+                >
+                  <Text style={styles.calendarConfirmButtonText}>Xong</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -824,6 +957,9 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     fontSize: 14,
     fontWeight: '500',
+  },
+  placeholderText: {
+    color: '#9CA3AF',
   },
   inputBox: {
     backgroundColor: '#F9FAFB',
@@ -1182,5 +1318,175 @@ const styles = StyleSheet.create({
   pickerItemTextSelected: {
     color: '#0284C7',
     fontWeight: '600',
+  },
+  // Date picker modal styles
+  pickerModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  androidPickerContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    width: '90%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  pickerContainer: {
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  pickerTitle: {
+    color: '#1F2937',
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  androidPickerButton: {
+    backgroundColor: '#0284C7',
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  androidPickerButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  // Calendar styles
+  calendarContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    width: '90%',
+    maxWidth: 360,
+  },
+  calendarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  calendarNavButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
+    backgroundColor: '#F3F4F6',
+  },
+  calendarTitle: {
+    color: '#1F2937',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  weekdayRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  weekdayText: {
+    flex: 1,
+    color: '#9CA3AF',
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  calendarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 16,
+  },
+  calendarDay: {
+    width: '14.28%',
+    aspectRatio: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+    borderRadius: 12,
+    position: 'relative',
+  },
+  calendarDayText: {
+    color: '#374151',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  calendarDayDisabled: {
+    opacity: 0.3,
+  },
+  calendarDayTextDisabled: {
+    color: '#9CA3AF',
+  },
+  calendarDayToday: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#0284C7',
+  },
+  calendarDaySelected: {
+    backgroundColor: '#0284C7',
+  },
+  calendarDayTextSelected: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  calendarDayStart: {
+    borderTopLeftRadius: 12,
+    borderBottomLeftRadius: 12,
+  },
+  calendarDayEnd: {
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
+  },
+  todayPin: {
+    position: 'absolute',
+    bottom: 4,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#EF4444',
+  },
+  calendarFooter: {
+    gap: 12,
+  },
+  calendarRangeText: {
+    color: '#6B7280',
+    fontSize: 12,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  calendarActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  calendarResetButton: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  calendarResetButtonText: {
+    color: '#6B7280',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  calendarConfirmButton: {
+    flex: 1,
+    backgroundColor: '#0284C7',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  calendarConfirmButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
   },
 });

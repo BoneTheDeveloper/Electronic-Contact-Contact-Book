@@ -24,7 +24,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          admin_code: string
+          admin_code?: string
           created_at?: string | null
           department?: string | null
           id: string
@@ -1217,6 +1217,42 @@ export type Database = {
           },
         ]
       }
+      otp_codes: {
+        Row: {
+          attempts: number
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          max_attempts: number
+          phone_number: string
+          type: string
+          verified_at: string | null
+        }
+        Insert: {
+          attempts?: number
+          code: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          max_attempts?: number
+          phone_number: string
+          type?: string
+          verified_at?: string | null
+        }
+        Update: {
+          attempts?: number
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          max_attempts?: number
+          phone_number?: string
+          type?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       parents: {
         Row: {
           created_at: string | null
@@ -1618,7 +1654,7 @@ export type Database = {
           gender?: string | null
           guardian_id?: string | null
           id: string
-          student_code: string
+          student_code?: string
           updated_at?: string | null
         }
         Update: {
@@ -1693,7 +1729,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          employee_code: string
+          employee_code?: string
           id: string
           join_date?: string | null
           subject?: string | null
@@ -2142,10 +2178,15 @@ export type Database = {
       }
     }
     Functions: {
+      generate_admin_code: { Args: never; Returns: string }
       generate_invoices_from_assignment: {
         Args: { assignment_id: string }
         Returns: number
       }
+      generate_parent_code: { Args: never; Returns: string }
+      generate_student_code: { Args: never; Returns: string }
+      generate_teacher_code: { Args: never; Returns: string }
+      generate_user_code: { Args: never; Returns: string }
       get_notification_recipients: {
         Args: {
           p_specific_user_ids?: string[]
@@ -2158,7 +2199,20 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_parent_children: { Args: never; Returns: string[] }
+      get_parent_children:
+        | { Args: never; Returns: string[] }
+        | {
+            Args: { p_parent_id: string }
+            Returns: {
+              avatar_url: string
+              class_id: string
+              full_name: string
+              grade_id: string
+              id: string
+              is_primary: boolean
+              student_code: string
+            }[]
+          }
       get_payment_stats: {
         Args: { academic_year?: string; semester?: string }
         Returns: {

@@ -2,11 +2,14 @@
  * Summary Screen
  * Academic summary and overall performance with proper StyleSheet
  * Matches wireframe design
+ * Uses real Supabase data via student store
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Icon } from '../../components/ui';
+import { useStudentStore } from '../../stores';
+import { useAuthStore } from '../../stores';
 import type { StudentHomeStackNavigationProp } from '../../navigation/types';
 
 interface SummaryScreenProps {
@@ -19,21 +22,62 @@ interface SubjectSummary {
   rating: string;
 }
 
-const MOCK_SUBJECTS: SubjectSummary[] = [
-  { subject: 'Toán học', average: 8.5, rating: 'Giỏi' },
-  { subject: 'Ngữ văn', average: 7.8, rating: 'Khá' },
-  { subject: 'Tiếng Anh', average: 9.0, rating: 'Giỏi' },
-  { subject: 'Vật lý', average: 7.2, rating: 'Khá' },
-  { subject: 'Hóa học', average: 8.0, rating: 'Giỏi' },
-  { subject: 'Lịch sử', average: 7.5, rating: 'Khá' },
-];
-
-const OVERALL_SCORE = 8.2;
-
 type TabType = 'semester1' | 'yearly';
 
 export const StudentSummaryScreen: React.FC<SummaryScreenProps> = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState<TabType>('semester1');
+  const { user } = useAuthStore();
+  const { grades, attendance, attendancePercentage, loadGrades, loadAttendance } = useStudentStore();
+
+  useEffect(() => {
+    if (user?.id && user?.role === 'student') {
+      loadGrades(user.id, activeTab === 'semester1' ? '1' : '2');
+      loadAttendance(user.id);
+    }
+  }, [user?.id, activeTab]);
+
+  // Calculate subject averages from grades
+  const subjectSummaries = useMemo(() => {
+    const subjectMap = new Map<string, { total: number; count: number }>();
+
+    grades.forEach(grade => {
+      if (grade.score !== null) {
+        const normalizedScore = (grade.score / grade.maxScore) * 10;
+        const current = subjectMap.get(grade.subjectName) || { total: 0, count: 0 };
+        subjectMap.set(grade.subjectName, {
+          total: current.total + normalizedScore,
+          count: current.count + 1,
+        });
+      }
+    });
+
+    return Array.from(subjectMap.entries()).map(([subject, data]) => {
+      const average = data.total / data.count;
+      let rating = 'TB';
+      if (average >= 9) rating = 'Giỏi';
+      else if (average >= 8) rating = 'Giỏi';
+      else if (average >= 7) rating = 'Khá';
+      else if (average >= 6) rating = 'TB';
+      else rating = 'Kém';
+
+      return { subject, average, rating };
+    }).sort((a, b) => b.average - a.average);
+  }, [grades]);
+
+  // Calculate overall score
+  const overallScore = useMemo(() => {
+    if (subjectSummaries.length === 0) return 0;
+    return subjectSummaries.reduce((sum, s) => sum + s.average, 0) / subjectSummaries.length;
+  }, [subjectSummaries]);
+
+  // Get overall rating
+  const getOverallRating = (): string => {
+    if (overallScore >= 9) return 'Xuất sắc';
+    if (overallScore >= 8) return 'Giỏi';
+    if (overallScore >= 7) return 'Khá';
+    if (overallScore >= 6) return 'TB';
+    return 'Kém';
+  };
 
   const getRatingColor = (rating: string): { bg: string; text: string } => {
     if (rating === 'Giỏi') return { bg: '#ECFDF5', text: '#059669' };
@@ -101,9 +145,9 @@ export const StudentSummaryScreen: React.FC<SummaryScreenProps> = ({ navigation 
           <View style={[styles.simpleStatCard, styles.scoreCard]}>
             <Text style={styles.simpleStatLabel}>Điểm tổng kết</Text>
             <View style={styles.scoreContent}>
-              <Text style={styles.simpleStatScore}>{OVERALL_SCORE}</Text>
+              <Text style={styles.simpleStatScore}>{overallScore.toFixed(1)}</Text>
               <View style={[styles.ratingBadge, styles.scoreRatingBadge]}>
-                <Text style={[styles.simpleStatRating, styles.scoreRating]}>Giỏi</Text>
+                <Text style={[styles.simpleStatRating, styles.scoreRating]}>{getOverallRating()}</Text>
               </View>
             </View>
           </View>
@@ -118,7 +162,12 @@ export const StudentSummaryScreen: React.FC<SummaryScreenProps> = ({ navigation 
         {/* Subject Breakdown */}
         <Text style={styles.sectionTitle}>Chi tiết các môn</Text>
 
-        {MOCK_SUBJECTS.map((subject, index) => {
+        {subjectSummaries.length === 0 ? (
+          <View style={{ padding: 32, alignItems: 'center' }}>
+            <Text style={{ fontSize: 14, color: '#9ca3af' }}>Chưa có dữ liệu điểm</Text>
+          </View>
+        ) : (
+          subjectSummaries.map((subject, index) => {
           const colors = getRatingColor(subject.rating);
           const progressWidth = getProgressWidth(subject.average);
           const progressColor = getProgressColor(subject.average);
@@ -144,7 +193,8 @@ export const StudentSummaryScreen: React.FC<SummaryScreenProps> = ({ navigation 
               </View>
             </View>
           );
-        })}
+        })
+        )}
       </ScrollView>
     </View>
   );

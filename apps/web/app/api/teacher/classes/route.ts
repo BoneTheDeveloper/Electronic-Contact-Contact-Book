@@ -1,20 +1,47 @@
+/**
+ * Teacher Classes API
+ * GET /api/teacher/classes
+ * Returns all classes assigned to the current teacher (both homeroom and subject teacher)
+ */
+
 import { NextResponse } from 'next/server'
-import { getTeacherClasses } from '@/lib/supabase/queries'
+import { requireAuth } from '@/lib/auth'
+import { getTeacherClasses } from '@/lib/services/teacher-assignment-service'
 import type { TeacherClass } from '@/lib/types'
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const teacherId = searchParams.get('teacherId') || undefined
+/**
+ * GET /api/teacher/classes
+ * Returns classes where current teacher is either:
+ * - Homeroom teacher (GVCN)
+ * - Subject teacher (GVBM)
+ */
+export async function GET() {
+  try {
+    const user = await requireAuth()
 
-  const classes: TeacherClass[] = await getTeacherClasses(teacherId) as any
+    if (user.role !== 'teacher') {
+      return NextResponse.json({
+        success: false,
+        message: 'Chỉ giáo viên mới có thể truy cập'
+      }, { status: 403 })
+    }
 
-  // Validate that all classes are for grades 6-9 (middle school)
-  const validClasses = classes.filter((c: TeacherClass) =>
-    ['6', '7', '8', '9'].includes(c.grade)
-  )
+    const classes = await getTeacherClasses(user.id)
 
-  return NextResponse.json({
-    success: true,
-    data: validClasses,
-  })
+    // Filter for middle school grades (6-9)
+    const validClasses = classes.filter((c) =>
+      ['6', '7', '8', '9'].includes(c.grade)
+    )
+
+    return NextResponse.json({
+      success: true,
+      data: validClasses,
+    })
+  } catch (error: any) {
+    console.error('Error fetching teacher classes:', error)
+    return NextResponse.json({
+      success: false,
+      message: error.message || 'Không thể tải danh sách lớp'
+    }, { status: 500 })
+  }
 }

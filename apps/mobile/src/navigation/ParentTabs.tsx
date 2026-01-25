@@ -15,9 +15,9 @@ import {
   ScheduleScreen,
   GradesScreen,
   AttendanceScreen,
+  LeaveRequestScreen,
   TeacherFeedbackScreen,
   SummaryScreen,
-  LeaveRequestScreen,
   ChildSelectionScreen,
 } from '../screens/parent';
 import { PaymentOverviewScreen, PaymentDetailScreen, PaymentMethodScreen, PaymentReceiptScreen } from '../screens/parent';
@@ -31,7 +31,7 @@ import {
   FAQScreen,
   SupportScreen,
 } from '../screens/profile';
-import type { ParentTabParamList, ParentHomeStackParamList, ParentProfileStackParamList } from './types';
+import type { ParentTabParamList, ParentHomeStackParamList, ParentCommStackParamList, ParentProfileStackParamList } from './types';
 
 // Home Stack (Dashboard + all service screens accessible from dashboard)
 // Including News and Payment screens for dashboard navigation
@@ -40,12 +40,20 @@ const HomeStack = createNativeStackNavigator<ParentHomeStackParamList>();
 const HomeStackNavigator = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
     <HomeStack.Screen name="Dashboard" component={DashboardScreen} />
-    <HomeStack.Screen name="ChildSelection" component={ChildSelectionScreen} />
+    <HomeStack.Screen
+      name="ChildSelection"
+      component={ChildSelectionScreen}
+      options={{
+        presentation: 'card',
+        animation: 'default',
+        headerShown: false,
+      }}
+    />
     <HomeStack.Screen name="Schedule" component={ScheduleScreen} />
     <HomeStack.Screen name="Grades" component={GradesScreen} />
     <HomeStack.Screen name="Attendance" component={AttendanceScreen} />
-    <HomeStack.Screen name="TeacherFeedback" component={TeacherFeedbackScreen} />
     <HomeStack.Screen name="LeaveRequest" component={LeaveRequestScreen} />
+    <HomeStack.Screen name="TeacherFeedback" component={TeacherFeedbackScreen} />
     <HomeStack.Screen name="Summary" component={SummaryScreen} />
     <HomeStack.Screen name="TeacherDirectory" component={TeacherDirectoryScreen} />
     {/* News screen for dashboard navigation */}

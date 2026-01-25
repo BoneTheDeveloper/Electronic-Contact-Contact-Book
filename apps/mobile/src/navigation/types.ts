@@ -47,8 +47,8 @@ export type ParentHomeStackParamList = {
   Schedule: undefined;
   Grades: undefined;
   Attendance: undefined;
-  TeacherFeedback: undefined;
   LeaveRequest: undefined;
+  TeacherFeedback: undefined;
   Summary: undefined;
   TeacherDirectory: undefined;
   // News and Payment screens accessible from Dashboard

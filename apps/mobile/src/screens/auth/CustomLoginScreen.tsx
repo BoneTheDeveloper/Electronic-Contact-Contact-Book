@@ -3,8 +3,7 @@
  * Matches wireframe design with parent/student role tabs
  * Includes forgot password, OTP, and first-login password change flows
  *
- * SECURITY NOTICE: This is MOCK authentication.
- * Accepts any password. Role is selected via tabs.
+ * Uses real OTP verification via Supabase Edge Functions
  */
 
 import React, { useState } from 'react';
@@ -26,6 +25,7 @@ import Svg, { Path, Circle, Line, Polyline } from 'react-native-svg';
 import { useAuthStore } from '../../stores';
 import { colors } from '../../theme';
 import type { AuthStackNavigationProp } from '../../navigation/types';
+import { sendOTP, verifyOTP } from '../../lib/supabase/otp';
 
 const { width } = Dimensions.get('window');
 
@@ -50,6 +50,9 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [countdown, setCountdown] = useState(59);
   const [error, setError] = useState('');
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [verifiedPhone, setVerifiedPhone] = useState('');
 
   const handleLogin = async () => {
     if (!identifier || !password) {
@@ -85,13 +88,25 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
   };
 
-  const handleSendOTP = () => {
+  const handleSendOTP = async () => {
     if (phoneNumber.length < 10) {
       setError('Vui lòng nhập số điện thoại hợp lệ');
       return;
     }
-    setCurrentScreen('otp');
-    startCountdown();
+
+    setSendingOtp(true);
+    setError('');
+
+    const result = await sendOTP(phoneNumber, 'reset_password');
+
+    setSendingOtp(false);
+
+    if (result.success) {
+      setCurrentScreen('otp');
+      startCountdown();
+    } else {
+      setError(result.error || 'Không thể gửi mã OTP. Vui lòng thử lại.');
+    }
   };
 
   const startCountdown = () => {
@@ -107,9 +122,27 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }, 1000);
   };
 
-  const handleVerifyOTP = () => {
-    // Mock OTP verification
-    setCurrentScreen('changePassword');
+  const handleVerifyOTP = async () => {
+    const otpCode = otp.join('');
+    if (otpCode.length !== 6) {
+      setError('Vui lòng nhập đủ 6 số mã OTP');
+      return;
+    }
+
+    setVerifyingOtp(true);
+    setError('');
+
+    const result = await verifyOTP(phoneNumber, otpCode, 'reset_password');
+
+    setVerifyingOtp(false);
+
+    if (result.success) {
+      // Store verified phone for password change
+      setVerifiedPhone(phoneNumber);
+      setCurrentScreen('changePassword');
+    } else {
+      setError(result.error || 'Mã OTP không đúng. Vui lòng thử lại.');
+    }
   };
 
   const handleChangePassword = () => {
@@ -253,12 +286,6 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('DebugLogs')}
-          style={styles.debugButton}
-        >
-          <Text style={styles.debugButtonText}>🐛 Debug Logs</Text>
-        </TouchableOpacity>
         <Text style={styles.footerText}>Phiên bản 1.0.2 • Project 2 - HUST 2026</Text>
       </View>
     </View>
@@ -374,9 +401,14 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
         <TouchableOpacity
           onPress={handleSendOTP}
-          style={styles.loginButton}
+          disabled={sendingOtp}
+          style={[styles.loginButton, sendingOtp && styles.loginButtonDisabled]}
         >
-          <Text style={styles.loginButtonText}>GỬI MÃ OTP</Text>
+          {sendingOtp ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.loginButtonText}>GỬI MÃ OTP</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>
@@ -431,9 +463,14 @@ const CustomLoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
       <TouchableOpacity
         onPress={handleVerifyOTP}
-        style={styles.loginButton}
+        disabled={verifyingOtp}
+        style={[styles.loginButton, verifyingOtp && styles.loginButtonDisabled]}
       >
-        <Text style={styles.loginButtonText}>XÁC THỰC</Text>
+        {verifyingOtp ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <Text style={styles.loginButtonText}>XÁC THỰC</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -814,17 +851,6 @@ const styles = StyleSheet.create({
   footer: {
     marginTop: 24,
     alignItems: 'center',
-  },
-  debugButton: {
-    marginBottom: 12,
-    padding: 8,
-    backgroundColor: '#1E293B',
-    borderRadius: 8,
-  },
-  debugButtonText: {
-    fontSize: 11,
-    color: '#64748B',
-    fontWeight: '600',
   },
   footerText: {
     fontSize: 10,

@@ -14,43 +14,22 @@ export interface ChildData {
   grade: number;
   studentCode: string;
   isPrimary?: boolean;
-  avatarUrl?: string;
+  avatarUrl: string | null;
 }
 
 /**
  * Fetch all children for a given parent from student_guardians junction table
+ * Uses a direct SQL query via RPC for reliability with complex joins
  * @param parentId - UUID from parents table
  * @returns Array of child data
  */
 export const getParentChildren = async (
   parentId: string
 ): Promise<ChildData[]> => {
-  const { data, error } = await supabase
-    .from('student_guardians')
-    .select(`
-      student_id,
-      is_primary,
-      students!inner(
-        id,
-        student_code,
-        profiles!students_id_fkey(
-          full_name,
-          avatar_url,
-          status
-        ),
-        enrollments!inner(
-          class_id,
-          status,
-          classes!inner(
-            name,
-            grade_id
-          )
-        )
-      )
-    `)
-    .eq('guardian_id', parentId)
-    .eq('students.profiles!students_id_fkey.status', 'active')
-    .eq('students.enrollments.status', 'active');
+  // Use RPC to call a database function that handles the complex joins
+  const { data, error } = await supabase.rpc('get_parent_children', {
+    p_parent_id: parentId
+  });
 
   if (error) {
     console.error('[QUERIES] Error fetching children:', error);
@@ -61,42 +40,34 @@ export const getParentChildren = async (
     return [];
   }
 
-  // Group by student (in case multiple enrollments exist, get the active one)
-  const uniqueChildren = new Map<string, StudentGuardianData>();
-
-  for (const item of data) {
-    const studentId = item.students.id;
-    if (!uniqueChildren.has(studentId)) {
-      uniqueChildren.set(studentId, item);
-    }
-  }
-
-  return Array.from(uniqueChildren.values()).map((item) => ({
-    id: item.students.id,
-    name: item.students.full_name,
-    rollNumber: item.students.student_code,
-    classId: item.students.enrollments?.[0]?.class_id || '',
+  return data.map((item: any) => ({
+    id: item.id,
+    name: item.full_name || '',
+    rollNumber: item.student_code || '',
+    classId: item.class_id || '',
     section: '',
-    grade: parseInt(item.students.enrollments?.[0]?.classes?.grade_id || '0', 10),
-    studentCode: item.students.student_code,
-    isPrimary: item.is_primary,
-    avatarUrl: item.students.avatar_url,
+    grade: parseInt(item.grade_id || '0', 10),
+    studentCode: item.student_code || '',
+    isPrimary: item.is_primary || false,
+    avatarUrl: item.avatar_url ?? null,
   }));
 }
 
 type StudentGuardianData = {
-  students: {
+  students?: Array<{
     id: string;
     student_code: string;
-    full_name: string;
-    avatar_url: string | null;
+    profiles?: Array<{
+      full_name: string;
+      avatar_url: string | null;
+    }>;
     enrollments?: Array<{
       class_id: string;
-      classes?: {
+      classes?: Array<{
         grade_id: string;
-      };
+      }>;
     }>;
-  };
+  }>;
   is_primary: boolean;
 };
 
@@ -176,14 +147,18 @@ export const getStudentProfile = async (
 
   if (!data) return null;
 
+  const profile = data.profiles?.[0];
+  const enrollment = data.enrollments?.[0];
+  const classData = enrollment?.classes?.[0];
+
   return {
     id: data.id,
     studentCode: data.student_code,
-    fullName: data.full_name,
-    avatarUrl: data.avatar_url,
-    classId: data.enrollments?.[0]?.class_id || '',
-    className: data.enrollments?.[0]?.classes?.name || '',
-    gradeId: data.enrollments?.[0]?.classes?.grade_id || '',
+    fullName: profile?.full_name || '',
+    avatarUrl: profile?.avatar_url,
+    classId: enrollment?.class_id || '',
+    className: classData?.name || '',
+    gradeId: classData?.grade_id || '',
   };
 };
 
@@ -202,12 +177,14 @@ export interface GradeEntryData {
 /**
  * Get student grades with subject info
  * @param studentId - Student UUID
+ * @param semester - Optional semester filter ('1' or '2')
  * @returns Array of grade entries
  */
 export const getStudentGrades = async (
-  studentId: string
+  studentId: string,
+  semester?: string
 ): Promise<GradeEntryData[]> => {
-  const { data, error } = await supabase
+  let query = supabase
     .from('grade_entries')
     .select(`
       id,
@@ -225,25 +202,34 @@ export const getStudentGrades = async (
         )
       )
     `)
-    .eq('student_id', studentId)
-    .order('date', { ascending: false });
+    .eq('student_id', studentId);
+
+  if (semester) {
+    query = query.eq('assessments.semester', semester);
+  }
+
+  const { data, error } = await query.order('date', { ascending: false });
 
   if (error) {
     console.error('[QUERIES] Error fetching grades:', error);
     return [];
   }
 
-  return (data || []).map(entry => ({
-    id: entry.id,
-    subjectId: entry.assessments.subjects.id,
-    subjectName: entry.assessments.subjects.name,
-    assessmentName: entry.assessments.name,
-    assessmentType: entry.assessments.assessment_type || 'quiz',
-    score: entry.score,
-    maxScore: entry.assessments.max_score,
-    date: entry.assessments.date,
-    semester: entry.assessments.semester || '1',
-  }));
+  return (data || []).map(entry => {
+    const assessment = entry.assessments?.[0];
+    const subject = assessment?.subjects?.[0];
+    return {
+      id: entry.id,
+      subjectId: subject?.id || '',
+      subjectName: subject?.name || '',
+      assessmentName: assessment?.name || '',
+      assessmentType: assessment?.assessment_type || 'quiz',
+      score: entry.score,
+      maxScore: assessment?.max_score || 10,
+      date: assessment?.date || '',
+      semester: assessment?.semester || '1',
+    };
+  });
 };
 
 export interface AttendanceRecordData {
@@ -347,18 +333,23 @@ export const getStudentSchedule = async (
     return [];
   }
 
-  return (data || []).map(item => ({
-    id: item.id,
-    dayOfWeek: item.day_of_week,
-    periodId: item.period_id,
-    periodName: item.periods?.name || '',
-    startTime: item.periods?.start_time || '',
-    endTime: item.periods?.end_time || '',
-    subjectId: item.subjects?.id || '',
-    subjectName: item.subjects?.name || '',
-    teacherId: item.teacher_id,
-    room: item.room,
-  }));
+  return (data || []).map(item => {
+    const period = item.periods?.[0];
+    const subject = item.subjects?.[0];
+    const teacher = item.teachers?.[0];
+    return {
+      id: item.id,
+      dayOfWeek: item.day_of_week,
+      periodId: item.period_id,
+      periodName: period?.name || '',
+      startTime: period?.start_time || '',
+      endTime: period?.end_time || '',
+      subjectId: subject?.id || '',
+      subjectName: subject?.name || '',
+      teacherId: item.teachers?.[0]?.id || '',
+      room: item.room,
+    };
+  });
 };
 
 export interface StudentCommentData {
@@ -409,17 +400,21 @@ export const getStudentComments = async (
     return [];
   }
 
-  return (data || []).map(item => ({
-    id: item.id,
-    teacherId: item.teachers.id,
-    teacherName: item.teachers.full_name,
-    commentType: item.comment_type as 'academic' | 'behavior' | 'achievement' | 'concern',
-    title: item.title,
-    content: item.content,
-    subjectId: item.subject_id,
-    subjectName: item.subjects?.name || null,
-    createdAt: item.created_at,
-  }));
+  return (data || []).map(item => {
+    const teacher = item.teachers?.[0];
+    const subject = item.subjects?.[0];
+    return {
+      id: item.id,
+      teacherId: teacher?.id || '',
+      teacherName: teacher?.profiles?.[0]?.full_name || '',
+      commentType: item.comment_type as 'academic' | 'behavior' | 'achievement' | 'concern',
+      title: item.title,
+      content: item.content,
+      subjectId: item.subject_id,
+      subjectName: subject?.name || null,
+      createdAt: item.created_at,
+    };
+  });
 };
 
 // ============================================
@@ -474,4 +469,285 @@ export const getStudentInvoices = async (
     dueDate: invoice.due_date,
     paidDate: invoice.paid_date,
   }));
+};
+
+// ============================================
+// NEWS & NOTIFICATIONS QUERIES
+// ============================================
+
+export interface AnnouncementData {
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  category: string;
+  attachmentUrl: string | null;
+  publishedAt: string;
+  expiresAt: string | null;
+  isPinned: boolean;
+}
+
+/**
+ * Get announcements targeting students
+ * @param targetRole - Role filter (default: 'student')
+ * @returns Array of announcements
+ */
+export const getAnnouncements = async (
+  targetRole: string = 'student'
+): Promise<AnnouncementData[]> => {
+  const { data, error } = await supabase
+    .from('announcements')
+    .select('*')
+    .or(`target_role.eq.${targetRole},target_role.eq.all`)
+    .gte('expires_at', new Date().toISOString())
+    .order('is_pinned', { ascending: false })
+    .order('published_at', { ascending: false });
+
+  if (error) {
+    console.error('[QUERIES] Error fetching announcements:', error);
+    return [];
+  }
+
+  return (data || []).map(item => ({
+    id: item.id,
+    title: item.title,
+    content: item.content,
+    type: item.type,
+    category: item.category || 'Nhà trường',
+    attachmentUrl: item.attachment_url,
+    publishedAt: item.published_at,
+    expiresAt: item.expires_at,
+    isPinned: item.is_pinned || false,
+  }));
+};
+
+export interface NotificationData {
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  category: string;
+  createdAt: string;
+  isRead: boolean;
+  readAt: string | null;
+}
+
+/**
+ * Get notifications for a specific recipient
+ * @param recipientId - User UUID
+ * @returns Array of notifications
+ */
+export const getNotifications = async (
+  recipientId: string
+): Promise<NotificationData[]> => {
+  const { data, error } = await supabase
+    .from('notifications')
+    .select(`
+      id,
+      title,
+      content,
+      type,
+      category,
+      created_at,
+      notification_recipients!inner(
+        is_read,
+        read_at
+      )
+    `)
+    .eq('notification_recipients.recipient_id', recipientId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('[QUERIES] Error fetching notifications:', error);
+    return [];
+  }
+
+  return (data || []).map(item => {
+    const recipient = item.notification_recipients?.[0];
+    return {
+      id: item.id,
+      title: item.title,
+      content: item.content,
+      type: item.type,
+      category: item.category || 'Thông báo',
+      createdAt: item.created_at,
+      isRead: recipient?.is_read || false,
+      readAt: recipient?.read_at,
+    };
+  });
+};
+
+/**
+ * Mark notification as read
+ * @param notificationId - Notification UUID
+ * @param recipientId - Recipient UUID
+ */
+export const markNotificationRead = async (
+  notificationId: string,
+  recipientId: string
+): Promise<void> => {
+  const { error } = await supabase
+    .from('notification_recipients')
+    .update({
+      is_read: true,
+      read_at: new Date().toISOString(),
+    })
+    .eq('notification_id', notificationId)
+    .eq('recipient_id', recipientId);
+
+  if (error) {
+    console.error('[QUERIES] Error marking notification as read:', error);
+    throw error;
+  }
+};
+
+// ============================================
+// LEAVE REQUESTS & APPEALS MUTATIONS
+// ============================================
+
+export interface LeaveRequestData {
+  id: string;
+  studentId: string;
+  classId: string;
+  requestType: string;
+  startDate: string;
+  endDate: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+}
+
+export interface CreateLeaveRequestInput {
+  studentId: string;
+  classId: string;
+  requestType: string;
+  startDate: string;
+  endDate: string;
+  reason: string;
+}
+
+/**
+ * Create a new leave request
+ * @param data - Leave request data
+ * @returns Created leave request
+ */
+export const createLeaveRequest = async (
+  data: CreateLeaveRequestInput
+): Promise<LeaveRequestData> => {
+  const { data: result, error } = await supabase
+    .from('leave_requests')
+    .insert({
+      student_id: data.studentId,
+      class_id: data.classId,
+      request_type: data.requestType,
+      start_date: data.startDate,
+      end_date: data.endDate,
+      reason: data.reason,
+      status: 'pending',
+      created_by: data.studentId,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[QUERIES] Error creating leave request:', error);
+    throw error;
+  }
+
+  return {
+    id: result.id,
+    studentId: result.student_id,
+    classId: result.class_id,
+    requestType: result.request_type,
+    startDate: result.start_date,
+    endDate: result.end_date,
+    reason: result.reason,
+    status: result.status as 'pending' | 'approved' | 'rejected',
+    createdAt: result.created_at,
+  };
+};
+
+/**
+ * Get leave requests for a student
+ * @param studentId - Student UUID
+ * @returns Array of leave requests
+ */
+export const getLeaveRequests = async (
+  studentId: string
+): Promise<LeaveRequestData[]> => {
+  const { data, error } = await supabase
+    .from('leave_requests')
+    .select('*')
+    .eq('student_id', studentId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('[QUERIES] Error fetching leave requests:', error);
+    return [];
+  }
+
+  return (data || []).map(item => ({
+    id: item.id,
+    studentId: item.student_id,
+    classId: item.class_id,
+    requestType: item.request_type,
+    startDate: item.start_date,
+    endDate: item.end_date,
+    reason: item.reason,
+    status: item.status as 'pending' | 'approved' | 'rejected',
+    createdAt: item.created_at,
+  }));
+};
+
+export interface GradeAppealData {
+  id: string;
+  gradeEntryId: string;
+  studentId: string;
+  reason: string;
+  detail: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+}
+
+export interface CreateGradeAppealInput {
+  gradeEntryId: string;
+  studentId: string;
+  reason: string;
+  detail: string;
+}
+
+/**
+ * Create a grade appeal
+ * @param data - Appeal data
+ * @returns Created appeal
+ */
+export const createGradeAppeal = async (
+  data: CreateGradeAppealInput
+): Promise<GradeAppealData> => {
+  const { data: result, error } = await supabase
+    .from('grade_appeals')
+    .insert({
+      grade_entry_id: data.gradeEntryId,
+      student_id: data.studentId,
+      reason: data.reason,
+      detail: data.detail,
+      status: 'pending',
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[QUERIES] Error creating grade appeal:', error);
+    throw error;
+  }
+
+  return {
+    id: result.id,
+    gradeEntryId: result.grade_entry_id,
+    studentId: result.student_id,
+    reason: result.reason,
+    detail: result.detail,
+    status: result.status as 'pending' | 'approved' | 'rejected',
+    createdAt: result.created_at,
+  };
 };

@@ -1,9 +1,11 @@
 /**
  * News Screen - Matches news.html wireframe
+ * Uses real Supabase data via student store
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, ScrollView, Text, Pressable, StyleSheet } from 'react-native';
 import { Svg, Path, Rect } from 'react-native-svg';
+import { useStudentStore } from '../../stores';
 import type { StudentHomeStackNavigationProp } from '../../navigation/types';
 
 interface NewsItem {
@@ -15,13 +17,6 @@ interface NewsItem {
   views: number;
   featured?: boolean;
 }
-
-const MOCK_NEWS: NewsItem[] = [
-  { id: '1', category: 'Nhà trường', title: 'Thông báo nghỉ Tết Nguyên Đán 2026', content: 'Trường sẽ nghỉ từ 20/01 đến 02/02/2026...', date: '20/01/2026', views: 256, featured: true },
-  { id: '2', category: 'Lớp học', title: 'Lịch họp phụ huynh cuối kỳ I', content: 'Thời gian: 15/01/2026 lúc 18:00...', date: '15/01/2026', views: 189 },
-  { id: '3', category: 'Hoạt động', title: 'Hội thao thể thao học sinh 2026', content: 'Đăng ký tham gia các môn...', date: '20/01/2026', views: 412 },
-  { id: '4', category: 'Nhà trường', title: 'Kết thúc kỳ thi giữa kỳ I', content: 'Kết quả sẽ được công bố...', date: '15/01/2026', views: 523 },
-];
 
 const CATEGORY_COLORS = {
   'Nhà trường': { bg: '#DBEAFE', text: '#0284C7' },
@@ -64,6 +59,12 @@ export const StudentNewsScreen: React.FC<{ navigation?: StudentHomeStackNavigati
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const categories = ['Tất cả', 'Nhà trường', 'Lớp học', 'Hoạt động'];
 
+  const { announcements, loadAnnouncements, isLoading } = useStudentStore();
+
+  useEffect(() => {
+    loadAnnouncements();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.headerBg} />
@@ -86,27 +87,36 @@ export const StudentNewsScreen: React.FC<{ navigation?: StudentHomeStackNavigati
             </Pressable>
           ))}
         </View>
-        {MOCK_NEWS.filter(n => n.featured).map(item => (
+        {announcements.filter(n => n.isPinned).map(item => (
           <Pressable key={item.id} style={styles.featuredCard}>
             <View style={styles.featuredBadge}><Text style={styles.featuredBadgeText}>Nổi bật</Text></View>
-            <Text style={styles.featuredDate}>Hôm nay</Text>
+            <Text style={styles.featuredDate}>
+              {new Date(item.publishedAt).toLocaleDateString('vi-VN')}
+            </Text>
             <Text style={styles.featuredTitle}>{item.title}</Text>
             <Text style={styles.featuredContent}>{item.content}</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><CalendarIcon /><Text style={styles.featuredDate}>{item.date}</Text></View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <CalendarIcon />
+              <Text style={styles.featuredDate}>
+                {new Date(item.publishedAt).toLocaleDateString('vi-VN')}
+              </Text>
+            </View>
           </Pressable>
         ))}
         <Text style={styles.listTitle}>Tin mới nhất</Text>
-        {MOCK_NEWS.filter(n => !n.featured).map(item => {
+        {announcements.filter(n => !n.isPinned).map(item => {
           const cc = CATEGORY_COLORS[item.category as keyof typeof CATEGORY_COLORS] || CATEGORY_COLORS['Nhà trường'];
           return (
             <Pressable key={item.id} style={styles.newsCard}>
               <View style={styles.newsCardHeader}>
                 <View style={[styles.categoryBadge, { backgroundColor: cc.bg }]}><Text style={[styles.categoryBadgeText, { color: cc.text }]}>{item.category}</Text></View>
-                <Text style={styles.newsDate}>Hôm qua</Text>
+                <Text style={styles.newsDate}>
+                  {new Date(item.publishedAt).toLocaleDateString('vi-VN')}
+                </Text>
               </View>
               <Text style={styles.newsTitle}>{item.title}</Text>
               <Text style={styles.newsContent}>{item.content}</Text>
-              <View style={styles.newsFooter}><EyeIcon color="#9CA3AF" /><Text style={styles.newsViews}>{item.views} lượt xem</Text></View>
+              <View style={styles.newsFooter}><EyeIcon color="#9CA3AF" /><Text style={styles.newsViews}>0 lượt xem</Text></View>
             </Pressable>
           );
         })}

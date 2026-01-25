@@ -12,6 +12,11 @@ import {
   getStudentSchedule,
   getStudentComments,
   getStudentInvoices,
+  getAnnouncements,
+  getNotifications,
+  createLeaveRequest,
+  getLeaveRequests,
+  createGradeAppeal,
 } from '../lib/supabase/queries';
 
 interface StudentData {
@@ -84,6 +89,41 @@ interface Invoice {
   paidDate: string | null;
 }
 
+interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  category: string;
+  attachmentUrl: string | null;
+  publishedAt: string;
+  expiresAt: string | null;
+  isPinned: boolean;
+}
+
+interface Notification {
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  category: string;
+  createdAt: string;
+  isRead: boolean;
+  readAt: string | null;
+}
+
+interface LeaveRequest {
+  id: string;
+  studentId: string;
+  classId: string;
+  requestType: string;
+  startDate: string;
+  endDate: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+}
+
 // ============================================
 // MOCK DATA
 // ============================================
@@ -130,7 +170,7 @@ const generateMockAttendance = (): AttendanceRecord[] => {
       records.push({
         id: `att-${day}`,
         date,
-        status: statuses[Math.floor(Math.random() * statuses.length)],
+        status: statuses[Math.floor(Math.random() * statuses.length)]!,
         notes: null,
         periodId: 1,
       });
@@ -222,6 +262,69 @@ const MOCK_INVOICES: Invoice[] = [
   },
 ];
 
+const MOCK_ANNOUNCEMENTS: Announcement[] = [
+  {
+    id: 'ann1',
+    title: 'Thông báo nghỉ Tết Nguyên Đán 2026',
+    content: 'Trường sẽ nghỉ từ 20/01 đến 02/02/2026...',
+    type: 'event',
+    category: 'Nhà trường',
+    attachmentUrl: null,
+    publishedAt: '2026-01-20T00:00:00Z',
+    expiresAt: '2026-02-05T00:00:00Z',
+    isPinned: true,
+  },
+  {
+    id: 'ann2',
+    title: 'Lịch họp phụ huynh cuối kỳ I',
+    content: 'Thời gian: 15/01/2026 lúc 18:00...',
+    type: 'meeting',
+    category: 'Lớp học',
+    attachmentUrl: null,
+    publishedAt: '2026-01-15T00:00:00Z',
+    expiresAt: '2026-01-20T00:00:00Z',
+    isPinned: false,
+  },
+];
+
+const MOCK_NOTIFICATIONS: Notification[] = [
+  {
+    id: 'notif1',
+    title: 'Điểm kiểm tra 15 phút Toán',
+    content: 'Điểm của bạn đã được cập nhật',
+    type: 'grade',
+    category: 'Học tập',
+    createdAt: '2026-01-20T10:30:00Z',
+    isRead: false,
+    readAt: null,
+  },
+];
+
+const MOCK_LEAVE_REQUESTS: LeaveRequest[] = [
+  {
+    id: 'lr1',
+    studentId: 'student-001',
+    classId: 'class-10a1',
+    requestType: 'leave',
+    startDate: '2026-01-20',
+    endDate: '2026-01-20',
+    reason: 'Đi gia đình',
+    status: 'approved',
+    createdAt: '2026-01-15T00:00:00Z',
+  },
+  {
+    id: 'lr2',
+    studentId: 'student-001',
+    classId: 'class-10a1',
+    requestType: 'leave',
+    startDate: '2026-01-10',
+    endDate: '2026-01-11',
+    reason: 'Ốm đau',
+    status: 'pending',
+    createdAt: '2026-01-09T00:00:00Z',
+  },
+];
+
 // ============================================
 // STORE INTERFACE
 // ============================================
@@ -235,16 +338,36 @@ interface StudentState {
   schedule: ScheduleItem[];
   comments: StudentComment[];
   invoices: Invoice[];
+  announcements: Announcement[];
+  notifications: Notification[];
+  leaveRequests: LeaveRequest[];
   isLoading: boolean;
   error: string | null;
 
   // Actions
   loadStudentData: (studentId: string) => Promise<void>;
-  loadGrades: (studentId: string) => Promise<void>;
+  loadGrades: (studentId: string, semester?: string) => Promise<void>;
   loadAttendance: (studentId: string, monthFilter?: string) => Promise<void>;
   loadSchedule: (classId: string, semester?: string) => Promise<void>;
   loadComments: (studentId: string) => Promise<void>;
   loadInvoices: (studentId: string) => Promise<void>;
+  loadAnnouncements: () => Promise<void>;
+  loadNotifications: (recipientId: string) => Promise<void>;
+  loadLeaveRequests: (studentId: string) => Promise<void>;
+  createLeaveRequest: (data: {
+    studentId: string;
+    classId: string;
+    requestType: string;
+    startDate: string;
+    endDate: string;
+    reason: string;
+  }) => Promise<LeaveRequest | null>;
+  createGradeAppeal: (data: {
+    gradeEntryId: string;
+    studentId: string;
+    reason: string;
+    detail: string;
+  }) => Promise<void>;
   clearError: () => void;
 }
 
@@ -257,6 +380,9 @@ export const useStudentStore = create<StudentState>((set) => ({
   schedule: [],
   comments: [],
   invoices: [],
+  announcements: [],
+  notifications: [],
+  leaveRequests: [],
   isLoading: false,
   error: null,
 
@@ -290,11 +416,11 @@ export const useStudentStore = create<StudentState>((set) => ({
   },
 
   // Load grades
-  loadGrades: async (studentId: string) => {
+  loadGrades: async (studentId: string, semester?: string) => {
     set({ isLoading: true, error: null });
 
     try {
-      const grades = await getStudentGrades(studentId);
+      const grades = await getStudentGrades(studentId, semester);
       if (grades.length > 0) {
         set({ grades, isLoading: false });
       } else {
@@ -315,7 +441,7 @@ export const useStudentStore = create<StudentState>((set) => ({
       const attendance = await getStudentAttendance(studentId, monthFilter);
       if (attendance.length > 0) {
         const presentDays = attendance.filter(
-          (record) => record.status === 'present' || record.status === 'late' || record.status === 'excused'
+          (record) => (record.status === 'present' || record.status === 'late' || record.status === 'excused') && record.status !== undefined
         ).length;
         const percentage = attendance.length > 0 ? (presentDays / attendance.length) * 100 : 0;
         set({ attendance, attendancePercentage: percentage, isLoading: false });
@@ -323,8 +449,8 @@ export const useStudentStore = create<StudentState>((set) => ({
         console.warn('[StudentStore] No attendance found, using mock data');
         const mockAttendance = generateMockAttendance();
         const presentDays = mockAttendance.filter(
-          (record) => record.status === 'present' || record.status === 'late' || record.status === 'excused'
-        ).length;
+          (record) => (record.status === 'present' || record.status === 'late' || record.status === 'excused') && record.status !== undefined
+        ).filter(record => record.status !== undefined).length;
         const percentage = mockAttendance.length > 0 ? (presentDays / mockAttendance.length) * 100 : 0;
         set({ attendance: mockAttendance, attendancePercentage: percentage, isLoading: false });
       }
@@ -332,7 +458,7 @@ export const useStudentStore = create<StudentState>((set) => ({
       console.error('[StudentStore] Error loading attendance:', err);
       const mockAttendance = generateMockAttendance();
       const presentDays = mockAttendance.filter(
-        (record) => record.status === 'present' || record.status === 'late' || record.status === 'excused'
+        (record) => (record.status === 'present' || record.status === 'late' || record.status === 'excused') && record.status !== undefined
       ).length;
       const percentage = mockAttendance.length > 0 ? (presentDays / mockAttendance.length) * 100 : 0;
       set({ attendance: mockAttendance, attendancePercentage: percentage, isLoading: false, error: (err as Error).message });
@@ -390,4 +516,85 @@ export const useStudentStore = create<StudentState>((set) => ({
 
   // Clear error
   clearError: () => set({ error: null }),
+
+  // Load announcements
+  loadAnnouncements: async () => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const announcements = await getAnnouncements('student');
+      if (announcements.length > 0) {
+        set({ announcements, isLoading: false });
+      } else {
+        console.warn('[StudentStore] No announcements found, using mock data');
+        set({ announcements: MOCK_ANNOUNCEMENTS, isLoading: false });
+      }
+    } catch (err) {
+      console.error('[StudentStore] Error loading announcements:', err);
+      set({ announcements: MOCK_ANNOUNCEMENTS, isLoading: false, error: (err as Error).message });
+    }
+  },
+
+  // Load notifications
+  loadNotifications: async (recipientId: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const notifications = await getNotifications(recipientId);
+      set({ notifications, isLoading: false });
+    } catch (err) {
+      console.error('[StudentStore] Error loading notifications:', err);
+      set({ notifications: MOCK_NOTIFICATIONS, isLoading: false, error: (err as Error).message });
+    }
+  },
+
+  // Load leave requests
+  loadLeaveRequests: async (studentId: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const leaveRequests = await getLeaveRequests(studentId);
+      if (leaveRequests.length > 0) {
+        set({ leaveRequests, isLoading: false });
+      } else {
+        console.warn('[StudentStore] No leave requests found, using mock data');
+        set({ leaveRequests: MOCK_LEAVE_REQUESTS, isLoading: false });
+      }
+    } catch (err) {
+      console.error('[StudentStore] Error loading leave requests:', err);
+      set({ leaveRequests: MOCK_LEAVE_REQUESTS, isLoading: false, error: (err as Error).message });
+    }
+  },
+
+  // Create leave request
+  createLeaveRequest: async (data) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const result = await createLeaveRequest(data);
+      // Refresh leave requests list
+      await getLeaveRequests(data.studentId).then(requests => {
+        set({ leaveRequests: requests, isLoading: false });
+      });
+      return result;
+    } catch (err) {
+      console.error('[StudentStore] Error creating leave request:', err);
+      set({ isLoading: false, error: (err as Error).message });
+      return null;
+    }
+  },
+
+  // Create grade appeal
+  createGradeAppeal: async (data) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      await createGradeAppeal(data);
+      set({ isLoading: false });
+    } catch (err) {
+      console.error('[StudentStore] Error creating grade appeal:', err);
+      set({ isLoading: false, error: (err as Error).message });
+      throw err;
+    }
+  },
 }));

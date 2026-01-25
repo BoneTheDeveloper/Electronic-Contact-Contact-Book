@@ -4,7 +4,7 @@
  * Wireframe-compliant design with SVG icons
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, ScrollView, TouchableOpacity, Dimensions, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useAuthStore } from '../../stores';
 import { useParentStore } from '../../stores';
@@ -32,7 +32,7 @@ const SERVICE_ICONS: ServiceIcon[] = [
   { id: '1', label: 'Thời khóa\nbiểu', icon: 'calendar', color: '#F97316', route: 'Schedule' },
   { id: '2', label: 'Bảng điểm\nmôn học', icon: 'check-circle', color: '#0284C7', route: 'Grades' },
   { id: '3', label: 'Lịch sử\nđiểm danh', icon: 'account-check', color: '#059669', route: 'Attendance' },
-  { id: '4', label: 'Đơn xin\nnghỉ phép', icon: 'file-document', color: '#F43F5E', route: 'LeaveRequest' },
+  { id: '4', label: 'Đơn xin\nnghỉ phép', icon: 'file-document', color: '#F43F5E', route: 'LeaveRequest' as any },
   { id: '5', label: 'Nhận xét\ngiáo viên', icon: 'message-reply', color: '#9333EA', route: 'TeacherFeedback' },
   { id: '6', label: 'Tin tức &\nsự kiện', icon: 'newspaper', color: '#0EA5E9', route: 'News' },
   { id: '7', label: 'Kết quả\ntổng hợp', icon: 'chart-pie', color: '#4F46E5', route: 'Summary' },
@@ -47,15 +47,33 @@ interface DashboardScreenProps {
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const { user } = useAuthStore();
   const { children, selectedChildId, loadChildren, isLoading, error } = useParentStore();
+  const hasCheckedSelection = useRef(false);
 
   // Load children when dashboard mounts (for parent users)
+  // And navigate to ChildSelection if there are multiple children
   useEffect(() => {
     if (user?.role === 'parent' && user?.id && children.length === 0) {
       loadChildren(user.id);
     }
   }, [user?.id, user?.role]);
 
-  const selectedChild = children.find(c => c.id === selectedChildId) || children[0];
+  // Navigate to ChildSelection if there are multiple children and we haven't checked yet
+  useEffect(() => {
+    if (
+      !isLoading &&
+      children.length > 1 &&
+      !hasCheckedSelection.current &&
+      navigation
+    ) {
+      hasCheckedSelection.current = true;
+      // Small delay to ensure smooth navigation
+      setTimeout(() => {
+        navigation.navigate('ChildSelection');
+      }, 100);
+    }
+  }, [isLoading, children.length, navigation]);
+
+  const selectedChild = children.find((c: { id: string | null }) => c.id === selectedChildId) || children[0];
 
   // Loading state
   if (isLoading && children.length === 0) {
