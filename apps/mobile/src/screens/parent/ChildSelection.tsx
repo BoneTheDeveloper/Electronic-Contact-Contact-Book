@@ -8,13 +8,13 @@
 
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Pressable, StyleSheet } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useParentStore } from "../../stores";
 import { ScreenHeader, Icon } from "../../components/ui";
-import type { ParentHomeStackNavigationProp } from "../../navigation/types";
+import type { ParentNavigatorParamList } from "../../navigation/types";
 
 interface ChildSelectionScreenProps {
-  navigation?: ParentHomeStackNavigationProp;
+  navigation?: NativeStackNavigationProp<ParentNavigatorParamList, "ChildSelection">;
 }
 
 export const ChildSelectionScreen: React.FC<ChildSelectionScreenProps> = ({ navigation }) => {
@@ -25,35 +25,6 @@ export const ChildSelectionScreen: React.FC<ChildSelectionScreenProps> = ({ navi
   useEffect(() => {
     setTempSelectedId(selectedChildId);
   }, [selectedChildId]);
-
-  // Hide tab bar when this screen is focused
-  useFocusEffect(
-    React.useCallback(() => {
-      // Get the parent navigator (HomeStack's parent = ParentTabs tab navigator)
-      const parentNav = navigation?.getParent();
-      if (parentNav) {
-        // Hide tab bar by setting height to 0 and moving off-screen
-        parentNav.setOptions({
-          tabBarStyle: { height: 0, overflow: 'hidden' as const }
-        });
-      }
-      return () => {
-        // Show tab bar when leaving this screen
-        if (parentNav) {
-          parentNav.setOptions({
-            tabBarStyle: {
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              borderTopColor: '#F3F4F6',
-              borderTopWidth: 1,
-              paddingBottom: 5,
-              paddingTop: 5,
-              height: 65,
-            }
-          });
-        }
-      };
-    }, [navigation])
-  );
 
   // Loading state
   if (isLoading && children.length === 0) {

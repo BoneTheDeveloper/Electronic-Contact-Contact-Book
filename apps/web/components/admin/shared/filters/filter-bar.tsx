@@ -13,7 +13,7 @@ export interface FilterOption {
 export interface Filter {
   key: string
   label: string
-  type: 'select' | 'multiselect' | 'search'
+  type: 'select' | 'multiselect' | 'search' | 'dateRange'
   options?: FilterOption[]
   value?: string | string[] | number
 }
@@ -90,6 +90,38 @@ export const FilterBar = memo(function FilterBar({
                   </option>
                 ))}
               </select>
+            )}
+            {filter.type === 'dateRange' && (
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={(values[filter.key] as string)?.split('..')[0] || ''}
+                  onChange={(e) => {
+                    const endDate = (values[filter.key] as string)?.split('..')[1] || ''
+                    onChange(filter.key, e.target.value ? `${e.target.value}..${endDate}` : '')
+                  }}
+                  className={cn(
+                    'flex-1 h-10 rounded-lg border border-slate-300 px-3 py-2 text-sm',
+                    'focus:border-[#0284C7] focus:outline-none focus:ring-1 focus:ring-[#0284C7]',
+                    'transition-colors'
+                  )}
+                  placeholder="Từ ngày"
+                />
+                <input
+                  type="date"
+                  value={(values[filter.key] as string)?.split('..')[1] || ''}
+                  onChange={(e) => {
+                    const startDate = (values[filter.key] as string)?.split('..')[0] || ''
+                    onChange(filter.key, e.target.value ? `${startDate}..${e.target.value}` : '')
+                  }}
+                  className={cn(
+                    'flex-1 h-10 rounded-lg border border-slate-300 px-3 py-2 text-sm',
+                    'focus:border-[#0284C7] focus:outline-none focus:ring-1 focus:ring-[#0284C7]',
+                    'transition-colors'
+                  )}
+                  placeholder="Đến ngày"
+                />
+              </div>
             )}
           </div>
         ))}

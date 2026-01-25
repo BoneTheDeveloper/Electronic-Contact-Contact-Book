@@ -66,10 +66,14 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
       navigation
     ) {
       hasCheckedSelection.current = true;
-      // Small delay to ensure smooth navigation
-      setTimeout(() => {
-        navigation.navigate('ChildSelection');
-      }, 100);
+      // Get ParentNavigator (2 levels up: HomeStack -> ParentTabs -> ParentNavigator)
+      const parentNav = navigation.getParent()?.getParent();
+      if (parentNav) {
+        // Small delay to ensure smooth navigation
+        setTimeout(() => {
+          parentNav.navigate('ChildSelection');
+        }, 100);
+      }
     }
   }, [isLoading, children.length, navigation]);
 
@@ -169,7 +173,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
         {selectedChild && (
           <TouchableOpacity
             style={styles.childCard}
-            onPress={() => navigation?.navigate('ChildSelection')}
+            onPress={() => {
+              const parentNav = navigation?.getParent()?.getParent();
+              parentNav?.navigate('ChildSelection');
+            }}
             activeOpacity={0.7}
           >
             <View style={[styles.avatar, { backgroundColor: '#E0F2FE' }]}>
@@ -199,27 +206,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
       >
         <View style={styles.iconsGrid}>
           {SERVICE_ICONS.map(renderServiceIcon)}
-        </View>
-
-        {/* News Preview Section */}
-        <View style={styles.newsSection}>
-          <View style={styles.newsHeader}>
-            <Text style={styles.newsTitle}>Thông báo mới</Text>
-            <TouchableOpacity onPress={() => navigation?.navigate('News' as keyof ParentHomeStackParamList)}>
-              <Text style={styles.seeAll}>Xem tất cả</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.newsCard}>
-            <View style={styles.newsMeta}>
-              <View style={[styles.newsTag, { backgroundColor: '#E0F2FE' }]}>
-                <Text style={[styles.newsTagText, { color: '#0284C7' }]}>Nhà trường</Text>
-              </View>
-              <Text style={styles.newsTime}>10 phút trước</Text>
-            </View>
-            <Text style={styles.newsText} numberOfLines={2}>
-              Thông báo về việc nghỉ lễ Tết Nguyên Đán 2026...
-            </Text>
-          </View>
         </View>
       </ScrollView>
     </View>

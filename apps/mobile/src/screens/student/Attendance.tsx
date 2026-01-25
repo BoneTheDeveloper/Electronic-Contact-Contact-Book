@@ -234,7 +234,7 @@ export const StudentAttendanceScreen: React.FC<AttendanceScreenProps> = ({ navig
           </TouchableOpacity>
           <View style={styles.headerTextContainer}>
             <Text style={styles.headerTitle}>Lịch sử điểm danh</Text>
-            <Text style={styles.headerSubtitle}>Theo dõi attendance học sinh</Text>
+            <Text style={styles.headerSubtitle}>Năm học 2025-2026</Text>
           </View>
           <TouchableOpacity
             onPress={handleReload}

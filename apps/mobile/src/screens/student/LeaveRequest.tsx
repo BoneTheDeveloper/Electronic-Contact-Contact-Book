@@ -37,10 +37,11 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
   const [activeTab, setActiveTab] = useState<'new' | 'history'>('new');
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [detailReason, setDetailReason] = useState('');
-  // Start from today (25/1/2026) - date range for leave
+  // Today's date for validation (25/1/2026)
   const today = new Date(2026, 0, 25);
-  const [startDate, setStartDate] = useState<Date>(today);
-  const [endDate, setEndDate] = useState<Date>(today);
+  // No pre-selected dates - user must choose
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
 
@@ -88,6 +89,11 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
       return;
     }
 
+    if (!startDate || !endDate) {
+      Alert.alert('Lỗi', 'Vui lòng chọn khoảng thời gian nghỉ');
+      return;
+    }
+
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
     const reason = showOtherReasonInput ? otherReasonText : `${selectedReason!}: ${detailReason}`;
@@ -107,8 +113,8 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
         // Reset form
         setSelectedReason(null);
         setDetailReason('');
-        setStartDate(today);
-        setEndDate(today);
+        setStartDate(null);
+        setEndDate(null);
         setAttachedFile(null);
       } else {
         Alert.alert('Lỗi', 'Không thể gửi đơn xin nghỉ phép');
@@ -137,35 +143,54 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
   };
 
   const isStartDate = (day: number) => {
-    return day === startDate.getDate() && currentMonth === startDate.getMonth() && currentYear === startDate.getFullYear();
+    if (!startDate) return false;
+    const date = new Date(currentYear, currentMonth, day);
+    return date.getDate() === startDate.getDate() &&
+           date.getMonth() === startDate.getMonth() &&
+           date.getFullYear() === startDate.getFullYear();
   };
 
   const isEndDate = (day: number) => {
-    return day === endDate.getDate() && currentMonth === endDate.getMonth() && currentYear === endDate.getFullYear();
+    if (!endDate) return false;
+    const date = new Date(currentYear, currentMonth, day);
+    return date.getDate() === endDate.getDate() &&
+           date.getMonth() === endDate.getMonth() &&
+           date.getFullYear() === endDate.getFullYear();
   };
 
   const isBeforeToday = (day: number) => {
     const date = new Date(currentYear, currentMonth, day);
-    return date < today;
+    const todayTimestamp = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const dateTimestamp = date.getTime();
+    return dateTimestamp < todayTimestamp;
   };
 
   const handleDatePress = (day: number) => {
     const selectedDate = new Date(currentYear, currentMonth, day);
+    const todayTimestamp = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const selectedTimestamp = selectedDate.getTime();
 
     // Prevent selecting dates before today
-    if (selectedDate < today) {
+    if (selectedTimestamp < todayTimestamp) {
       return;
     }
 
-    if (selectingStartDate) {
+    if (selectingStartDate || !startDate) {
+      // First click: set as initial choice (both start and end same)
       setStartDate(selectedDate);
       setEndDate(selectedDate);
       setSelectingStartDate(false);
     } else {
-      if (selectedDate < startDate) {
-        setEndDate(startDate);
+      // Second click: create range, auto-determine start/end based on which is earlier/later
+      const startTimestamp = startDate.getTime();
+      if (selectedTimestamp === startTimestamp) {
+        // Clicked the same date again - restart selection
+        setSelectingStartDate(true);
+      } else if (selectedTimestamp < startTimestamp) {
+        // Selected date is earlier, becomes start date
         setStartDate(selectedDate);
       } else {
+        // Selected date is later, becomes end date
         setEndDate(selectedDate);
       }
     }
@@ -173,8 +198,8 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
 
   const handleResetRange = () => {
     setSelectingStartDate(true);
-    setStartDate(today);
-    setEndDate(today);
+    setStartDate(null);
+    setEndDate(null);
   };
 
   const previousMonth = () => {
@@ -422,8 +447,8 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
                     setCurrentYear(today.getFullYear());
                   }}
                 >
-                  <Text style={styles.valueText}>
-                    {formatDateDisplay(startDate)} - {formatDateDisplay(endDate)}
+                  <Text style={[styles.valueText, !startDate && styles.placeholderText]}>
+                    {startDate && endDate ? `${formatDateDisplay(startDate)} - ${formatDateDisplay(endDate)}` : 'Chọn khoảng thời gian'}
                   </Text>
                   <Icon name="calendar" size={16} color="#9CA3AF" />
                 </TouchableOpacity>
@@ -753,13 +778,13 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
             {/* Header with month navigation */}
             <View style={styles.calendarHeader}>
               <TouchableOpacity onPress={previousMonth} style={styles.calendarNavButton}>
-                <Icon name="chevron-left" size={24} color="#374151" />
+                <Icon name="arrow-left" size={24} color="#0284C7" />
               </TouchableOpacity>
               <Text style={styles.calendarTitle}>
                 Tháng {currentMonth + 1}/{currentYear}
               </Text>
               <TouchableOpacity onPress={nextMonth} style={styles.calendarNavButton}>
-                <Icon name="chevron-right" size={24} color="#374151" />
+                <Icon name="arrow-right" size={24} color="#0284C7" />
               </TouchableOpacity>
             </View>
 
@@ -784,12 +809,13 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
                 let dayStyle = styles.calendarDay;
                 let textStyle = styles.calendarDayText;
 
-                if (isTodayDate) {
-                  dayStyle = { ...dayStyle, ...styles.calendarDayToday };
-                }
+                // Apply styles in order: selected -> today -> disabled (selected takes priority)
                 if (isSelectedDate && !isDisabledDate) {
                   dayStyle = { ...dayStyle, ...styles.calendarDaySelected };
                   textStyle = { ...textStyle, ...styles.calendarDayTextSelected };
+                }
+                if (isTodayDate) {
+                  dayStyle = { ...dayStyle, ...styles.calendarDayToday };
                 }
                 if (isDisabledDate) {
                   dayStyle = { ...dayStyle, ...styles.calendarDayDisabled };
@@ -821,7 +847,7 @@ export const StudentLeaveRequestScreen: React.FC<LeaveRequestScreenProps> = ({ n
             {/* Range info and actions */}
             <View style={styles.calendarFooter}>
               <Text style={styles.calendarRangeText}>
-                {selectingStartDate ? 'Chọn ngày bắt đầu' : `Đã chọn: ${formatDateDisplay(startDate)} - ${formatDateDisplay(endDate)}`}
+                {selectingStartDate || !startDate ? 'Chọn ngày bắt đầu' : `Đã chọn: ${formatDateDisplay(startDate)} - ${endDate ? formatDateDisplay(endDate) : formatDateDisplay(startDate)}`}
               </Text>
               <View style={styles.calendarActions}>
                 <TouchableOpacity
@@ -1425,9 +1451,7 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
   },
   calendarDayToday: {
-    backgroundColor: '#EFF6FF',
-    borderWidth: 1,
-    borderColor: '#0284C7',
+    // No background/border - just the red dot indicator
   },
   calendarDaySelected: {
     backgroundColor: '#0284C7',

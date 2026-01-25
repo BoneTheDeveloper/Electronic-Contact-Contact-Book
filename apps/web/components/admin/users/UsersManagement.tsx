@@ -25,7 +25,6 @@ interface ApiResponse<T> {
 interface UsersManagementProps {
   initialUsers: User[]
   initialStats: UserStats
-  initialClassOptions: Array<{ value: string; label: string }>
   refreshTrigger?: number
   onAddUser?: () => void
   onImportExcel?: () => void
@@ -34,14 +33,12 @@ interface UsersManagementProps {
 export function UsersManagement({
   initialUsers,
   initialStats,
-  initialClassOptions,
   refreshTrigger: externalRefreshTrigger = 0,
   onAddUser,
   onImportExcel
 }: UsersManagementProps) {
   const [users, setUsers] = useState<User[]>(initialUsers)
   const [stats, setStats] = useState<UserStats>(initialStats)
-  const [classOptions, setClassOptions] = useState(initialClassOptions)
   const [loading, setLoading] = useState(false)
   const [internalRefreshTrigger, setInternalRefreshTrigger] = useState(0)
 
@@ -91,8 +88,74 @@ export function UsersManagement({
     search: '',
     role: '',
     status: '',
+    grade: '',
     class: '',
   })
+
+  // Grade options (Khối)
+  const gradeOptions = useMemo(() => [
+    { value: '6', label: 'Khối 6' },
+    { value: '7', label: 'Khối 7' },
+    { value: '8', label: 'Khối 8' },
+    { value: '9', label: 'Khối 9' },
+  ], [])
+
+  // Class options filtered by selected grade
+  const classOptionsByGrade = useMemo(() => {
+    const allClasses: Record<string, Array<{ value: string; label: string }>> = {
+      '6': [
+        { value: '6A', label: '6A' },
+        { value: '6B', label: '6B' },
+        { value: '6C', label: '6C' },
+        { value: '6D', label: '6D' },
+        { value: '6E', label: '6E' },
+        { value: '6F', label: '6F' },
+      ],
+      '7': [
+        { value: '7A', label: '7A' },
+        { value: '7B', label: '7B' },
+        { value: '7C', label: '7C' },
+        { value: '7D', label: '7D' },
+        { value: '7E', label: '7E' },
+      ],
+      '8': [
+        { value: '8A', label: '8A' },
+        { value: '8B', label: '8B' },
+        { value: '8C', label: '8C' },
+        { value: '8D', label: '8D' },
+        { value: '8E', label: '8E' },
+      ],
+      '9': [
+        { value: '9A', label: '9A' },
+        { value: '9B', label: '9B' },
+        { value: '9C', label: '9C' },
+        { value: '9D', label: '9D' },
+        { value: '9E', label: '9E' },
+      ],
+    }
+    return filters.grade ? allClasses[filters.grade] || [] : []
+  }, [filters.grade])
+
+  // All class options (when no grade selected)
+  const allClassOptions = useMemo(() => [
+    { value: '6A', label: '6A' }, { value: '6B', label: '6B' }, { value: '6C', label: '6C' },
+    { value: '6D', label: '6D' }, { value: '6E', label: '6E' }, { value: '6F', label: '6F' },
+    { value: '7A', label: '7A' }, { value: '7B', label: '7B' }, { value: '7C', label: '7C' },
+    { value: '7D', label: '7D' }, { value: '7E', label: '7E' },
+    { value: '8A', label: '8A' }, { value: '8B', label: '8B' }, { value: '8C', label: '8C' },
+    { value: '8D', label: '8D' }, { value: '8E', label: '8E' },
+    { value: '9A', label: '9A' }, { value: '9B', label: '9B' }, { value: '9C', label: '9C' },
+    { value: '9D', label: '9D' }, { value: '9E', label: '9E' },
+  ], [])
+
+  // Dynamic class filter options (filtered by grade if grade is selected, otherwise show all)
+  const classFilterOptions = useMemo(() => {
+    if (filters.grade) {
+      return classOptionsByGrade
+    }
+    // All classes when no grade filter
+    return allClassOptions
+  }, [filters.grade, classOptionsByGrade, allClassOptions])
 
   // Refresh callback pattern
   const handleRefresh = useCallback(() => {
@@ -131,14 +194,31 @@ export function UsersManagement({
         const response = await fetch(`/api/users?${params}`)
         const result: ApiResponse<User> = await response.json()
         if (result.success) {
-          setUsers(result.data)
-          // Update stats when data changes
+          let filteredUsers = result.data
+
+          // Client-side filtering for grade (shows ONLY students in that grade)
+          if (filters.grade) {
+            filteredUsers = filteredUsers.filter((u: User) => {
+              // Only students have classId - filter by grade
+              return u.role === 'student' && u.classId && u.classId.startsWith(filters.grade)
+            })
+          }
+
+          // If specific class is selected, filter by exact classId
+          if (filters.class) {
+            filteredUsers = filteredUsers.filter((u: User) => {
+              return u.classId === filters.class
+            })
+          }
+
+          setUsers(filteredUsers)
+          // Update stats when data changes (based on filtered users)
           const newStats = {
-            total: result.data.length,
-            admin: result.data.filter((u: User) => u.role === 'admin').length,
-            teachers: result.data.filter((u: User) => u.role === 'teacher').length,
-            parents: result.data.filter((u: User) => u.role === 'parent').length,
-            students: result.data.filter((u: User) => u.role === 'student').length,
+            total: filteredUsers.length,
+            admin: filteredUsers.filter((u: User) => u.role === 'admin').length,
+            teachers: filteredUsers.filter((u: User) => u.role === 'teacher').length,
+            parents: filteredUsers.filter((u: User) => u.role === 'parent').length,
+            students: filteredUsers.filter((u: User) => u.role === 'student').length,
           }
           setStats(newStats)
         }
@@ -154,7 +234,7 @@ export function UsersManagement({
 
   // Clear filters - memoized
   const handleClearFilters = useCallback(() => {
-    setFilters({ search: '', role: '', status: '', class: '' })
+    setFilters({ search: '', role: '', status: '', grade: '', class: '' })
   }, [])
 
   // Handle filter change - memoized
@@ -214,12 +294,18 @@ export function UsersManagement({
             <p className="text-sm font-bold text-slate-800">{row.name}</p>
             <p className="text-xs text-slate-400 truncate">{row.role === 'parent' ? (row.phone || row.email) : row.email}</p>
           </div>
-          {row.code && (
-            <span className="shrink-0 px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-mono font-bold">
-              {row.code}
-            </span>
-          )}
         </div>
+      ),
+    },
+    {
+      key: 'code',
+      label: 'Mã người dùng',
+      render: (value) => value ? (
+        <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-mono font-bold">
+          {value as React.ReactNode}
+        </span>
+      ) : (
+        <span className="text-xs text-slate-400">—</span>
       ),
     },
     {
@@ -246,13 +332,32 @@ export function UsersManagement({
     {
       key: 'classId',
       label: 'Lớp / Đơn vị',
-      render: (value) => value ? (
-        <span className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-          Lớp {value as React.ReactNode}
-        </span>
-      ) : (
-        <span className="text-xs text-slate-400">—</span>
-      ),
+      render: (_value, row) => {
+        const classInfo = row.classId
+        if (!classInfo) {
+          return <span className="text-xs text-slate-400">—</span>
+        }
+        // For students: show "Lớp X", for teachers: show their unit/class
+        if (row.role === 'student') {
+          return (
+            <span className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              Lớp {classInfo}
+            </span>
+          )
+        }
+        if (row.role === 'teacher') {
+          return (
+            <span className="rounded-lg bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+              {classInfo}
+            </span>
+          )
+        }
+        return (
+          <span className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+            {classInfo}
+          </span>
+        )
+      },
     },
     {
       key: 'status',
@@ -263,11 +368,6 @@ export function UsersManagement({
           label={value === 'active' ? 'Hoạt động' : 'Không hoạt động'}
         />
       ),
-    },
-    {
-      key: 'lastLogin',
-      label: 'Đăng nhập cuối',
-      render: () => <span className="text-xs text-slate-500">2 giờ trước</span>,
     },
     {
       key: 'actions',
@@ -365,14 +465,33 @@ export function UsersManagement({
             ))}
           </select>
 
-          {/* Grade/Class Filter */}
+          {/* Grade Filter (Khối) */}
+          <select
+            value={filters.grade}
+            onChange={(e) => {
+              const newGrade = e.target.value
+              handleFilterChange('grade', newGrade)
+              // Reset class filter if current class is not in the new grade
+              if (filters.class && newGrade && !filters.class.startsWith(newGrade)) {
+                handleFilterChange('class', '')
+              }
+            }}
+            className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none"
+          >
+            <option value="">Tất cả khối</option>
+            {gradeOptions.map((opt: { value: string; label: string }) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+
+          {/* Class Filter (Lớp) - shows all classes or filtered by grade */}
           <select
             value={filters.class}
             onChange={(e) => handleFilterChange('class', e.target.value)}
             className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-100 outline-none"
           >
-            <option value="">Tất cả khối</option>
-            {classOptions.map((opt: { value: string; label: string }) => (
+            <option value="">{filters.grade ? 'Tất cả lớp' : 'Tất cả lớp'}</option>
+            {classFilterOptions.map((opt: { value: string; label: string }) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
@@ -386,7 +505,7 @@ export function UsersManagement({
         </div>
 
         {/* Active Filters Display */}
-        {(filters.role || filters.status || filters.class) && (
+        {(filters.role || filters.status || filters.grade || filters.class) && (
           <div className="flex flex-wrap gap-2 mt-4">
             {filters.role && (
               <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-xs font-bold flex items-center gap-2">
@@ -400,9 +519,18 @@ export function UsersManagement({
                 <button onClick={() => handleFilterChange('status', '')} className="hover:text-blue-800">×</button>
               </span>
             )}
+            {filters.grade && (
+              <span className="px-3 py-1 bg-purple-100 text-purple-600 rounded-lg text-xs font-bold flex items-center gap-2">
+                {gradeOptions.find(o => o.value === filters.grade)?.label}
+                <button onClick={() => {
+                  handleFilterChange('grade', '')
+                  handleFilterChange('class', '')
+                }} className="hover:text-purple-800">×</button>
+              </span>
+            )}
             {filters.class && (
               <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-xs font-bold flex items-center gap-2">
-                {classOptions.find(o => o.value === filters.class)?.label}
+                {classFilterOptions.find(o => o.value === filters.class)?.label}
                 <button onClick={() => handleFilterChange('class', '')} className="hover:text-blue-800">×</button>
               </span>
             )}

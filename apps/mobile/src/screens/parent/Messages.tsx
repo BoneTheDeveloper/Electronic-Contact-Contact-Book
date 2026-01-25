@@ -1,12 +1,20 @@
 /**
  * Messages Screen
- * Chat and notifications from teachers
+ * Chat list with online teachers section
+ * Wireframe: messages.html
  */
 
-import React from 'react';
-import { View, FlatList, TouchableOpacity, Text, StyleSheet, TextInput } from 'react-native';
-import { useParentStore } from '../../stores';
-import { colors } from '../../theme';
+import React, { useState, useMemo } from 'react';
+import {
+  View,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
+import { mockTeachers } from '../../mock-data';
+import { Icon } from '../../components/ui';
 import { ScreenHeader } from '../../components/ui';
 import type { ParentCommStackNavigationProp } from '../../navigation/types';
 
@@ -16,294 +24,28 @@ interface MessagesScreenProps {
 
 interface Message {
   id: string;
+  teacherId: string;
   teacherName: string;
   teacherAvatar: string;
-  subject?: string;
   lastMessage?: string;
   time?: string;
   unreadCount?: number;
   isOnline: boolean;
-  gradientType?: string;
+  isRead?: boolean;
+  gradientType: string;
 }
 
-const MOCK_MESSAGES: Message[] = [
-  {
-    id: '1',
-    teacherName: 'Nguyễn Thị H (GVCN)',
-    teacherAvatar: 'NH',
-    subject: 'Chủ nhiệm',
-    lastMessage: 'Cháu Hoàng B hôm nay đi học rất đầy đủ...',
-    time: '5 phút',
-    unreadCount: 2,
-    isOnline: true,
-    gradientType: 'blue',
-  },
-  {
-    id: '2',
-    teacherName: 'Trần Văn H (Toán)',
-    teacherAvatar: 'TH',
-    subject: 'Toán học',
-    lastMessage: 'Điểm kiểm tra hôm nay cháu đã tiến bộ khá...',
-    time: '1 giờ',
-    unreadCount: 0,
-    isOnline: true,
-    gradientType: 'purple',
-  },
-  {
-    id: '3',
-    teacherName: 'Lê Thị P (Anh)',
-    teacherAvatar: 'LP',
-    subject: 'Tiếng Anh',
-    lastMessage: 'Nhớ nhắc cháu review từ vựng trước khi đến lớp...',
-    time: 'Hôm qua',
-    unreadCount: 5,
-    isOnline: false,
-    gradientType: 'pink',
-  },
-  {
-    id: '4',
-    teacherName: 'Phạm Minh K (Lý)',
-    teacherAvatar: 'PM',
-    subject: 'Vật lý',
-    lastMessage: 'Sắp đến bài kiểm tra giữa kỳ, cần ôn bài kỹ nhé...',
-    time: '2 ngày',
-    unreadCount: 0,
-    isOnline: false,
-    gradientType: 'green',
-  },
-  {
-    id: '5',
-    teacherName: 'Trần Hùng M (Sử)',
-    teacherAvatar: 'TH',
-    subject: 'Lịch sử',
-    lastMessage: 'Bài thuyết trình của nhóm cháu làm rất tốt,继续保持...',
-    time: '1 tuần',
-    unreadCount: 0,
-    isOnline: false,
-    gradientType: 'amber',
-  },
-  {
-    id: '6',
-    teacherName: 'Nguyễn Thu T (GVCN 8A)',
-    teacherAvatar: 'NT',
-    subject: 'Chủ nhiệm cũ',
-    lastMessage: 'Chúc cháu năm học mới học thật tốt nhé!',
-    time: '2 tuần',
-    unreadCount: 0,
-    isOnline: false,
-    gradientType: 'cyan',
-  },
-];
-
-const ONLINE_TEACHERS: Message[] = [
-  {
-    id: 'online-1',
-    teacherName: 'Nguyễn T.H',
-    teacherAvatar: 'GV',
-    isOnline: true,
-    gradientType: 'blue',
-  },
-  {
-    id: 'online-2',
-    teacherName: 'Trần V.H',
-    teacherAvatar: 'TH',
-    isOnline: true,
-    gradientType: 'purple',
-  },
-  {
-    id: 'online-3',
-    teacherName: 'Lê T.P',
-    teacherAvatar: 'LP',
-    isOnline: true,
-    gradientType: 'pink',
-  },
-  {
-    id: 'online-4',
-    teacherName: 'Phạm V.K',
-    teacherAvatar: 'PM',
-    isOnline: true,
-    gradientType: 'green',
-  },
-];
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  headerChildInfo: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#0284C7',
-    textTransform: 'uppercase',
-  },
-  // Search bar styles
-  searchContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-  },
-  searchInput: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
-    borderColor: '#E5E7EB',
-    borderWidth: 1,
-  },
-
-  // Online teachers section
-  onlineSection: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  onlineTitle: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: '#9CA3AF',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 8,
-  },
-  onlineScrollContainer: {
-    flexDirection: 'row',
-    gap: 16,
-    overflow: 'scroll',
-    paddingHorizontal: 4,
-  },
-  onlineAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  onlineAvatarText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  onlineTeacherName: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: '#4B5563',
-    marginTop: 6,
-  },
-
-  // Chat styles
-  messageContainer: {
-    marginBottom: 8,
-    borderRadius: 16,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  messageContent: {
-    flexDirection: 'row',
-    padding: 16,
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  avatarContainer: {
-    marginRight: 12,
-    position: 'relative',
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  onlineIndicator: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 12,
-    height: 12,
-    backgroundColor: '#22C55E',
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: 'white',
-  },
-  readCheckmark: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 12,
-    height: 12,
-  },
-  unreadBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
-    minWidth: 18,
-  },
-  unreadBadgeText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  messageTextContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  messageHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  teacherName: {
-    color: '#111827',
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  messageTime: {
-    color: '#9CA3AF',
-    fontSize: 11,
-    fontWeight: '500',
-  },
-  messageSubtitle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  lastMessage: {
-    color: '#6B7280',
-    fontSize: 12,
-    lineHeight: 16,
-    flex: 1,
-  },
-  flatListContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 96,
-  },
-});
+const getInitials = (name: string) => {
+  const parts = name.split(' ').filter(p => p.length > 0);
+  if (parts.length === 0) return 'GV';
+  if (parts.length === 1) return (parts[0] || '').slice(0, 2).toUpperCase();
+  const first = (parts[0] || '').charAt(0);
+  const last = (parts[parts.length - 1] || '').charAt(0);
+  return `${first}${last}`.toUpperCase();
+};
 
 const getGradientColors = (type: string) => {
-  const gradients = {
+  const colors = {
     blue: ['#60A5FA', '#3B82F6'],
     purple: ['#C084FC', '#A855F7'],
     pink: ['#F472B6', '#EC4899'],
@@ -311,141 +53,160 @@ const getGradientColors = (type: string) => {
     amber: ['#FCD34D', '#F59E0B'],
     cyan: ['#5EEAD4', '#2DD4BF'],
   };
-  return gradients[type as keyof typeof gradients] || gradients.blue;
+  return colors[type as keyof typeof colors] || colors.blue;
 };
 
-export const MessagesScreen: React.FC<MessagesScreenProps> = ({ navigation }) => {
-  const { children, selectedChildId } = useParentStore();
-  const selectedChild = children.find(c => c.id === selectedChildId) || children[0];
+// Mock recent chat data
+const RECENT_CHATS_DATA: Omit<Message, 'teacherId' | 'teacherName' | 'teacherAvatar' | 'gradientType' | 'isOnline'>[] = [
+  {
+    id: '1',
+    lastMessage: 'Cháu Hoàng B hôm nay đi học rất đầy đủ...',
+    time: '5 phút',
+    unreadCount: 2,
+    isRead: false,
+  },
+  {
+    id: '2',
+    lastMessage: 'Điểm kiểm tra hôm nay cháu đã tiến bộ khá...',
+    time: '1 giờ',
+    unreadCount: 0,
+    isRead: true,
+  },
+  {
+    id: '3',
+    lastMessage: 'Nhớ nhắc cháu review từ vựng trước khi đến lớp...',
+    time: 'Hôm qua',
+    unreadCount: 5,
+    isRead: false,
+  },
+  {
+    id: '4',
+    lastMessage: 'Sắp đến bài kiểm tra giữa kỳ, cần ôn bài kỹ nhé...',
+    time: '2 ngày',
+    unreadCount: 0,
+    isRead: false,
+  },
+  {
+    id: '5',
+    lastMessage: 'Bài thuyết trình của nhóm cháu làm rất tốt!',
+    time: '1 tuần',
+    unreadCount: 0,
+    isRead: false,
+  },
+  {
+    id: '6',
+    lastMessage: 'Chúc cháu năm học mới học thật tốt nhé!',
+    time: '2 tuần',
+    unreadCount: 0,
+    isRead: false,
+  },
+];
 
-  const renderOnlineTeacher = ({ item }: { item: Message }) => (
-    <View style={{ flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-      <View style={styles.avatarContainer}>
-        <View style={[
-          styles.avatar,
-          {
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            backgroundColor: 'transparent'
-          }
-        ]}>
-          <View style={{
-            width: '100%',
-            height: '100%',
-            borderRadius: 28,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-            <View style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: 28,
-              backgroundColor: getGradientColors(item.gradientType!)[0],
-            }}>
-            <View style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: 28,
-              backgroundColor: getGradientColors(item.gradientType!)[1],
-              opacity: 0.8,
-            }}>
-              <Text style={styles.avatarText}>
-                {item.teacherAvatar}
-              </Text>
-              </View>
-              </View>
+export const MessagesScreen: React.FC<MessagesScreenProps> = ({ navigation }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Combine mockTeachers with chat data
+  const { onlineTeachers, recentChats } = useMemo(() => {
+    const online = mockTeachers.filter(t => t.status === 'online');
+    const chats = mockTeachers.map((teacher, index) => {
+      const chatData = RECENT_CHATS_DATA[index % RECENT_CHATS_DATA.length];
+      return {
+        ...chatData,
+        id: teacher.id,
+        teacherId: teacher.id,
+        teacherName: teacher.name,
+        teacherAvatar: getInitials(teacher.name),
+        gradientType: teacher.avatarColor || 'blue',
+        isOnline: teacher.status === 'online',
+      } as Message;
+    });
+    return { onlineTeachers: online, recentChats: chats };
+  }, []);
+
+  const renderOnlineTeacher = (teacher: typeof mockTeachers[0]) => (
+    <View style={styles.onlineTeacherContainer}>
+      <View style={styles.onlineAvatarContainer}>
+        <View
+          style={[
+            styles.onlineAvatar,
+            {
+              backgroundColor: getGradientColors(teacher.avatarColor || 'blue')[0],
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.onlineAvatarInner,
+              {
+                backgroundColor: getGradientColors(teacher.avatarColor || 'blue')[1],
+              },
+            ]}
+          >
+            <Text style={styles.onlineAvatarText}>{getInitials(teacher.name)}</Text>
           </View>
         </View>
-        {item.isOnline && (
-          <View style={styles.onlineIndicator} />
-        )}
+        <View style={styles.onlineIndicator} />
       </View>
-      <Text style={styles.onlineTeacherName}>
-        {item.teacherName}
-      </Text>
+      <Text style={styles.onlineTeacherName}>{teacher.name}</Text>
     </View>
   );
 
-  const renderMessage = ({ item }: { item: Message }) => (
+  const renderChat = (item: Message) => (
     <TouchableOpacity
-      onPress={() => navigation?.navigate('ChatDetail' as keyof ParentCommStackParamList, { chatId: item.id })}
+      key={item.id}
+      style={styles.chatCard}
+      onPress={() => navigation?.navigate('ChatDetail', { chatId: item.teacherId, teacherName: item.teacherName })}
       activeOpacity={0.7}
-      style={styles.messageContainer}
     >
-      <View style={styles.messageContent}>
-        <View style={styles.avatarContainer}>
-          <View style={[
-            styles.avatar,
+      <View style={styles.avatarContainer}>
+        <View
+          style={[
+            styles.chatAvatar,
             {
-              backgroundColor: 'transparent'
-            }
-          ]}>
-            <View style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: 24,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <View style={{
-                width: '100%',
-                height: '100%',
-                borderRadius: 24,
-                backgroundColor: getGradientColors(item.gradientType!)[0],
-              }}>
-              <View style={{
-                width: '100%',
-                height: '100%',
-                borderRadius: 24,
-                backgroundColor: getGradientColors(item.gradientType!)[1],
-                opacity: 0.8,
-              }}>
-                <Text style={styles.avatarText}>
-                  {item.teacherAvatar}
-                </Text>
-                </View>
-                </View>
-            </View>
-          </View>
-          {item.isOnline && (
-            <View style={styles.onlineIndicator} />
-          )}
-          {item.unreadCount > 0 && (
-            <View style={[
-              styles.unreadBadge,
+              backgroundColor: getGradientColors(item.gradientType)[0],
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.chatAvatarInner,
               {
-                backgroundColor: item.unreadCount > 0 ? '#0284C7' : '#EF4444'
-              }
-            ]}>
+                backgroundColor: getGradientColors(item.gradientType)[1],
+              },
+            ]}
+          >
+            <Text style={styles.chatAvatarText}>{item.teacherAvatar}</Text>
+          </View>
+        </View>
+        {item.isOnline && <View style={styles.chatOnlineIndicator} />}
+      </View>
+
+      <View style={styles.chatContent}>
+        <View style={styles.chatHeader}>
+          <Text style={styles.teacherName}>{item.teacherName}</Text>
+          <View style={styles.timeRow}>
+            <Text style={styles.timeText}>{item.time}</Text>
+            {item.isRead && (
+              <Icon name="check-double" size={12} color="#9CA3AF" />
+            )}
+          </View>
+        </View>
+        <View style={styles.chatFooter}>
+          <Text style={styles.lastMessage} numberOfLines={1}>
+            {item.lastMessage}
+          </Text>
+          {item.unreadCount && item.unreadCount > 0 && (
+            <View
+              style={[
+                styles.unreadBadge,
+                item.unreadCount > 9 ? styles.unreadBadgeLarge : null,
+              ]}
+            >
               <Text style={styles.unreadBadgeText}>
                 {item.unreadCount > 9 ? '9+' : item.unreadCount}
               </Text>
             </View>
           )}
-        </View>
-        <View style={styles.messageTextContainer}>
-          <View style={styles.messageHeader}>
-            <Text style={styles.teacherName}>
-              {item.teacherName}
-            </Text>
-            <Text style={styles.messageTime}>
-              {item.time}
-            </Text>
-          </View>
-          <View style={styles.messageSubtitle}>
-            <Text style={{
-              fontSize: 12,
-              fontWeight: '600',
-              color: colors.primary,
-              marginBottom: 2,
-            }}>
-              {item.subject}
-            </Text>
-          </View>
-          <Text style={styles.lastMessage}>
-            {item.lastMessage}
-          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -453,46 +214,248 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({ navigation }) =>
 
   return (
     <View style={styles.container}>
-      <ScreenHeader
-        title="Tin nhắn"
-        showBackButton={false}
-        rightComponent={selectedChild ? (
-          <Text style={styles.headerChildInfo}>
-            {selectedChild.grade}{selectedChild.section}
-          </Text>
-        ) : undefined}
-      />
+      {/* Header */}
+      <View style={styles.header}>
+        <ScreenHeader title="Tin nhắn" showBackButton={false} />
 
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Tìm kiếm cuộc trò chuyện..."
-          placeholderTextColor="#9CA3AF"
-        />
+        {/* Search */}
+        <View style={styles.searchContainer}>
+          <Icon name="search" size={16} color="#9CA3AF" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Tìm kiếm cuộc trò chuyện..."
+            placeholderTextColor="#9CA3AF"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
       </View>
 
       {/* Online Teachers Section */}
       <View style={styles.onlineSection}>
         <Text style={styles.onlineTitle}>Đang hoạt động</Text>
-        <FlatList
-          data={ONLINE_TEACHERS}
-          renderItem={renderOnlineTeacher}
-          keyExtractor={(item: Message) => item.id}
+        <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.onlineScrollContainer}
-        />
+          contentContainerStyle={styles.onlineScroll}
+        >
+          {onlineTeachers.map((teacher) => (
+            <View key={teacher.id}>{renderOnlineTeacher(teacher)}</View>
+          ))}
+        </ScrollView>
       </View>
 
-      {/* Chat List */}
-      <FlatList
-        data={MOCK_MESSAGES}
-        renderItem={renderMessage}
-        keyExtractor={(item: Message) => item.id}
-        contentContainerStyle={styles.flatListContent}
+      {/* Recent Chats */}
+      <ScrollView
+        style={styles.chatList}
+        contentContainerStyle={styles.chatListContent}
         showsVerticalScrollIndicator={false}
-      />
+      >
+        {recentChats.map((chat) => renderChat(chat))}
+      </ScrollView>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  header: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 24,
+    paddingTop: 64,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 44,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1F2937',
+  },
+  onlineSection: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  onlineTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#9CA3AF',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 12,
+  },
+  onlineScroll: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  onlineTeacherContainer: {
+    alignItems: 'center',
+  },
+  onlineAvatarContainer: {
+    position: 'relative',
+    marginBottom: 8,
+  },
+  onlineAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+  },
+  onlineAvatarInner: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 28,
+    opacity: 0.8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  onlineAvatarText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  onlineIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#22C55E',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  onlineTeacherName: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#4B5563',
+  },
+  chatList: {
+    flex: 1,
+  },
+  chatListContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingBottom: 96,
+  },
+  chatCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  avatarContainer: {
+    position: 'relative',
+    marginRight: 12,
+  },
+  chatAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  chatAvatarInner: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 24,
+    opacity: 0.8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chatAvatarText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  chatOnlineIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#22C55E',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  chatContent: {
+    flex: 1,
+  },
+  chatHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  teacherName: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1F2937',
+  },
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  timeText: {
+    fontSize: 9,
+    fontWeight: '500',
+    color: '#9CA3AF',
+  },
+  chatFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  lastMessage: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#6B7280',
+    flex: 1,
+    marginRight: 8,
+  },
+  unreadBadge: {
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#0284C7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  unreadBadgeLarge: {
+    minWidth: 22,
+  },
+  unreadBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+});

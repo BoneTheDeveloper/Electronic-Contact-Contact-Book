@@ -9,7 +9,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuthStore } from '../stores';
 
 import AuthNavigator from './AuthNavigator';
-import ParentTabs from './ParentTabs';
+import ParentNavigator from './ParentNavigator';
 import StudentTabs from './StudentTabs';
 
 export type RootStackParamList = {
@@ -37,7 +37,7 @@ const RootNavigator: React.FC = () => {
         {!isAuthenticated ? (
           <Stack.Screen name="Auth" component={AuthNavigator} />
         ) : user?.role === 'parent' ? (
-          <Stack.Screen name="Parent" component={ParentTabs} />
+          <Stack.Screen name="Parent" component={ParentNavigator} />
         ) : user?.role === 'student' ? (
           <Stack.Screen name="Student" component={StudentTabs} />
         ) : (

@@ -12,7 +12,7 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
-  Parent: NavigatorScreenParams<ParentTabParamList>;
+  Parent: NavigatorScreenParams<ParentNavigatorParamList>;
   Student: NavigatorScreenParams<StudentTabParamList>;
   Teacher: undefined;
   Admin: undefined;
@@ -31,6 +31,17 @@ export type AuthStackParamList = {
 export type AuthStackNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
 // ============================================================================
+// Parent Navigator - Wraps ParentTabs with modal screens
+// ============================================================================
+
+export type ParentNavigatorParamList = {
+  ParentTabs: NavigatorScreenParams<ParentTabParamList>;
+  ChildSelection: undefined;
+};
+
+export type ParentNavigatorNavigationProp = NativeStackNavigationProp<ParentNavigatorParamList>;
+
+// ============================================================================
 // Parent Tab - Parent user tabs
 // ============================================================================
 
@@ -43,7 +54,6 @@ export type ParentTabParamList = {
 // Parent Home Stack (includes all screens accessible from Dashboard)
 export type ParentHomeStackParamList = {
   Dashboard: undefined;
-  ChildSelection: undefined;
   Schedule: undefined;
   Grades: undefined;
   Attendance: undefined;
@@ -74,7 +84,7 @@ export type ParentCommStackParamList = {
   Messages: undefined;
   Notifications: undefined;
   News: undefined;
-  ChatDetail: { chatId?: string };
+  ChatDetail: { chatId?: string; teacherName?: string };
 };
 
 export type ParentCommStackNavigationProp = NativeStackNavigationProp<ParentCommStackParamList>;

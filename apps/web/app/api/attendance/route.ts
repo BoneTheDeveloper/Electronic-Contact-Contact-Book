@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 interface AttendanceRecord {
   id: string
+  studentCode: string
   studentName: string
   classId: string
   date: string
@@ -9,16 +10,44 @@ interface AttendanceRecord {
   notes?: string
 }
 
-// Mock data
+// Mock data - using REAL student codes, names, and classes from Supabase database
+// Only showing: Đi muộn (late), Vắng mặt (absent), Có phép (excused)
 const mockAttendance: AttendanceRecord[] = [
-  { id: '1', studentName: 'Nguyễn Văn An', classId: '10A1', date: '15/01/2026', status: 'present' },
-  { id: '2', studentName: 'Trần Thị Bình', classId: '10A1', date: '15/01/2026', status: 'present' },
-  { id: '3', studentName: 'Lê Văn Cường', classId: '10A1', date: '15/01/2026', status: 'late', notes: 'Đi muộn 15 phút' },
-  { id: '4', studentName: 'Phạm Thị Dung', classId: '10A1', date: '15/01/2026', status: 'absent', notes: 'Ốm đau' },
-  { id: '5', studentName: 'Hoàng Văn Em', classId: '10A2', date: '15/01/2026', status: 'present' },
-  { id: '6', studentName: 'Đỗ Thị Gái', classId: '10A2', date: '15/01/2026', status: 'excused', notes: 'Có phép gia đình' },
-  { id: '7', studentName: 'Vũ Văn Hùng', classId: '10A2', date: '15/01/2026', status: 'present' },
-  { id: '8', studentName: 'Ngô Thị Hoa', classId: '10A3', date: '15/01/2026', status: 'present' },
+  // Khối 6A - Đi muộn (real students from DB)
+  { id: '1', studentCode: 'ST20260575', studentName: 'Nguyễn Văn An', classId: '6A', date: '25/01/2026', status: 'late', notes: 'Đi muộn 10 phút' },
+  { id: '2', studentCode: 'ST20260576', studentName: 'Trần Thị Bình', classId: '6A', date: '25/01/2026', status: 'late', notes: 'Kẹt xe' },
+  { id: '3', studentCode: 'ST20260577', studentName: 'Lê Văn Cường', classId: '6A', date: '25/01/2026', status: 'late', notes: 'Đi muộn 15 phút' },
+  { id: '4', studentCode: 'ST20260578', studentName: 'Phạm Thị Dung', classId: '6A', date: '25/01/2026', status: 'late', notes: 'Xe hỏng' },
+
+  // Khối 6A - Vắng mặt
+  { id: '5', studentCode: 'ST20260579', studentName: 'Hoàng Văn Em', classId: '6A', date: '25/01/2026', status: 'absent', notes: 'Không có lý do' },
+  { id: '6', studentCode: 'ST20260580', studentName: 'Võ Thị Gái', classId: '6A', date: '25/01/2026', status: 'absent', notes: 'Ốm đau' },
+  { id: '7', studentCode: 'ST20260581', studentName: 'Ngô Văn Hùng', classId: '6A', date: '25/01/2026', status: 'absent', notes: 'Việc gia đình' },
+
+  // Khối 6A - Có phép
+  { id: '8', studentCode: 'ST20260582', studentName: 'Đặng Thị Lan', classId: '6A', date: '25/01/2026', status: 'excused', notes: 'Có phép gia đình' },
+  { id: '9', studentCode: 'ST20260583', studentName: 'Dương Văn Minh', classId: '6A', date: '25/01/2026', status: 'excused', notes: 'Đi lễ' },
+
+  // Khối 7B - Real students from DB
+  { id: '10', studentCode: 'ST20260007', studentName: 'Nguyễn Thị Gái', classId: '7B', date: '25/01/2026', status: 'late', notes: 'Đi muộn 5 phút' },
+  { id: '11', studentCode: 'ST20260012', studentName: 'Dương Văn Thành', classId: '7B', date: '25/01/2026', status: 'absent', notes: 'Không lý do' },
+  { id: '12', studentCode: 'ST20260017', studentName: 'Trần Thị Lan', classId: '7B', date: '25/01/2026', status: 'excused', notes: 'Có phép' },
+  { id: '13', studentCode: 'ST20260022', studentName: 'Vũ Thị Bình', classId: '7B', date: '25/01/2026', status: 'late', notes: 'Đi muộn 20 phút' },
+  { id: '14', studentCode: 'ST20260027', studentName: 'Nguyễn Văn Em', classId: '7B', date: '25/01/2026', status: 'absent', notes: 'Ốm' },
+
+  // Khối 8C - Real students from DB
+  { id: '15', studentCode: 'ST20260008', studentName: 'Phan Thị Lan', classId: '8C', date: '25/01/2026', status: 'excused', notes: 'Đi đám tang' },
+  { id: '16', studentCode: 'ST20260013', studentName: 'Vũ Thị Sương', classId: '8C', date: '25/01/2026', status: 'late', notes: 'Kẹt xe' },
+  { id: '17', studentCode: 'ST20260018', studentName: 'Dương Thị Bình', classId: '8C', date: '25/01/2026', status: 'absent', notes: 'Không có phép' },
+  { id: '18', studentCode: 'ST20260023', studentName: 'Hồ Thị Bình', classId: '8C', date: '25/01/2026', status: 'excused', notes: 'Việc gia đình' },
+  { id: '19', studentCode: 'ST20260028', studentName: 'Dương Vân Rạng', classId: '8C', date: '25/01/2026', status: 'late', notes: 'Đi muộn 12 phút' },
+
+  // Khối 9A - Real students from DB
+  { id: '20', studentCode: 'ST20260001', studentName: 'Đỗ Thị Bình', classId: '9A', date: '25/01/2026', status: 'absent', notes: 'Không lý do' },
+  { id: '21', studentCode: 'ST20260004', studentName: 'Hồ Văn Em', classId: '9A', date: '25/01/2026', status: 'excused', notes: 'Có phép' },
+  { id: '22', studentCode: 'ST20260009', studentName: 'Đỗ Văn Cường', classId: '9A', date: '25/01/2026', status: 'late', notes: 'Đi muộn 8 phút' },
+  { id: '23', studentCode: 'ST20260014', studentName: 'Dương Thị Gái', classId: '9A', date: '25/01/2026', status: 'absent', notes: 'Ốm đau' },
+  { id: '24', studentCode: 'ST20260019', studentName: 'Trần Vân Rạng', classId: '9A', date: '25/01/2026', status: 'excused', notes: 'Đi khám bệnh' },
 ]
 
 export async function GET(request: Request) {
@@ -42,16 +71,12 @@ export async function GET(request: Request) {
     )
   }
 
-  // Calculate statistics
+  // Calculate statistics (only issues: absent, late, excused)
   const stats = {
     total: filteredAttendance.length,
-    present: filteredAttendance.filter((a: AttendanceRecord) => a.status === 'present').length,
     absent: filteredAttendance.filter((a: AttendanceRecord) => a.status === 'absent').length,
     late: filteredAttendance.filter((a: AttendanceRecord) => a.status === 'late').length,
     excused: filteredAttendance.filter((a: AttendanceRecord) => a.status === 'excused').length,
-    rate: filteredAttendance.length > 0
-      ? Math.round((filteredAttendance.filter((a: AttendanceRecord) => a.status === 'present').length / filteredAttendance.length) * 100)
-      : 0,
   }
 
   return NextResponse.json({

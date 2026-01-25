@@ -325,8 +325,7 @@ const styles = StyleSheet.create({
     borderColor: '#1F2937',
     padding: 8,
     position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
+    overflow: 'hidden',
   },
   vietqrLogoContainer: {
     position: 'absolute',

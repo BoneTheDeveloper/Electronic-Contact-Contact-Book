@@ -61,6 +61,10 @@ export interface MockTeacher {
   subjects: string[];
   email: string;
   phone: string;
+  type: 'homeroom' | 'subject';
+  classes?: string[];
+  avatarColor?: string;
+  status?: 'online' | 'offline';
 }
 
 export interface MockNotification {
@@ -80,10 +84,10 @@ export const mockStudents: MockStudent[] = [
     id: '2',
     name: 'Nguyen Van B',
     rollNumber: 'STU001',
-    classId: 'CLASS10A',
+    classId: 'CLASS9A',
     section: 'A',
-    grade: 10,
-    dateOfBirth: '2009-05-15',
+    grade: 9,
+    dateOfBirth: '2010-05-15',
     parentIds: ['1'],
   },
   {
@@ -208,9 +212,9 @@ export const mockFees: MockFee[] = [
 // Mock Classes Data
 export const mockClasses: MockClass[] = [
   {
-    id: 'CLASS10A',
-    name: 'Class 10A',
-    grade: 10,
+    id: 'CLASS9A',
+    name: 'Class 9A',
+    grade: 9,
     section: 'A',
     teacherId: 'TEACHER001',
     studentIds: ['2'],
@@ -223,25 +227,97 @@ export const mockClasses: MockClass[] = [
     teacherId: 'TEACHER002',
     studentIds: ['5'],
   },
+  {
+    id: 'CLASS7A',
+    name: 'Class 7A',
+    grade: 7,
+    section: 'A',
+    teacherId: 'TEACHER001',
+    studentIds: [],
+  },
+  {
+    id: 'CLASS6A',
+    name: 'Class 6A',
+    grade: 6,
+    section: 'A',
+    teacherId: 'TEACHER002',
+    studentIds: [],
+  },
 ];
 
 // Mock Teachers Data
 export const mockTeachers: MockTeacher[] = [
   {
     id: 'TEACHER001',
-    name: 'Teacher A',
-    employeeId: 'EMP001',
-    subjects: ['Mathematics', 'Physics'],
-    email: 'teacher@school.edu',
-    phone: '+84 123 456 789',
+    name: 'Nguyễn Thị Hồng',
+    employeeId: 'GV001',
+    subjects: ['GVCN'],
+    email: 'hong.nguyen@school.edu.vn',
+    phone: '0901234567',
+    type: 'homeroom',
+    classes: ['9A'],
+    avatarColor: 'blue',
+    status: 'online',
   },
   {
     id: 'TEACHER002',
-    name: 'Teacher B',
-    employeeId: 'EMP002',
-    subjects: ['English', 'Literature'],
-    email: 'teacher2@school.edu',
-    phone: '+84 987 654 321',
+    name: 'Trần Văn Hùng',
+    employeeId: 'GV002',
+    subjects: ['Toán'],
+    email: 'hung.tran@school.edu.vn',
+    phone: '0912345678',
+    type: 'subject',
+    classes: ['9A', '9B', '9C'],
+    avatarColor: 'purple',
+    status: 'online',
+  },
+  {
+    id: 'TEACHER003',
+    name: 'Lê Thị Khánh',
+    employeeId: 'GV003',
+    subjects: ['Ngữ văn'],
+    email: 'khanh.le@school.edu.vn',
+    phone: '0923456789',
+    type: 'subject',
+    classes: ['9A', '9D'],
+    avatarColor: 'amber',
+    status: 'offline',
+  },
+  {
+    id: 'TEACHER004',
+    name: 'Lê Phượng',
+    employeeId: 'GV004',
+    subjects: ['Tiếng Anh'],
+    email: 'phuong.le@school.edu.vn',
+    phone: '0934567890',
+    type: 'subject',
+    classes: ['9A', '9B'],
+    avatarColor: 'pink',
+    status: 'online',
+  },
+  {
+    id: 'TEACHER005',
+    name: 'Phạm Minh Khang',
+    employeeId: 'GV005',
+    subjects: ['Vật lý'],
+    email: 'khang.pm@school.edu.vn',
+    phone: '0945678901',
+    type: 'subject',
+    classes: ['9A', '9B', '9C', '9D', '9E', '9F'],
+    avatarColor: 'green',
+    status: 'offline',
+  },
+  {
+    id: 'TEACHER006',
+    name: 'Nguyễn Thúy Loan',
+    employeeId: 'GV006',
+    subjects: ['Hóa học'],
+    email: 'loan.nguyen@school.edu.vn',
+    phone: '0956789012',
+    type: 'subject',
+    classes: ['9A', '9B', '9C'],
+    avatarColor: 'cyan',
+    status: 'offline',
   },
 ];
 

@@ -1,5 +1,5 @@
 import { AttendanceManagement } from '@/components/admin/attendance/AttendanceManagement'
-import { Calendar, Download } from 'lucide-react'
+import { Download } from 'lucide-react'
 
 export default async function AttendancePage() {
   return (
@@ -16,10 +16,6 @@ export default async function AttendancePage() {
           <button className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-bold text-sm text-slate-700 shadow-sm transition-all hover:bg-slate-50">
             <Download className="h-4 w-4" />
             Xuất báo cáo
-          </button>
-          <button className="flex items-center gap-2 rounded-xl bg-[#0284C7] px-5 py-2.5 font-bold text-sm text-white shadow-lg shadow-blue-100 transition-all hover:bg-[#0369a1]">
-            <Calendar className="h-4 w-4" />
-            Điểm danh nhanh
           </button>
         </div>
       </div>

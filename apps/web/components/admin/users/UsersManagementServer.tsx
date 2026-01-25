@@ -36,18 +36,10 @@ export function UsersManagementServer({
     students: initialUsers.filter((u: User) => u.role === 'student').length,
   }
 
-  // Get unique classes server-side
-  const classOptions = initialUsers
-    .map((u: User) => u.classId)
-    .filter((value): value is string => Boolean(value))
-    .filter((value, index, self) => self.indexOf(value) === index)
-    .map((c) => ({ value: c, label: `Lớp ${c}` }))
-
   return (
     <UsersManagement
       initialUsers={initialUsers}
       initialStats={stats}
-      initialClassOptions={classOptions}
       refreshTrigger={refreshTrigger}
       onAddUser={onAddUser}
       onImportExcel={onImportExcel}

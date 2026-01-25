@@ -1,26 +1,25 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { CheckCircle, XCircle, Clock, Users } from 'lucide-react'
+import { XCircle, Clock } from 'lucide-react'
 import { StatCard, DataTable, StatusBadge, FilterBar } from '@/components/admin/shared'
 import type { Column } from '@/components/admin/shared'
 
 interface AttendanceRecord extends Record<string, unknown> {
   id: string
+  studentCode: string
   studentName: string
   classId: string
   date: string
-  status: 'present' | 'absent' | 'late' | 'excused'
+  status: 'absent' | 'late' | 'excused'
   notes?: string
 }
 
 interface AttendanceStats {
   total: number
-  present: number
   absent: number
   late: number
   excused: number
-  rate: number
 }
 
 interface ApiResponse<T> {
@@ -34,11 +33,9 @@ export function AttendanceManagement() {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([])
   const [stats, setStats] = useState<AttendanceStats>({
     total: 0,
-    present: 0,
     absent: 0,
     late: 0,
     excused: 0,
-    rate: 0,
   })
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({
@@ -68,6 +65,11 @@ export function AttendanceManagement() {
       if (filters.search) params.append('search', filters.search)
       if (filters.class) params.append('classId', filters.class)
       if (filters.status) params.append('status', filters.status)
+      if (filters.dateRange) {
+        const [startDate, endDate] = filters.dateRange.split('..')
+        if (startDate) params.append('startDate', startDate)
+        if (endDate) params.append('endDate', endDate)
+      }
 
       try {
         const response = await fetch(`/api/attendance?${params}`)
@@ -104,17 +106,15 @@ export function AttendanceManagement() {
     setFilters(prev => ({ ...prev, [key]: String(value) }))
   }, [])
 
-  // Status configuration - memoized
+  // Status configuration - memoized (only showing late, absent, excused)
   const statusConfig = useMemo(() => ({
-    present: { label: 'Có mặt', color: 'success' as const, icon: CheckCircle },
     absent: { label: 'Vắng mặt', color: 'error' as const, icon: XCircle },
     late: { label: 'Đi muộn', color: 'warning' as const, icon: Clock },
     excused: { label: 'Có phép', color: 'info' as const, icon: Clock },
   }), [])
 
-  // Status filter options - memoized
+  // Status filter options - memoized (only showing late, absent, excused)
   const statusFilterOptions = useMemo(() => [
-    { value: 'present', label: 'Có mặt' },
     { value: 'absent', label: 'Vắng mặt' },
     { value: 'late', label: 'Đi muộn' },
     { value: 'excused', label: 'Có phép' },
@@ -122,6 +122,11 @@ export function AttendanceManagement() {
 
   // Memoize filters array for FilterBar
   const filterBarFilters = useMemo(() => [
+    {
+      key: 'dateRange',
+      label: 'Khoảng ngày',
+      type: 'dateRange' as const,
+    },
     {
       key: 'class',
       label: 'Lớp',
@@ -148,7 +153,7 @@ export function AttendanceManagement() {
           </div>
           <div>
             <p className="text-sm font-bold text-slate-800">{row.studentName}</p>
-            <p className="text-xs text-slate-400">Mã HS: {row.id}</p>
+            <p className="text-xs text-slate-400">Mã HS: {row.studentCode}</p>
           </div>
         </div>
       ),
@@ -195,21 +200,8 @@ export function AttendanceManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Tổng học sinh"
-          value={stats.total}
-          icon={<Users className="h-5 w-5" />}
-          color="blue"
-        />
-        <StatCard
-          title="Có mặt"
-          value={stats.present}
-          trend={stats.rate}
-          icon={<CheckCircle className="h-5 w-5" />}
-          color="green"
-        />
+      {/* Statistics Cards - Only showing issues: Vắng mặt, Đi muộn, Có phép */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <StatCard
           title="Vắng mặt"
           value={stats.absent}
@@ -222,20 +214,12 @@ export function AttendanceManagement() {
           icon={<Clock className="h-5 w-5" />}
           color="orange"
         />
-      </div>
-
-      {/* Attendance Rate Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-slate-800">Tỷ lệ chuyên cần</h3>
-          <span className="text-3xl font-black text-[#0284C7]">{stats.rate}%</span>
-        </div>
-        <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-full bg-gradient-to-r from-[#0284C7] to-[#0369a1] transition-all duration-500"
-            style={{ width: `${stats.rate}%` }}
-          />
-        </div>
+        <StatCard
+          title="Có phép"
+          value={stats.excused}
+          icon={<Clock className="h-5 w-5" />}
+          color="blue"
+        />
       </div>
 
       {/* Filters */}

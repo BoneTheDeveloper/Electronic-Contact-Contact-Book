@@ -105,10 +105,11 @@ function handleQueryError(error: { message?: string; code?: string }, context: s
 // ==================== USER MANAGEMENT ====================
 
 /**
- * Get all users with their profiles (cached)
+ * Get all users with their profiles
  * Replaces: getUsers()
+ * NOTE: Not cached to ensure fresh classId data from enrollments
  */
-export const getUsers = cache(async (): Promise<User[]> => {
+export async function getUsers(): Promise<User[]> {
   const supabase = await getSupabase()
 
   // Fetch all profiles
@@ -120,11 +121,15 @@ export const getUsers = cache(async (): Promise<User[]> => {
   if (profilesError) handleQueryError(profilesError, 'getUsers')
 
   // Fetch role-specific codes in parallel
-  const [adminsResult, teachersResult, parentsResult, studentsResult] = await Promise.all([
+  const [adminsResult, teachersResult, parentsResult, studentsResult, enrollmentsResult, classTeachersResult] = await Promise.all([
     supabase.from('admins').select('id, admin_code'),
     supabase.from('teachers').select('id, employee_code'),
     supabase.from('parents').select('id, parent_code'),
-    supabase.from('students').select('id, student_code')
+    supabase.from('students').select('id, student_code'),
+    // Fetch enrollments for students (class assignments)
+    supabase.from('enrollments').select('student_id, class_id').eq('status', 'active'),
+    // Fetch class_teachers for teachers (class assignments)
+    supabase.from('class_teachers').select('teacher_id, class_id')
   ])
 
   const adminCodes = new Map((adminsResult.data || []).map((a: any) => [a.id, a.admin_code]))
@@ -132,9 +137,14 @@ export const getUsers = cache(async (): Promise<User[]> => {
   const parentCodes = new Map((parentsResult.data || []).map((p: any) => [p.id, p.parent_code]))
   const studentCodes = new Map((studentsResult.data || []).map((s: any) => [s.id, s.student_code]))
 
+  // Create maps for class assignments
+  const studentClassMap = new Map((enrollmentsResult.data || []).map((e: any) => [e.student_id, e.class_id]))
+  const teacherClassMap = new Map((classTeachersResult.data || []).map((ct: any) => [ct.teacher_id, ct.class_id]))
+
   return (profiles || []).map((p: any) => {
     // Get code from role-specific table
     let code: string | undefined
+    let classId: string | undefined
 
     switch (p.role) {
       case 'admin':
@@ -142,12 +152,14 @@ export const getUsers = cache(async (): Promise<User[]> => {
         break
       case 'teacher':
         code = teacherCodes.get(p.id)
+        classId = teacherClassMap.get(p.id)
         break
       case 'parent':
         code = parentCodes.get(p.id)
         break
       case 'student':
         code = studentCodes.get(p.id)
+        classId = studentClassMap.get(p.id)
         break
     }
 
@@ -159,10 +171,11 @@ export const getUsers = cache(async (): Promise<User[]> => {
       role: p.role as User['role'],
       status: p.status as User['status'],
       avatar: p.avatar_url || undefined,
-      phone: p.phone || undefined
+      phone: p.phone || undefined,
+      classId
     }
   })
-})
+}
 
 /**
  * Get user by ID
@@ -188,6 +201,7 @@ export async function getUserById(id: string): Promise<User | null> {
 
   // Fetch role-specific code based on role
   let code: string | undefined
+  let classId: string | undefined
   switch (profile.role) {
     case 'admin': {
       const { data: admin } = await supabase.from('admins').select('admin_code').eq('id', id).single()
@@ -197,6 +211,9 @@ export async function getUserById(id: string): Promise<User | null> {
     case 'teacher': {
       const { data: teacher } = await supabase.from('teachers').select('employee_code').eq('id', id).single()
       code = (teacher as any)?.employee_code
+      // Fetch teacher's class assignment
+      const { data: classTeacher } = await supabase.from('class_teachers').select('class_id').eq('teacher_id', id).limit(1).single()
+      classId = (classTeacher as any)?.class_id
       break
     }
     case 'parent': {
@@ -207,6 +224,9 @@ export async function getUserById(id: string): Promise<User | null> {
     case 'student': {
       const { data: student } = await supabase.from('students').select('student_code').eq('id', id).single()
       code = (student as any)?.student_code
+      // Fetch student's class enrollment
+      const { data: enrollment } = await supabase.from('enrollments').select('class_id').eq('student_id', id).eq('status', 'active').limit(1).single()
+      classId = (enrollment as any)?.class_id
       break
     }
   }
@@ -219,7 +239,8 @@ export async function getUserById(id: string): Promise<User | null> {
     role: profile.role as User['role'],
     status: profile.status as User['status'],
     avatar: profile.avatar_url || undefined,
-    phone: profile.phone || undefined
+    phone: profile.phone || undefined,
+    classId
   }
 }
 
@@ -339,8 +360,9 @@ export async function updateUser(
 
   const d = data as any
 
-  // Fetch role-specific code
+  // Fetch role-specific code and classId
   let code: string | undefined
+  let classId: string | undefined
   switch (d.role) {
     case 'admin': {
       const { data: admin } = await supabase.from('admins').select('admin_code').eq('id', id).single()
@@ -350,6 +372,9 @@ export async function updateUser(
     case 'teacher': {
       const { data: teacher } = await supabase.from('teachers').select('employee_code').eq('id', id).single()
       code = (teacher as any)?.employee_code
+      // Fetch teacher's class assignment
+      const { data: classTeacher } = await supabase.from('class_teachers').select('class_id').eq('teacher_id', id).limit(1).single()
+      classId = (classTeacher as any)?.class_id
       break
     }
     case 'parent': {
@@ -360,6 +385,9 @@ export async function updateUser(
     case 'student': {
       const { data: student } = await supabase.from('students').select('student_code').eq('id', id).single()
       code = (student as any)?.student_code
+      // Fetch student's class enrollment
+      const { data: enrollment } = await supabase.from('enrollments').select('class_id').eq('student_id', id).eq('status', 'active').limit(1).single()
+      classId = (enrollment as any)?.class_id
       break
     }
   }
@@ -372,7 +400,8 @@ export async function updateUser(
     role: d.role as User['role'],
     status: d.status as User['status'],
     avatar: d.avatar_url || undefined,
-    phone: d.phone || undefined
+    phone: d.phone || undefined,
+    classId
   }
 }
 
